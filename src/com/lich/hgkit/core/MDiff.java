@@ -245,6 +245,48 @@ public class MDiff {
 
 
 	private static List<Frag> decode(StringBuilder buffer, int length) {
+		static struct flist *decode(const char *bin, int len)
+		{
+			struct flist *l;
+			struct frag *lt;
+			
+//			const char *data = bin + 12, 
+//				*end = bin + len;
+			
+			// char decode[12]; /* for dealing with alignment issues */
+			byte decode[] = new byte[12]; /* for dealing with alignment issues */
+
+			/* assume worst case size, we won't have many of these lists */
+			l = lalloc(len / 12);
+			if (!l)
+				return NULL;
+
+			lt = l->tail;
+
+			while (data <= end) {
+				memcpy(decode, bin, 12);
+				lt->start = ntohl(*(uint32_t *)decode);
+				lt->end = ntohl(*(uint32_t *)(decode + 4));
+				lt->len = ntohl(*(uint32_t *)(decode + 8));
+				if (lt->start > lt->end)
+					break; /* sanity check */
+				bin = data + lt->len;
+				if (bin < data)
+					break; /* big data + big (bogus) len can wrap around */
+				lt->data = data;
+				data = bin + 12;
+				lt++;
+			}
+
+			if (bin != end) {
+				if (!PyErr_Occurred())
+					PyErr_SetString(mpatch_Error, "patch cannot be decoded");
+				lfree(l);
+				return NULL;
+			}
+
+			l->tail = lt;
+			retu	
 		throw new RuntimeException("NIE");
 	}
 
