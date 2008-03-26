@@ -6,11 +6,21 @@ import java.util.List;
 
 class Frag {
 	int start; 
-	int end;	
-	int len() {
-		return data.length();
-	}
+	int end;
+	// May differ from stirng data lenght
+	int mlen = -1;
 	String data;
+	
+	int len() {
+		if(mlen == -1) {
+			mlen = data.length();
+		}
+		return mlen;
+	}
+	
+	public void len(int len) {
+		mlen = len;
+	}
 
 }
 
@@ -119,11 +129,14 @@ public class MDiff {
 
 			/* insert new hunk */
 			// ct = c->tail;
-			Frag ct = c.get(c.size() - 1);
+			
+			Frag ct = new Frag();
 			ct.start = frag.start - offset;
 			ct.end = frag.end - post;
 			ct.data = frag.data;
 			// c.tail++;
+			c.add(ct);
+			
 			offset = post;
 		}
 
@@ -135,8 +148,101 @@ public class MDiff {
 		return c;
 
 		
-		throw new RuntimeException("NIE");
 	}
+
+	// static int discard(struct flist *src, int cut, int offset) {
+	private static int discard(List<Frag> src, int cut, int offset) {
+		// struct frag *s = src->head;
+		Frag s = null;
+		int postend, c, l;
+		// while (s != src->tail) {
+		for(Frag frag : src) {
+			s = frag;
+			if (s.start + offset >= cut)
+				break;
+
+			postend = offset + s.start + s.len();
+			if (postend <= cut) {
+				offset += s.start + s.len() - s.end;
+			}
+			else {
+				c = cut - offset;
+				if (s.end < c)
+					c = s.end;
+				l = cut - offset - s.start;
+				if (s.len() < l)
+					l = s.len();
+
+				offset += s.start + l - c;
+				s.start = c;
+				s.len(s.len() - l);
+				s.data = s.data + l;
+
+				break;
+			}
+		}
+		
+		// src.head = s;
+		// seems like a no-op? no, it clear src, pointing at null
+		src.clear();
+		return offset;
+	}
+
+
+	private static int gather(List<Frag> dest, List<Frag> src, int cut,
+			int offset) {
+		/*
+		 * move hunks in source that are less cut to dest, compensating for
+		 * changes in offset. the last hunk may be split if necessary.
+		 */
+		// struct frag *d = dest->tail, *s = src->head;
+		int postend, c, l;
+
+		Frag s = null;
+		// while (s != src->tail) {
+		for(Frag frag : src) {
+			s = frag;
+			if (s.start + offset >= cut)
+				break; /* we've gone far enough */
+
+			postend = offset + s.start + s.len();
+			if (postend <= cut) {
+				/* save this hunk */
+				offset += s.start + s.len() - s.end;
+				// *d++ = *s++;
+				dest.add(s);
+			} else {
+				/* break up this hunk */
+				c = cut - offset;
+				if (s.end < c)
+					c = s.end;
+				l = cut - offset - s.start;
+				if (s.len() < l)
+					l = s.len();
+
+				offset += s.start + l - c;
+				Frag d  = new Frag();
+				d.start = s.start;
+				d.end = c;
+				d.data = s.data;
+				d.len(l);
+				// d++;
+				dest.add(d);
+
+				s.start = c;
+				s.len(s.len() - l);
+				s.data = s.data + l;
+				break;
+			}
+		}
+
+		// dest->tail = d;
+		// src->head = s;
+		// this is
+		src.set(0, s);
+		return offset;
+	}
+
 
 	private static List<Frag> decode(StringBuilder buffer, int length) {
 		throw new RuntimeException("NIE");
