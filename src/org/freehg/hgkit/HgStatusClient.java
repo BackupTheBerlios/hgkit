@@ -84,4 +84,8 @@ public class HgStatusClient {
 		// TODO Binary compare the repository version against the supplied version
 
 	}
+	
+	public void addedMethod() {
+	    // this method were added
+	}
 }

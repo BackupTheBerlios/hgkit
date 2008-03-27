@@ -127,62 +127,32 @@ public class Revlog {
 	}
 
 	public String revision(NodeId node) {
-		// /**
-		// * <pre>
-		// *
-		// def revision(self, node):
-		// """return an uncompressed revision of a given"""
-		// if node == nullid:
-		// return &quot;&quot;
-		// if self._cache and self._cache[0] == node:
-		// return str(self._cache[2])
 		if (node.equals(NULLID)) {
 			return "";
 		}
-		// no caching for now
+		// hgkit doesnt cache for now
 
 		// # look up what we need to read
-		// rev = self.rev(node)
-		// base = self.base(rev)
 		RevlogEntry entry = nodemap.get(node);
-		int rev = index.indexOf(entry);
-		int base = entry.baseRev; // = self.base(rev)
+		int rev = entry.revision;
+		int base = entry.baseRev;
 
-		System.out.println("## Must lookup " + base + " to " + rev);
-		/*
-		 * # check rev flags if self.index[rev][0] & 0xFFFF: raise
-		 * RevlogError(_('incompatible revision flag %x') % (self.index[rev][0]
-		 * &amp; 0xFFFF))
-		 * 
-		 */
 		if ((entry.flags & 0xFFFF) != 0) {
 			throw new IllegalStateException("Incompatible revision flag: "
 					+ entry.flags);
 		}
 
-		// if self._inline:
-		// # we probably have the whole chunk cached
-		// df = None
-		// else:
-		// df = self.opener(self.datafile)
-		//		  
 		if (!isDataInline) {
 			throw new IllegalStateException(
 					"Only inline reading implemented yet");
 		}
 
 		String text = null;
-		byte[] allData = new byte[0];
 		try {
 			FileInputStream fis = new FileInputStream(this.dataFile);
-			// entry.loadBlock(fis);
-
-			// text = chunk(base);
-			// All data needed is contained in this byte array
-			// the data need to be split up into "chunks"
-			// byte[] data = chunk(allData, base);
-
-			byte[] data = index.get(base).loadBlock(fis);
+			
+			RevlogEntry revlogEntry = index.get(base);
+            byte[] data = revlogEntry.loadBlock(fis);
 			text = decompress(data);
 
 			System.out.println("Got base text: " + text);
@@ -293,7 +263,7 @@ public class Revlog {
 		byte[] buff = new byte[512];
 		InputStream _dec = new ZInputStream(datain);
 		int read = 0;
-		while( 0 < (read = _dec.read(buff))) {
+		while( -1 != (read = _dec.read(buff))) {
 			unc.write(buff,0,read);
 		}
 		return new String(unc.toString());
@@ -395,7 +365,10 @@ public class Revlog {
 					+ secondParentRev;
 		}
 
-		public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) {
+		public static RevlogEntry valueOf(Revlog parent, 
+		        byte[] data, 
+		        int off) {
+		    
 			byte[] mydata = new byte[BINARY_LENGTH];
 			for (int i = 0; i < BINARY_LENGTH; i++) {
 				mydata[i] = data[off + i];
