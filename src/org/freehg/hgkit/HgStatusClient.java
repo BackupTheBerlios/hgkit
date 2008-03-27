@@ -83,7 +83,5 @@ public class HgStatusClient {
 		System.out.println("Must use repository to determine if it has changed");
 		// TODO Binary compare the repository version against the supplied version
 
-		
-		// There should be more in the uncompressed shit than this
 	}
 }
