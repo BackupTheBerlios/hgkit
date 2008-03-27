@@ -1,6 +1,8 @@
 package org.freehg.hgkit.core;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -9,11 +11,11 @@ class Frag {
 	int end;
 	// May differ from stirng data lenght
 	int mlen = -1;
-	String data;
+	byte[] data;
 	
 	int len() {
 		if(mlen == -1) {
-			mlen = data.length();
+			mlen = data.length;
 		}
 		return mlen;
 	}
@@ -91,13 +93,11 @@ public class MDiff {
 
 	private static List<Frag> fold(List<String> bins, int start, int end) {
 		/* recursively generate a patch of all bins between start and end */
-			StringBuilder buffer = new StringBuilder();
 
 			if (start + 1 == end) {
 				/* trivial case, output a decoded list */
-				String hunk = bins.get(start);
-				buffer.append(hunk);
-				return decode(buffer, buffer.length());
+				byte[] bytes = bins.get(start).getBytes();
+                return decode(bytes, bytes.length);
 			}
 
 			/* divide and conquer, memory management is elsewhere */
@@ -115,14 +115,14 @@ public class MDiff {
 		}
 		// struct flist *c = NULL;
 		// c = lalloc((lsize(a) + lsize(b)) * 2);
-		List<Frag> c = new ArrayList<Frag>(2 * (a.size() + b.size())); 
+		List<Frag> combination = new ArrayList<Frag>(2 * (a.size() + b.size())); 
 		// struct frag *bh, *ct;
 		int offset = 0, post;
 		// for (bh = b->head; bh != b->tail; bh++) {
 		for (Frag frag : b) {
 			
 			/* save old hunks */
-			offset = gather(c, a, frag.start, offset);
+			offset = gather(combination, a, frag.start, offset);
 
 			/* discard replaced hunks */
 			post = discard(a, frag.end, offset);
@@ -135,7 +135,7 @@ public class MDiff {
 			ct.end = frag.end - post;
 			ct.data = frag.data;
 			// c.tail++;
-			c.add(ct);
+			combination.add(ct);
 			
 			offset = post;
 		}
@@ -144,15 +144,16 @@ public class MDiff {
 		// // void * memcpy ( void * destination, const void * source, size_t num );
 		// memcpy(c->tail, a->head, sizeof(struct frag) * lsize(a));
 		// c->tail += lsize(a);
-		c.addAll(a);
-		return c;
+		combination.addAll(a);
+		return combination;
 
 		
 	}
 
 	// static int discard(struct flist *src, int cut, int offset) {
-	private static int discard(List<Frag> src, int cut, int offset) {
+	private static int discard(List<Frag> src, int cut, int poffset) {
 		// struct frag *s = src->head;
+	    int offset = poffset;
 		Frag s = null;
 		int postend, c, l;
 		// while (s != src->tail) {
@@ -176,7 +177,9 @@ public class MDiff {
 				offset += s.start + l - c;
 				s.start = c;
 				s.len(s.len() - l);
-				s.data = s.data + l;
+				
+				// s.data = s.data + l;
+				s.data = Arrays.copyOfRange(s.data, l, s.data.length);
 
 				break;
 			}
@@ -190,12 +193,13 @@ public class MDiff {
 
 
 	private static int gather(List<Frag> dest, List<Frag> src, int cut,
-			int offset) {
+			int poffset) {
 		/*
 		 * move hunks in source that are less cut to dest, compensating for
 		 * changes in offset. the last hunk may be split if necessary.
 		 */
 		// struct frag *d = dest->tail, *s = src->head;
+	    int offset = poffset;
 		int postend, c, l;
 
 		Frag s = null;
@@ -231,7 +235,8 @@ public class MDiff {
 
 				s.start = c;
 				s.len(s.len() - l);
-				s.data = s.data + l;
+				// s.data = s.data + l;
+				s.data = Arrays.copyOfRange(s.data, l, s.data.length);
 				break;
 			}
 		}
@@ -245,41 +250,48 @@ public class MDiff {
 
 
 	// static struct flist *decode(const char *bin, int len) {
-	private static List<Frag> decode(StringBuilder bin, int length) {
+	private static List<Frag> decode(byte[] bin, int length) {
 
 	        // struct flist *l;
 	        // struct frag *lt;
 			List<Frag> result = new ArrayList<Frag>();
 			Frag lt = null;
 			
-			// const char *data = bin + 12; 
+			// const char *data = bin + 12;
 			// const char *end = bin + len;
+			byte[] data = Arrays.copyOfRange(bin, 12, bin.length);
 			
 			// char decode[12]; /* for dealing with alignment issues */
 			byte decode[] = new byte[12];
 
 			/* assume worst case size, we won't have many of these lists */
-			result = lalloc(len / 12);
-			if (!result)
-				return NULL;
+            //	result = lalloc(len / 12);
+            //	if (!result)
+            //		return NULL;
 
 			// lt = l->tail;
-			lt = null; // FIXME This should be something else
+			
+			int binp = 0;
+			int datap = 0;
+			int end = length;
 
-			while (data <= end) {
+			ByteBuffer wrap = ByteBuffer.wrap(bin);
+
+			while (datap <= end) {
 				memcpy(decode, bin, 12);
 				lt = new Frag();
 				result.add(lt);
-				lt.start = ntohl(*(uint32_t *)decode);
-				lt.end = ntohl(*(uint32_t *)(decode + 4));
-				lt.len( ntohl(*(uint32_t *)(decode + 8)) );
+				lt.start = ntohl(decode,0);
+				lt.end = ntohl(decode,  4);
+				lt.len( ntohl(decode, 8) );
 				if (lt.start > lt.end)
 					break; /* sanity check */
-				bin = data + lt.len();
-				if (bin < data)
+				binp = datap + lt.len();
+				if (binp < datap)
 					break; /* big data + big (bogus) len can wrap around */
 				lt.data = data;
-				data = bin + 12;
+				// data = bin + 12;
+				data = Arrays.copyOfRange(bin, 12, bin.length);
 				
 				// lt++;
 			}
@@ -292,11 +304,28 @@ public class MDiff {
 //			}
 
 			// l->tail = lt;
-		throw new RuntimeException("NIE");
-		return result;	
+			return result;	
 	}
 
-	private static String apply(String text, Object patch) {
+
+    private static int ntohl(byte[] decode, int offset) {
+        throw new RuntimeException("NIE");
+    }
+
+
+    private static void memcpy(byte[] dest, byte[] src, int length) {
+        if( dest.length != length
+            || src.length < length) {
+            
+            throw new IllegalArgumentException("Destination length must == length");
+        }
+        for(int byteIndex = 0; byteIndex < length; byteIndex++) {
+            dest[byteIndex] = src[byteIndex];
+        }
+    }
+
+
+    private static String apply(String text, Object patch) {
 		throw new RuntimeException("NIE");
 	}
 }

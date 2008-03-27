@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public final class NodeId {
 
-	private static final int SHA_SIZE = 20;
+//	private static final int SHA_SIZE = 20;
 	private static final int SHORT_SIZE = 6;
 	private static final int SIZE = 32;
 	private byte[] nodeid;

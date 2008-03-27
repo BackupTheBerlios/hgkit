@@ -1,10 +1,10 @@
 package org.freehg.hgkit.core;
-// FIXME Implement this
+// FIXME Implement this casefolding
 public final class CaseFolding {
-	public String fold(String name) {
+	public static String fold(String name) {
 		return name;
 	}
-	public String unfold(String foldedName) {
+	public static String unfold(String foldedName) {
 		return foldedName;
 	}
 }

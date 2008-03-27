@@ -1,7 +1,6 @@
 package org.freehg.hgkit;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.DirState.DirStateEntry;

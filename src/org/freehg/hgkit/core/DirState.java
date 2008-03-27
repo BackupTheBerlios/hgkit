@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +51,10 @@ public class DirState {
 	 */
 	public DirStateEntry getState(String path) {
 		return this.dirstate.get(path);
+	}
+	
+	public Collection<DirStateEntry> getDirState() {
+	    return this.dirstate.values();
 	}
 
 	private void parseHeader(DataInputStream in) throws IOException {

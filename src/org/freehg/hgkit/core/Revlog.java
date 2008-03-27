@@ -15,10 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import com.jcraft.jzlib.ZInputStream;
 
@@ -38,11 +34,9 @@ public class Revlog {
 	private boolean isDataInline;
 	private Map<NodeId, RevlogEntry> nodemap;
 	private ArrayList<RevlogEntry> index;
-	private final File indexFile;
 	private final File dataFile;
 
 	public Revlog(File index, File dataFile) {
-		indexFile = index;
 		this.dataFile = dataFile;
 		try {
 			parseIndex(index);
@@ -232,16 +226,16 @@ public class Revlog {
 		// */
 	}
 
-	private byte[] chunk(byte[] bigchunk, int revision) {
-		// get compressed data from a revision index
-
-		RevlogEntry entry = this.index.get(revision);
-		int start = (int) entry.offset;
-		int length = (int) entry.compressedLength;
-		ByteArrayOutputStream chunker = new ByteArrayOutputStream(length);
-		chunker.write(bigchunk, start, length);
-		return chunker.toByteArray();
-	}
+//	private byte[] chunk(byte[] bigchunk, int revision) {
+//		// get compressed data from a revision index
+//
+//		RevlogEntry entry = this.index.get(revision);
+//		int start = (int) entry.offset;
+//		int length = (int) entry.compressedLength;
+//		ByteArrayOutputStream chunker = new ByteArrayOutputStream(length);
+//		chunker.write(bigchunk, start, length);
+//		return chunker.toByteArray();
+//	}
 
 	private String decompress(byte[] data) {
 		try {
@@ -305,102 +299,6 @@ public class Revlog {
 		return new String(unc.toString());
 	}
 
-	private byte[] loadindex(int from, int to) throws IOException {
-		// def loadindex(self, i=None, end=None):
-		// if self.all:
-		// return
-		// all = False
-		// if i == None:
-		// blockstart = 0
-		// blocksize = (65536 / self.s) * self.s
-		// end = self.datasize
-		// all = True
-		// else:
-		// if end:
-		// blockstart = i * self.s
-		// end = end * self.s
-		// blocksize = end - blockstart
-		// This is nominal case and the only case we care about for now
-
-		int blockstart = from * RevlogEntry.BINARY_LENGTH;
-		int blockend = to * RevlogEntry.BINARY_LENGTH;
-		int blocksize = blockend - blockstart;
-		// else:
-		// blockstart = (i & ~1023) * self.s
-		// blocksize = self.s * 1024
-		// end = blockstart + blocksize
-
-		// while blockstart < end:
-		// self.loadblock(blockstart, blocksize)
-		// blockstart += blocksize
-		ByteArrayOutputStream content = new ByteArrayOutputStream(blocksize);
-		while (blockstart < blockend) {
-			byte[] block = loadblock(blockstart, blocksize);
-			content.write(block);
-			blockstart += blocksize;
-		}
-
-		return content.toByteArray();
-		// if all:
-		// self.all = True
-	}
-
-	private byte[] loadblock(int blockstart, int blocksize) throws IOException {
-
-		// TODO Auto-generated method stub
-		// This is what must be implemented now
-		/*
-		 * This is what I think loadblock does
-		 * 
-		 * position datafile to blockstart
-		 * 
-		 * get blocksize:bytes of content at the position
-		 * 
-		 * the data is then manipulated is some weird fashion Would be better to
-		 * just return it??
-		 */
-
-		FileInputStream dataIn = new FileInputStream(this.dataFile);
-		byte[] data = new byte[0];
-		try {
-			dataIn.skip(blockstart);
-			data = new byte[blocksize];
-			dataIn.read(data);
-		} finally {
-			dataIn.close();
-		}
-		return data;
-
-		// if self.all:
-		// return
-		// if data is None:
-		// self.dataf.seek(blockstart)
-		// if blockstart + blocksize > self.datasize:
-		// # the revlog may have grown since we've started running,
-		// # but we don't have space in self.index for more entries.
-		// # limit blocksize so that we don't get too much data.
-		// blocksize = max(self.datasize - blockstart, 0)
-		// data = self.dataf.read(blocksize)
-		// lend = len(data) / self.s
-		// i = blockstart / self.s
-		// off = 0
-		// # lazyindex supports __delitem__
-		// if lend > len(self.index) - i:
-		// lend = len(self.index) - i
-		// for x in xrange(lend):
-		// if self.index[i + x] == None:
-		// b = data[off : off + self.s]
-		// self.index[i + x] = b
-		// n = b[ngshaoffset:ngshaoffset + 20]
-		// self.map[n] = i + x # What is this? Is it so that we can do something
-		// with this?
-		// off += self.s
-
-	}
-
-	private RevlogEntry rev(NodeId node) {
-		return this.nodemap.get(node);
-	}
 
 	private byte[] readWholeFile(DataInputStream reader) throws IOException {
 		byte[] buf = new byte[512];
@@ -439,12 +337,20 @@ public class Revlog {
 			this.parent = parent;
 
 		}
+		
+		public int getLinkRev() {
+            return linkRev;
+        }
+		
+		public int getBaseRev() {
+            return baseRev;
+        }
 
 		private void read(DataInputStream reader) throws IOException {
 
 			System.out.println("Reading RevlogIndexEntry");
 			offset = ((long) reader.readShort() << 32)
-					+ (long) reader.readInt();
+					+ reader.readInt();
 			flags = reader.readShort();
 			compressedLength = reader.readInt();
 			uncompressedLength = reader.readInt();
