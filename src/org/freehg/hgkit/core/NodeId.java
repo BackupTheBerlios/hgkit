@@ -1,4 +1,4 @@
-package com.lich.hgkit.core;
+package org.freehg.hgkit.core;
 
 import java.util.Arrays;
 

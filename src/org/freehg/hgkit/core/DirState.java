@@ -1,4 +1,4 @@
-package com.lich.hgkit.core;
+package org.freehg.hgkit.core;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -10,9 +10,9 @@ import java.util.Map;
 
 public class DirState {
 
-	private Map<String, DirStateEntry> state  = new HashMap<String, DirStateEntry>();
+	private Map<String, DirStateEntry> dirstate  = new HashMap<String, DirStateEntry>();
+	
 	public DirState(File dirState) {
-
 		try {
 			FileInputStream fis = new FileInputStream(dirState);
 			DataInputStream in = new DataInputStream(new BufferedInputStream(fis));
@@ -25,7 +25,7 @@ public class DirState {
 
 	private void parse(DataInputStream in) throws IOException {
 		
-		state.clear();
+		dirstate.clear();
 		// ">c l l l l"
 		// state, mode, size, fileModTime, nameLength, bytes[namelength] as name (String) 
 		parseHeader(in);
@@ -40,7 +40,7 @@ public class DirState {
 			in.read(str);
 			String path = new String(str);
 			DirStateEntry entry = new DirStateEntry(state, mode, size, fileModTime, path);
-			this.state.put(path, entry);
+			this.dirstate.put(path, entry);
 		}
 	}
 	/**
@@ -49,7 +49,7 @@ public class DirState {
 	 * @return a {@link DirStateEntry} if one is avaialable for this repository. Null otherwise
 	 */
 	public DirStateEntry getState(String path) {
-		return this.state.get(path);
+		return this.dirstate.get(path);
 	}
 
 	private void parseHeader(DataInputStream in) throws IOException {
@@ -96,6 +96,5 @@ public class DirState {
 		public String toString() {
 			return mode + "	" + (char) state + "	" + size + "	" + fileModTime + "	" + path;
 		}
-
 	}
 }

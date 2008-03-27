@@ -4,9 +4,9 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.freehg.hgkit.core.DirState;
 import org.junit.Test;
 
-import com.lich.hgkit.core.DirState;
 
 public class DirStateTest {
 	

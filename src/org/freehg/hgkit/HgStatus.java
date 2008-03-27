@@ -1,4 +1,4 @@
-package com.lich.hgkit;
+package org.freehg.hgkit;
 
 public class HgStatus {
 

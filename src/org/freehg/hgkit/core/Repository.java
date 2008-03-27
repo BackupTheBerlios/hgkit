@@ -1,4 +1,4 @@
-package com.lich.hgkit.core;
+package org.freehg.hgkit.core;
 
 public class Repository {
 

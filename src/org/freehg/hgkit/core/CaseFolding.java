@@ -1,4 +1,4 @@
-package com.lich.hgkit.core;
+package org.freehg.hgkit.core;
 // FIXME Implement this
 public final class CaseFolding {
 	public String fold(String name) {

@@ -1,10 +1,11 @@
-package com.lich.hgkit;
+package org.freehg.hgkit;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.lich.hgkit.core.DirState;
-import com.lich.hgkit.core.DirState.DirStateEntry;
+import org.freehg.hgkit.core.DirState;
+import org.freehg.hgkit.core.DirState.DirStateEntry;
+
 
 public class HgStatusClient {
 
