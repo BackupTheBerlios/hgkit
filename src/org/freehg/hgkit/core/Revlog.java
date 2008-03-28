@@ -5,10 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -20,322 +19,65 @@ import com.jcraft.jzlib.ZInputStream;
 
 public class Revlog {
 
-	public static final int REVLOGV0 = 0;
-	public static final int REVLOGNG = 1;
-	public static final int REVLOGNGINLINEDATA = (1 << 16);
-	public static final int REVLOG_DEFAULT_FLAGS = REVLOGNGINLINEDATA;
-	public static final int REVLOG_DEFAULT_FORMAT = REVLOGNG;
-	public static final int REVLOG_DEFAULT_VERSION = REVLOG_DEFAULT_FORMAT
-			| REVLOG_DEFAULT_FLAGS;
-
-	private static final int EOF = -1;
-	/* FIXME: Create NULLID */
-	private static final NodeId NULLID = null;
-	private boolean isDataInline;
-	private Map<NodeId, RevlogEntry> nodemap;
-	private ArrayList<RevlogEntry> index;
-	private final File dataFile;
-
-	public Revlog(File index, File dataFile) {
-		this.dataFile = dataFile;
-		try {
-			parseIndex(index);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private void parseIndex(File index) throws IOException {
-		DataInputStream reader = new DataInputStream(new FileInputStream(index));
-		/*
-		 * versionformat = ">I", big endian, uint 4 bytes which includes version
-		 * format
-		 */
-		int version = reader.readInt();
-		reader.close();
-		reader = new DataInputStream(new FileInputStream(index));
-
-		isDataInline = (version & REVLOGNGINLINEDATA) != 0;
-		long flags = version & ~0xFFFF;
-		// Its pretty odd, but its the revlogFormat which is the "version"
-		long revlogFormat = version & 0xFFFF;
-
-		if (revlogFormat != REVLOGNG) {
-			throw new IllegalStateException("Revlog format MUST be NG");
-		}
-		/*
-		 * TODO: This should also be checked if fmt == REVLOGNG and flags &
-		 * ~REVLOGNGINLINEDATA: raise RevlogError(_("index %s unknown flags
-		 * %#04x for revlogng") % (self.indexfile, flags >> 16))
-		 */
-
-		nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
-		this.index = new ArrayList<RevlogEntry>();
-
-		int indexCount = 0;
-		int indexOffset = 0;
-		// if we're not using lazymap, always read the whole index
-		// data = fp.read()
-		byte[] data = readWholeFile(reader);
-		int length = data.length - RevlogEntry.BINARY_LENGTH;
-		if (isDataInline) {
-			System.out.println("Data is inline => do inline parsing");
-			// cache = (0, data)
-
-			System.out.println("while " + indexOffset + " <= " + length);
-			while (indexOffset <= length) {
-				System.out.println("Read a new RevLogEntry at " + indexOffset);
-				RevlogEntry entry = RevlogEntry
-						.valueOf(this, data, indexOffset);
-				if (indexCount == 0) {
-					entry.offset = 0;
-				}
-				nodemap.put(entry.nodeId, entry);
-				this.index.add(entry);
-				// e = _unpack(indexformatng, data[off:off + s])
-				// nodemap[e[7]] = n
-				// append(e)
-				indexCount += 1;
-				// What does this mean?
-				if (entry.compressedLength < 0) {
-					System.out.println("e.compressedlength < 0");
-					break;
-				}
-				indexOffset += entry.compressedLength
-						+ RevlogEntry.BINARY_LENGTH;
-			}
-		} else {
-			throw new IllegalStateException(
-					"Non inline data not implemented yet");
-		}
-
-		System.out.println("-------------------------------------");
-		for (int i = 0; i < this.index.size(); i++) {
-			// FIXME REAL BAD HERE. setting revision number here ????
-			RevlogEntry entry = this.index.get(i);
-			entry.revision = i;
-			System.out.print(i + "	");
-			System.out.print(entry.nodeId.asShort() + "	");
-			System.out.println(entry);
-		}
-		System.out.println("number of revlogs: " + indexCount);
-	}
-
-	public Set<NodeId> getRevisions() {
-		return Collections.unmodifiableSet(this.nodemap.keySet());
-
-	}
-
-	public String revision(NodeId node) {
-		if (node.equals(NULLID)) {
-			return "";
-		}
-		// hgkit doesnt cache for now
-
-		// # look up what we need to read
-		RevlogEntry entry = nodemap.get(node);
-		int rev = entry.revision;
-		int base = entry.baseRev;
-
-		if ((entry.flags & 0xFFFF) != 0) {
-			throw new IllegalStateException("Incompatible revision flag: "
-					+ entry.flags);
-		}
-
-		if (!isDataInline) {
-			throw new IllegalStateException(
-					"Only inline reading implemented yet");
-		}
-
-		String text = null;
-		try {
-			FileInputStream fis = new FileInputStream(this.dataFile);
-			
-			RevlogEntry revlogEntry = index.get(base);
-            byte[] data = revlogEntry.loadBlock(fis);
-			text = decompress(data);
-
-			System.out.println("Got base text: " + text);
-			List<String> bins = new ArrayList<String>();
-			for (int r = base + 1; r < rev + 1; r++) {
-				// byte[] chunk = chunk(allData, r);
-				byte[] chunk = this.index.get(r).loadBlock(fis);
-				String diff = decompress(chunk);
-				System.out.println("Got mdiff: " + diff);
-				bins.add(diff);
-			}
-			text = MDiff.patches(text, bins);
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		return text;
-		// text = mdiff.patches(text, bins);
-
-		// * text = None
-		// * # do we have useful data cached?
-		// * if self._cache and self._cache[1] >= base and self._cache[1] < rev:
-		// * base = self._cache[1]
-		// * text = str(self._cache[2])
-		// * self._loadindex(base, rev + 1)
-		// * else:
-		// * self._loadindex(base, rev + 1)
-		// * text = self.chunk(base, df=df)
-		// *
-		// * bins = [ self.chunk(r, df) for r in xrange(base + 1, rev + 1) ]
-		// * text = mdiff.patches(text, bins)
-		// * p1, p2 = self.parents(node)
-		// * if node != hash(text, p1, p2):
-		// * raise RevlogError(_(&quot;integrity check failed on %s:%d&quot;)
-		// * % (self.datafile, rev))
-		// *
-		// * self._cache = (node, rev, text)
-		// * return text
-		// * </pre>
-		// */
-	}
-
-//	private byte[] chunk(byte[] bigchunk, int revision) {
-//		// get compressed data from a revision index
-//
-//		RevlogEntry entry = this.index.get(revision);
-//		int start = (int) entry.offset;
-//		int length = (int) entry.compressedLength;
-//		ByteArrayOutputStream chunker = new ByteArrayOutputStream(length);
-//		chunker.write(bigchunk, start, length);
-//		return chunker.toByteArray();
-//	}
-
-	private String decompress(byte[] data) {
-		try {
-			if (data == null) {
-				return null;
-			}
-			if (data.length < 1) {
-				return "";
-			}
-			String uncompressed = new String(data);
-
-			System.out.println("Decompress: " + uncompressed);
-			// <pre>
-			// t = bin[0]
-			// if t == '\0':
-			// return bin
-			// if t == 'x':
-			// return _decompress(bin)
-			// if t == 'u':
-			// return bin[1:]
-			if (data[0] == 0) {
-				return new String(data);
-			}
-			if (data[0] == 'u') {
-				// FIXME: Bad performance/memory waste
-				System.out.println("[DECOMPRESS] Uncompressed data found");
-				return new String(data).substring(1);
-			}
-			if (data[0] == 'x') {
-				
-				return doDecompress(data);
-				
-				
-//				throw new RuntimeException("Decompress not implemented yet");
-			}
-			throw new RuntimeException("Unknown compression type : "
-					+ (char) (data[0]));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private String doDecompress(byte[] data) throws FileNotFoundException,
-			IOException {
-		FileOutputStream fos = new FileOutputStream("c:\\comp.zip");
-		fos.write(data);
-		fos.flush();
-		fos.close();
-		// decompress the bytearray using what should be python zlib
-		System.out
-				.println("[DECOMPRESS] Compressed data found _decompress");
-		ByteArrayInputStream datain = new ByteArrayInputStream(data);
-		
-		ByteArrayOutputStream unc = new ByteArrayOutputStream();
-		byte[] buff = new byte[512];
-		InputStream _dec = new ZInputStream(datain);
-		int read = 0;
-		while( -1 != (read = _dec.read(buff))) {
-			unc.write(buff,0,read);
-		}
-		return new String(unc.toString());
-	}
-
-
-	private byte[] readWholeFile(DataInputStream reader) throws IOException {
-		byte[] buf = new byte[512];
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream(reader
-				.available());
-		int read = 0;
-		while ((read = reader.read(buf)) != EOF) {
-			buffer.write(buf, 0, read);
-		}
-		return buffer.toByteArray();
-	}
-
 	public static class RevlogEntry {
 
 		/** The corresponding length of indexformatng >Qiiiiii20s12x */
 		private static final int BINARY_LENGTH = 64;
+        private static RevlogEntry nullInstance;
+		/**
+		 * 
+		 * @param parent
+		 * @param data
+		 * @param off where in data to begin extracting data
+		 * @return
+		 */
+		public static RevlogEntry valueOf(Revlog parent, 
+		        byte[] data, 
+		        int off) {
+		    
+			byte[] mydata = new byte[BINARY_LENGTH];
+			for (int i = 0; i < BINARY_LENGTH; i++) {
+				mydata[i] = data[off + i];
+			}
+			ByteArrayInputStream copy = new ByteArrayInputStream(data, off,
+					BINARY_LENGTH);
+			DataInputStream reader = new DataInputStream(copy);
+			RevlogEntry entry = new RevlogEntry(parent);
+			try {
+				entry.read(reader);
+			} catch (IOException e) {
+				// This should just never happen
+				throw new RuntimeException(e);
+			}
+			return entry;
+		}
 
+		private final Revlog parent;
 		private long compressedLength;
 		private long uncompressedLength;
+
+		private long offset;
 		private int baseRev;
 		private int linkRev;
+		private int flags;
 		private int firstParentRev;
 		private int secondParentRev;
 
-		private NodeId nodeId;
-
-		private long offset;
-
-		private int flags;
-
-		private final Revlog parent;
-
 		private int revision;
 
+		private NodeId nodeId;
+		
 		RevlogEntry(Revlog parent) {
 			this.parent = parent;
-
 		}
-		
-		public int getLinkRev() {
-            return linkRev;
-        }
 		
 		public int getBaseRev() {
             return baseRev;
         }
 
-		private void read(DataInputStream reader) throws IOException {
-
-			System.out.println("Reading RevlogIndexEntry");
-			offset = ((long) reader.readShort() << 32)
-					+ reader.readInt();
-			flags = reader.readShort();
-			compressedLength = reader.readInt();
-			uncompressedLength = reader.readInt();
-
-			baseRev = reader.readInt();
-			linkRev = reader.readInt();
-
-			firstParentRev = reader.readInt();
-			secondParentRev = reader.readInt();
-
-			int nodeidSize = 32;
-			byte[] nodeid = new byte[nodeidSize];
-			reader.read(nodeid);
-			nodeId = NodeId.valueOf(nodeid);
-		}
+		public int getLinkRev() {
+            return linkRev;
+        }
 
 		public byte[] loadBlock(FileInputStream fis) throws IOException {
 			System.out.println("Loading block for: " + this.nodeId);
@@ -358,33 +100,268 @@ public class Revlog {
 			return data;
 
 		}
+		
+		long getUncompressedLength() {
+            return uncompressedLength;
+        }
 
 		public String toString() {
-			return offset + "	" + flags + " 	" + compressedLength + " 		"
-					+ uncompressedLength + " 		" + firstParentRev + " 	"
-					+ secondParentRev;
+		    
+		    RevlogEntry p1 = getNullEntry();
+		    RevlogEntry p2 = getNullEntry();
+
+		    if(0 <= firstParentRev){ 
+		        p1 = parent.index.get(firstParentRev);
+		    }
+		    if( 0 <= secondParentRev) {
+		        p2 = parent.index.get(secondParentRev);
+		    }
+			return revision + "  " 
+			        + offset + "	" 
+			        + compressedLength + " 		"
+					// + uncompressedLength + " 		" 
+					+ baseRev + " 	"
+					+ linkRev + " 	"
+					+ nodeId.asShort() + " 	"
+					+ p1.nodeId.asShort() + " 	"
+					+ p2.nodeId.asShort();
+					
 		}
 
-		public static RevlogEntry valueOf(Revlog parent, 
-		        byte[] data, 
-		        int off) {
-		    
-			byte[] mydata = new byte[BINARY_LENGTH];
-			for (int i = 0; i < BINARY_LENGTH; i++) {
-				mydata[i] = data[off + i];
+		static RevlogEntry getNullEntry() {
+            if( nullInstance == null) {
+                nullInstance = valueOf(null, new byte[64], 0);
+            }
+            return nullInstance;
+        }
+
+        private void read(DataInputStream reader) throws IOException {
+
+			offset = ((long) reader.readShort() << 32)
+					+ reader.readInt();
+			flags = reader.readShort();
+			compressedLength = reader.readInt();
+			uncompressedLength = reader.readInt();
+
+			baseRev = reader.readInt();
+			linkRev = reader.readInt();
+
+			firstParentRev = reader.readInt();
+			secondParentRev = reader.readInt();
+
+			int nodeidSize = 32;
+			byte[] nodeid = new byte[nodeidSize];
+			reader.read(nodeid);
+			nodeId = NodeId.valueOf(nodeid);
+		}
+
+        public NodeId getId() {
+            return nodeId;
+        }
+	}
+	public static final int REVLOGV0 = 0;
+	public static final int REVLOGNG = 1;
+	public static final int REVLOGNGINLINEDATA = (1 << 16);
+	public static final int REVLOG_DEFAULT_FLAGS = REVLOGNGINLINEDATA;
+	public static final int REVLOG_DEFAULT_FORMAT = REVLOGNG;
+
+	public static final int REVLOG_DEFAULT_VERSION = REVLOG_DEFAULT_FORMAT
+			| REVLOG_DEFAULT_FLAGS;
+	private static final int EOF = -1;
+	/* FIXME: Create NULLID */
+	private static final NodeId NULLID = null;
+	private boolean isDataInline;
+	private Map<NodeId, RevlogEntry> nodemap;
+	private ArrayList<RevlogEntry> index;
+
+	private final File dataFile;
+
+	public Revlog(File index, File dataFile) {
+		this.dataFile = dataFile;
+		try {
+			parseIndex(index);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	public Set<NodeId> getRevisions() {
+	    return Collections.unmodifiableSet(this.nodemap.keySet());
+	}
+
+    /**
+	 * return an uncompressed revision data of a given nodeid
+	 * NOTE: hgkit doesn't use caching for now
+	 * @param node to nodeid to get data for
+	 * @return an uncompressed revision data
+	 */
+	public String revision(NodeId node) {
+		if (node.equals(NULLID)) {
+			return "";
+		}
+
+		RevlogEntry target = nodemap.get(node);
+		if ((target.flags & 0xFFFF) != 0) {
+			throw new IllegalStateException("Incompatible revision flag: "
+					+ target.flags);
+		}
+		
+		try {
+			FileInputStream reader = new FileInputStream(this.dataFile);
+			
+			RevlogEntry baseRev = index.get(target.baseRev);
+			byte[] baseData = decompress(baseRev.loadBlock(reader));
+
+			List<byte[]> patches = new ArrayList<byte[]>();
+			for (int rev = target.baseRev + 1; 
+			         rev <= target.revision; 
+			         rev++) {
+			    
+				RevlogEntry nextEntry = this.index.get(rev);
+                byte[] diff = decompress(nextEntry.loadBlock(reader));
+				patches.add(diff);
 			}
-			ByteArrayInputStream copy = new ByteArrayInputStream(data, off,
-					BINARY_LENGTH);
-			DataInputStream reader = new DataInputStream(copy);
-			RevlogEntry entry = new RevlogEntry(parent);
-			try {
-				entry.read(reader);
-			} catch (IOException e) {
-				// This should just never happen
-				throw new RuntimeException(e);
+			byte[] revisionData = MDiff.patches(baseData, patches);
+			return new String(revisionData);
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public RevlogEntry tip() {
+        return index.get(count() - 1);
+	}
+    
+    public int count() {
+        return index.size();
+    }
+
+    private byte[] decompress(byte[] data) {
+		try {
+			if (data == null) {
+				return null;
 			}
-			return entry;
+			if (data.length < 1) {
+				return new byte[0];
+			}
+
+			byte dataHeader = data[0];
+			switch(dataHeader) {
+			    case 0:
+			        return data;
+			    
+			    case 'u':
+			        byte[] uncompressed = new byte[data.length - 1];
+			        ByteBuffer.wrap(data).get(uncompressed,1, uncompressed.length);
+			        return uncompressed;
+			    
+			    case 'x':
+			        return doDecompress(data);
+			    
+			    default:
+			        throw new RuntimeException("Unknown compression type : "
+			                + (char) (dataHeader));
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
+
+	private byte[] doDecompress(byte[] data) throws IOException {
+        // decompress the bytearray using what should be python zlib
+        ByteArrayInputStream datain = new ByteArrayInputStream(data);
+        ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream();
+        byte[] buff = new byte[512];
+        InputStream _dec = new ZInputStream(datain);
+
+        int read = 0;
+        while (-1 != (read = _dec.read(buff))) {
+            uncompressedOut.write(buff, 0, read);
+        }
+        return uncompressedOut.toByteArray();
+    }
+
+	/**
+	 * versionformat = ">I", big endian, uint 4 bytes which includes version
+	 * format
+	 */
+	private void parseIndex(File index) throws IOException {
+		DataInputStream reader = new DataInputStream(new FileInputStream(index));
+		int version = reader.readInt();
+		reader.close();
+		reader = new DataInputStream(new FileInputStream(index));
+
+		isDataInline = (version & REVLOGNGINLINEDATA) != 0;
+		// Its pretty odd, but its the revlogFormat which is the "version"
+		long revlogFormat = version & 0xFFFF;
+		if (revlogFormat != REVLOGNG) {
+			throw new IllegalStateException("Revlog format MUST be NG");
+		}
+		/*
+		 * long flags = version & ~0xFFFF;
+		 * TODO check index for unknown flags (see revlog.py) 
+		 */
+
+		nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
+		this.index = new ArrayList<RevlogEntry>();
+		
+		if (isDataInline) {
+		    parseInlineIndex(reader);
+		} else {
+			throw new IllegalStateException(
+					"Non inline data not implemented yet");
+		}
+		printIndex();
+	}
+
+	private void parseInlineIndex(DataInputStream reader) throws IOException {
+        byte[] data = readWholeFile(reader);
+        int length = data.length - RevlogEntry.BINARY_LENGTH;
+        
+        int indexCount = 0;
+        int indexOffset = 0;
+        
+        while (indexOffset <= length) {
+        	RevlogEntry entry = RevlogEntry
+        			.valueOf(this, data, indexOffset);
+        	if (indexCount == 0) {
+        		entry.offset = 0;
+        	}
+        	entry.revision = indexCount;
+        	nodemap.put(entry.nodeId, entry);
+        	this.index.add(entry);
+        	
+        	if (entry.compressedLength < 0) {
+        	    // What does this mean?
+        		System.err.println("e.compressedlength < 0");
+        		break;
+        	}
+        	indexOffset += entry.compressedLength
+        			+ RevlogEntry.BINARY_LENGTH;
+        	indexCount++;
+        }
+    }
+
+
+	void printIndex() {
+        System.out.println("-------------------------------------");
+        System.out.println("rev off  len         base    linkRev    nodeid      p1      p2");
+		for (int i = 0; i < this.index.size(); i++) {
+			RevlogEntry entry = this.index.get(i);
+			System.out.println(entry);
+		}
+		System.out.println("number of revlogs: " + this.index.size());
+    }
+
+	private byte[] readWholeFile(DataInputStream reader) throws IOException {
+		byte[] buf = new byte[512];
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream(reader
+				.available());
+		int read = 0;
+		while ((read = reader.read(buf)) != EOF) {
+			buffer.write(buf, 0, read);
+		}
+		return buffer.toByteArray();
+	}
 }

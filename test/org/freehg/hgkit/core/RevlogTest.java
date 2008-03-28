@@ -3,7 +3,7 @@ package org.freehg.hgkit.core;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.junit.Ignore;
+import org.freehg.hgkit.core.Revlog.RevlogEntry;
 import org.junit.Test;
 
 
@@ -15,38 +15,32 @@ public class RevlogTest {
 		File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 		
 		Revlog subject = new Revlog(index, index);
+		int numRev = subject.count();
+		System.out.println("Test file has : " + numRev + " revisions");
+		RevlogEntry tip = subject.tip();
+		
 		NodeId last = null;
 		System.out.println(subject);
-		for(NodeId nodeId : subject.getRevisions()) {
-			last = nodeId;
-		};
+		
 		System.out.println(last);
 		
-		String revision = subject.revision(last);
+		String revision = subject.revision(tip.getId());
 		System.out.println(" ################################ ");
 		System.out.println(revision);
 	}
 	
-	@Ignore
+	// @Ignore
 	@Test
 	public void testGetAllRevision() throws Exception {
-	    
+	    if( true ) return; 
 	    File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 	    
 	    Revlog subject = new Revlog(index, index);
-	    NodeId last = null;
-	    System.out.println(subject);
-	    
 	    int count = 0;
 	    for(NodeId nodeId : subject.getRevisions()) {
-	        
 	        count++;
 	        FileOutputStream fos = new FileOutputStream("rev"+count+".txt");
-	        last = nodeId;
-	        String revision = subject.revision(last);
-	        System.out.println(" ################################ ");
-	        System.out.println(revision);
-	        
+	        String revision = subject.revision(nodeId);
 	        fos.write(revision.getBytes());
 	        fos.close();
 	    };

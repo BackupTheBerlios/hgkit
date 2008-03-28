@@ -50,7 +50,8 @@ public final class NodeId {
 	public String asShort() {
 		StringBuilder tos = new StringBuilder();
 		for (int i = 0; i < SHORT_SIZE; i++) {
-			String hex = Integer.toHexString(Integer.valueOf(nodeid[i]));
+			int b = nodeid[i] & 0x0FF;
+            String hex = Integer.toHexString(Integer.valueOf(b));
 			if( hex.length() < 2) {
 				tos.append("0");
 			} else {
