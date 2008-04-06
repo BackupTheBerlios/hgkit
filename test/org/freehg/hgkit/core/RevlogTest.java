@@ -32,7 +32,7 @@ public class RevlogTest {
 	// @Ignore
 	@Test
 	public void testGetAllRevision() throws Exception {
-	    if( true ) return; 
+//	    if( true ) return; 
 	    File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 	    
 	    Revlog subject = new Revlog(index, index);

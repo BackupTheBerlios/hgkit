@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+
 
 class Fragment {
     int start;
@@ -44,12 +46,12 @@ public class MDiff {
         if (bins.size() < 1) {
             return in;
         }
-        // convert to fragments
+        // convert binary to fragments
         List<Fragment> patch = fold(bins, 0, bins.size());
         if (patch == null) {
             return null;
         }
-        // apply all delta fragments to in
+        // apply all fragments to in
         return apply(in, in.length, patch);
     }
 
@@ -72,29 +74,34 @@ public class MDiff {
         return combine(left, right);
     }
 
-    private static List<Fragment> combine(List<Fragment> a, List<Fragment> b) {
-        /*
-         * combine hunk lists a and b, while adjusting b for offset changes in
-         * a this deletes a and b and returns the resultant list.
-         */
+    /*
+     * combine hunk lists a and b, while adjusting b for offset changes in
+     * a this deletes a and b and returns the resultant list.
+     */
+    private static List<Fragment> combine(List<Fragment> a, 
+    			List<Fragment> b) {
 
         if (a == null || b == null) {
             return null;
         }
         List<Fragment> combination = new ArrayList<Fragment>(2 * (a.size() + b.size()));
         int offset = 0;
-        for (Fragment frag : b) {
+        for (Fragment bFrag : b) {
             /* save old hunks */
-            offset = gather(combination, a, frag.start, offset);
+            offset = gather(combination, 
+            		a, 
+            		bFrag.start, 
+            		offset);
 
             /* discard replaced hunks */
-            int post = discard(a, frag.end, offset);
+            int post = discard(a, bFrag.end, offset);
 
             // create a new fragment from an existing with ajustments
             Fragment ct = new Fragment();
-            ct.start = frag.start - offset;
-            ct.end = frag.end - post;
-            ct.data = frag.data;
+            ct.start = bFrag.start - offset;
+            ct.end = bFrag.end - post;
+            ct.data = bFrag.data;
+            ct.len( bFrag.len());
             combination.add(ct);
 
             offset = post;
@@ -102,22 +109,24 @@ public class MDiff {
 
         /* hold on to tail from a */
         combination.addAll(a);
+        a.clear();
+        b.clear();
         return combination;
     }
 
     // static int discard(struct flist *src, int cut, int offset) {
-    private static int discard(List<Fragment> src, int cut, int poffset) {
-        // struct frag *s = src->head;
-        int offset = poffset;
+    private static int discard(List<Fragment> src, 
+    		int cut, 
+    		int poffset) {
+
+    	int offset = poffset;
         Fragment s = null;
         int postend, c, l;
-        // while (s != src->tail) {
+
         for (Fragment frag : src) {
             
             s = frag;
-            if (s == null  
-                || (s.start + offset >= cut)) {
-             
+            if (cut <= s.start + offset) {
                 break;
             }
 
@@ -126,8 +135,9 @@ public class MDiff {
                 offset += s.start + s.len() - s.end;
             } else {
                 c = cut - offset;
-                if (s.end < c)
+                if (s.end < c) {
                     c = s.end;
+                }
                 l = cut - offset - s.start;
                 if (s.len() < l)
                     l = s.len();
@@ -143,9 +153,20 @@ public class MDiff {
             }
         }
 
+        if(s != null) {
+        	int index = src.indexOf(s);
+        	if( 0 <= index ) {
+            	// TODO Performance is crap here
+            	for(int i = 0; i <= index; i++) {
+            		src.remove(0);
+            	}
+            }
+        } else {
+        	src.clear();
+        	
+        }
         // src.head = s;
         // seems like a no-op? no, it clear src, pointing at null
-        src.clear();
         return offset;
     }
 
@@ -203,14 +224,17 @@ public class MDiff {
             }
         }
 
+        // move src's head to point to s
+        int index = src.indexOf(s);
+        if( 0 <= index ) {
+        	// TODO Performance is crap here
+        	for(int i = 0; i <= index; i++) {
+        		src.remove(0);
+        	}
+        }
+        // d's tail already set by using lists
         // dest->tail = d;
         // src->head = s;
-        // this is
-        if (src.size() < 1) {
-            src.add(s);
-        } else {
-            src.set(0, s);
-        }
         return offset;
     }
 
@@ -271,13 +295,15 @@ public class MDiff {
     }
 
     static long ntohl(byte[] decode, int offset) {
-        // TODO It is very likely this is erroneuos
-
-        // network order is bigendian, as is java
+        // network order is bigendian, as is java by native
         ByteBuffer buffer = ByteBuffer.wrap(decode);
         buffer.position(offset);
         int x = buffer.getInt();
 
+        if( x < -20000) {
+        	throw new IllegalStateException("Assumptions are wrong");
+        }
+        
         long uint32 = ((x & 0x000000ffL) << 24) | ((x & 0x0000ff00L) << 8)
                 | ((x & 0x00ff0000L) >> 8) | ((x & 0xff000000L) >> 24);
         if (true) {
@@ -287,22 +313,7 @@ public class MDiff {
 
     }
 
-    // TODO Unused?
-    static void memcpy(byte[] dest, 
-            byte[] src,
-            int srcOffset,
-            int length) {
-
-        if (dest.length != length || src.length < length) {
-
-            throw new IllegalArgumentException(
-                    "Destination length must == length");
-        }
-        for (int byteIndex = 0; byteIndex < length; byteIndex++) {
-            dest[byteIndex] = src[byteIndex + srcOffset];
-        }
-    }
-
+    
     private static byte[] apply(byte[] orig, 
             int len, 
             List<Fragment> patch) {
@@ -314,21 +325,23 @@ public class MDiff {
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
             if (f.start < last || len < f.end) {
-                // throw new IllegalStateException("invalid patch");
+            	throw new IllegalStateException("invalid patch");
             }
-            
-            int writeLength = f.start - last;
-            writeLength = Math.min(writeLength, len - last);
-            if( 0 < writeLength ) {
-                p.write(orig, last, writeLength);
-            }
+            p.write(orig, last, f.start - last);
             p.write(f.data, 0, f.len());
             last = f.end;
+            
+            
         }
-        int wrl = len - last;
-        if(0 < wrl && (last + wrl) < orig.length ) {
-            p.write(orig, last, wrl);
-        }
+        // memcpy(p, orig + last, len - last);
+        p.write(orig, last, len - last);
         return p.toByteArray();
     }
+
+	public static byte[] patches(byte[] bytes, byte[] patch) {
+		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
+		list.add(patch);
+		return patches(bytes,list);
+		
+	}
 }
