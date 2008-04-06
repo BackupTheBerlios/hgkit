@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -41,7 +42,7 @@ public class MDiff {
     
     public static byte[] patches(byte[] in, 
             List<byte[]> bins) {
-        
+        long start = System.currentTimeMillis();
         // if there are no fragments we dont have to do anything
         if (bins.size() < 1) {
             return in;
@@ -52,10 +53,13 @@ public class MDiff {
             return null;
         }
         // apply all fragments to in
-        return apply(in, in.length, patch);
+        byte[] result = apply(in, in.length, patch);
+        long end = System.currentTimeMillis();
+        System.out.println("Took : " + (end - start) + " ms ");
+		return result;
     }
 
-    private static List<Fragment> fold(List<byte[]> bins, 
+    private static LinkedList<Fragment> fold(List<byte[]> bins, 
             int start, 
             int end) {
         
@@ -69,8 +73,8 @@ public class MDiff {
 
         /* divide and conquer, memory management is elsewhere */
         int len = (end - start) / 2;
-        List<Fragment> left = fold(bins, start, start + len);
-        List<Fragment> right = fold(bins, start + len, end);
+        LinkedList<Fragment> left = fold(bins, start, start + len);
+        LinkedList<Fragment> right = fold(bins, start + len, end);
         return combine(left, right);
     }
 
@@ -78,13 +82,13 @@ public class MDiff {
      * combine hunk lists a and b, while adjusting b for offset changes in
      * a this deletes a and b and returns the resultant list.
      */
-    private static List<Fragment> combine(List<Fragment> a, 
-    			List<Fragment> b) {
+    private static LinkedList<Fragment> combine(LinkedList<Fragment> a, 
+    		LinkedList<Fragment> b) {
 
         if (a == null || b == null) {
             return null;
         }
-        List<Fragment> combination = new ArrayList<Fragment>(2 * (a.size() + b.size()));
+        LinkedList<Fragment> combination = new LinkedList<Fragment>();
         int offset = 0;
         for (Fragment bFrag : b) {
             /* save old hunks */
@@ -115,7 +119,7 @@ public class MDiff {
     }
 
     // static int discard(struct flist *src, int cut, int offset) {
-    private static int discard(List<Fragment> src, 
+    private static int discard(LinkedList<Fragment> src, 
     		int cut, 
     		int poffset) {
 
@@ -158,7 +162,7 @@ public class MDiff {
         	if( 0 <= index ) {
             	// TODO Performance is crap here
             	for(int i = 0; i <= index; i++) {
-            		src.remove(0);
+            		src.remove();
             	}
             }
         } else {
@@ -170,8 +174,8 @@ public class MDiff {
         return offset;
     }
 
-    private static int gather(List<Fragment> dest, 
-            List<Fragment> src, 
+    private static int gather(LinkedList<Fragment> dest, 
+    		LinkedList<Fragment> src, 
             int cut,
             int poffset) {
         
@@ -229,8 +233,9 @@ public class MDiff {
         if( 0 <= index ) {
         	// TODO Performance is crap here
         	for(int i = 0; i <= index; i++) {
-        		src.remove(0);
+        		src.remove();
         	}
+        	
         }
         // d's tail already set by using lists
         // dest->tail = d;
@@ -245,10 +250,11 @@ public class MDiff {
      * @param length the length of the patch
      * @return a list of fragments
      */
-    static List<Fragment> decode(byte[] bin, int length) {
+    static LinkedList<Fragment> decode(byte[] bin, int length) {
         // 12 is some sort of magic number
         // Seems like a hunk-header size
-        List<Fragment> result = new ArrayList<Fragment>();
+        // List<Fragment> result = new ArrayList<Fragment>();// 
+        LinkedList<Fragment> result = new LinkedList<Fragment>();
         ByteBuffer wrap = ByteBuffer.wrap(bin);
 
         int binPtr = 0;
@@ -318,10 +324,9 @@ public class MDiff {
             int len, 
             List<Fragment> patch) {
 
-        // FIXME This seems wrong
-        int last = 0;
         ByteArrayOutputStream p = new ByteArrayOutputStream(len);
         
+        int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
             if (f.start < last || len < f.end) {
