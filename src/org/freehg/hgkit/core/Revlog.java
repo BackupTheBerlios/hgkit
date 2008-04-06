@@ -76,7 +76,7 @@ public class Revlog {
         }
 
 		public byte[] loadBlock(FileInputStream fis) throws IOException {
-			System.out.println("Loading block for: " + this.nodeId);
+			log("Loading block for: " + this.nodeId);
 			long pos = fis.getChannel().position();
 
 			long off = this.offset;
@@ -88,7 +88,7 @@ public class Revlog {
 			if (skip < 0) {
 				throw new IllegalStateException("Cannot skip negative");
 			}
-			System.out.println(pos + " = pos, offset = " + off + " Skipping: "
+			log(pos + " = pos, offset = " + off + " Skipping: "
 					+ skip);
 			fis.skip(skip);
 			byte[] data = new byte[(int) this.compressedLength];
@@ -294,12 +294,15 @@ public class Revlog {
 
 
 	void printIndex() {
-        System.out.println("-------------------------------------");
-        System.out.println("rev off  len         base    linkRev    nodeid      p1      p2");
+        log("-------------------------------------");
+        log("rev off  len         base    linkRev    nodeid      p1      p2");
 		for (int i = 0; i < this.index.size(); i++) {
 			RevlogEntry entry = this.index.get(i);
-			System.out.println(entry);
+			log(entry);
 		}
-		System.out.println("number of revlogs: " + this.index.size());
+		log("number of revlogs: " + this.index.size());
     }
+	private static void log(Object string) {
+		// System.out.println(string.toString());
+	}
 }

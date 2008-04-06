@@ -42,7 +42,6 @@ public class MDiff {
     
     public static byte[] patches(byte[] in, 
             List<byte[]> bins) {
-        long start = System.currentTimeMillis();
         // if there are no fragments we dont have to do anything
         if (bins.size() < 1) {
             return in;
@@ -54,8 +53,6 @@ public class MDiff {
         }
         // apply all fragments to in
         byte[] result = apply(in, in.length, patch);
-        long end = System.currentTimeMillis();
-        System.out.println("Took : " + (end - start) + " ms ");
 		return result;
     }
 
