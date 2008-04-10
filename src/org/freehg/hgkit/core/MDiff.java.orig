@@ -157,7 +157,7 @@ public class MDiff {
         if(s != null) {
         	int index = src.indexOf(s);
         	if( 0 <= index ) {
-            	// TODO Performance is crap here
+            	// TODO Performance may  be crap here
             	for(int i = 0; i <= index; i++) {
             		src.remove();
             	}
@@ -321,7 +321,8 @@ public class MDiff {
             int len, 
             List<Fragment> patch) {
 
-        ByteArrayOutputStream p = new ByteArrayOutputStream(len);
+        // ByteArrayOutputStream p = new ByteArrayOutputStream(len);
+        ByteBuffer buff = ByteBuffer.allocate(len);
         
         int last = 0;
         for (Fragment f : patch) {
@@ -329,15 +330,24 @@ public class MDiff {
             if (f.start < last || len < f.end) {
             	throw new IllegalStateException("invalid patch");
             }
-            p.write(orig, last, f.start - last);
-            p.write(f.data, 0, f.len());
+           // p.write(orig, last, f.start - last);
+            //p.write(f.data, 0, f.len());
+            
+            buff.put(orig,last,f.start - last);
+            buff.put(f.data,0,f.len());
+            
             last = f.end;
             
             
         }
         // memcpy(p, orig + last, len - last);
-        p.write(orig, last, len - last);
-        return p.toByteArray();
+        // p.write(orig, last, len - last);
+        buff.put(orig, last, len - last);
+        // byte[] result = p.toByteArray();
+        byte[] ores = buff.array();
+        
+        
+		return ores;
     }
 
 	public static byte[] patches(byte[] bytes, byte[] patch) {

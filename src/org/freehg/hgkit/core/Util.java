@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.jcraft.jzlib.ZInputStream;
 
@@ -40,9 +41,7 @@ class Util {
 			        return data;
 			    
 			    case 'u':
-			        byte[] uncompressed = new byte[data.length - 1];
-			        ByteBuffer.wrap(data).get(uncompressed,1, uncompressed.length);
-			        return uncompressed;
+			        return Arrays.copyOfRange(data, 1, data.length);
 			    
 			    case 'x':
 			        return doDecompress(data);

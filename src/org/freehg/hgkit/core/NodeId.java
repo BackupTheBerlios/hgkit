@@ -8,6 +8,7 @@ public final class NodeId {
 	private static final int SHORT_SIZE = 6;
 	private static final int SIZE = 32;
 	private byte[] nodeid;
+	private int hash = -1;
 
 	private NodeId(byte[] data) {
 		nodeid = data;
@@ -15,9 +16,13 @@ public final class NodeId {
 
 	@Override
 	public int hashCode() {
+		if( this.hash != -1) {
+			return this.hash ;
+		}
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Arrays.hashCode(nodeid);
+		this.hash = result;
 		return result;
 	}
 

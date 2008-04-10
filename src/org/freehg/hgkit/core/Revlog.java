@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -15,7 +16,7 @@ import java.util.Set;
 
 public class Revlog {
 
-	public static class RevlogEntry {
+	public static final class RevlogEntry {
 
 		/** The corresponding length of indexformatng >Qiiiiii20s12x */
 		private static final int BINARY_LENGTH = 64;
@@ -75,24 +76,15 @@ public class Revlog {
             return linkRev;
         }
 
-		public byte[] loadBlock(FileInputStream fis) throws IOException {
-			System.out.println("Loading block for: " + this.nodeId);
-			long pos = fis.getChannel().position();
-
+		public final byte[] loadBlock(RandomAccessFile reader) throws IOException {
+			log("Loading block for: " + this.nodeId);
 			long off = this.offset;
 			if (parent.isDataInline) {
 				off += (revision + 1) * RevlogEntry.BINARY_LENGTH;
 			}
-			long skip = off - pos;
-
-			if (skip < 0) {
-				throw new IllegalStateException("Cannot skip negative");
-			}
-			System.out.println(pos + " = pos, offset = " + off + " Skipping: "
-					+ skip);
-			fis.skip(skip);
+			reader.seek(off);
 			byte[] data = new byte[(int) this.compressedLength];
-			fis.read(data);
+			reader.read(data);
 			return data;
 
 		}
@@ -201,8 +193,7 @@ public class Revlog {
 		}
 		
 		try {
-			FileInputStream reader = new FileInputStream(this.dataFile);
-			
+			final RandomAccessFile reader = new RandomAccessFile(this.dataFile,"r");
 			RevlogEntry baseRev = index.get(target.baseRev);
 			byte[] baseData = Util.decompress(baseRev.loadBlock(reader));
 
@@ -294,12 +285,15 @@ public class Revlog {
 
 
 	void printIndex() {
-        System.out.println("-------------------------------------");
-        System.out.println("rev off  len         base    linkRev    nodeid      p1      p2");
+        log("-------------------------------------");
+        log("rev off  len         base    linkRev    nodeid      p1      p2");
 		for (int i = 0; i < this.index.size(); i++) {
 			RevlogEntry entry = this.index.get(i);
-			System.out.println(entry);
+			log(entry);
 		}
-		System.out.println("number of revlogs: " + this.index.size());
+		log("number of revlogs: " + this.index.size());
     }
+	private static void log(Object string) {
+		// sSystem.out.println(string.toString());
+	}
 }
