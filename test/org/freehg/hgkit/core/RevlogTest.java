@@ -25,10 +25,13 @@ public class RevlogTest {
 		System.out.println(subject);
 		
 		System.out.println(last);
-		
 		String revision = subject.revision(tip.getId());
 		System.out.println(" ################################ ");
 		System.out.println(revision);
+
+		for(NodeId rev : subject.getRevisions()) {
+		    subject.revision(rev);
+		}
 	}
 	
 	@Ignore
