@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import org.freehg.hgkit.core.Revlog.RevlogEntry;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -13,6 +14,7 @@ public class RevlogTest {
 	public void testGetLatestRevision() {
 		
 		File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+		index = new File(".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
 		
 		Revlog subject = new Revlog(index, index);
 		int numRev = subject.count();
@@ -29,7 +31,7 @@ public class RevlogTest {
 		System.out.println(revision);
 	}
 	
-	// @Ignore
+	@Ignore
 	@Test
 	public void testGetAllRevision() throws Exception {
 //	    if( true ) return; 

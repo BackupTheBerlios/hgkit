@@ -30,7 +30,11 @@ class Fragment {
     public String toString() {
         String txt = new String(this.data);
         if(80 < txt.length() ) {
-            txt = txt.substring(0,80) + "...";
+            int max = Math.min(80, len());
+            txt = txt.substring(0,max);
+            if(len() > 80) {
+                txt += "...";
+            }
         }
         return start + " " + end + " " + len() + " " + txt;
     }
@@ -122,18 +126,22 @@ public class MDiff {
     	int offset = poffset;
         Fragment s = null;
         int postend, c, l;
-
-        for (Fragment frag : src) {
-            
-            s = frag;
+//         i think this discards everything up to "cut"
+//         a fragment may have to be split if it 
+//         overlaps "cut"
+        for(Iterator<Fragment> iter = src.iterator(); iter.hasNext(); ) {
+            s = iter.next();
             if (cut <= s.start + offset) {
                 break;
             }
-
+            
             postend = offset + s.start + s.len();
             if (postend <= cut) {
+                // this one is discarded
                 offset += s.start + s.len() - s.end;
+                iter.remove();
             } else {
+                // partial discarding
                 c = cut - offset;
                 if (s.end < c) {
                     c = s.end;
@@ -148,23 +156,55 @@ public class MDiff {
 
                 // s.data = s.data + l;
                 s.data = Arrays.copyOfRange(s.data, l, s.data.length);
-
+                // no more needs to be discarded
                 break;
             }
         }
-
-        if(s != null) {
-        	int index = src.indexOf(s);
-        	if( 0 <= index ) {
-            	// TODO Performance is crap here
-            	for(int i = 0; i <= index; i++) {
-            		src.remove(0);
-            	}
-            }
-        } else {
-        	src.clear();
-        	
-        }
+        // i think this discards everything up to "cut"
+        // a fragment may have to be split if it 
+        // overlaps "cut"
+//        for (Fragment frag : src) {
+//            
+//            s = frag;
+//            if (cut <= s.start + offset) {
+//                break;
+//            }
+//
+//            postend = offset + s.start + s.len();
+//            if (postend <= cut) {
+//                offset += s.start + s.len() - s.end;
+//            } else {
+//                c = cut - offset;
+//                if (s.end < c) {
+//                    c = s.end;
+//                }
+//                l = cut - offset - s.start;
+//                if (s.len() < l)
+//                    l = s.len();
+//
+//                offset += s.start + l - c;
+//                s.start = c;
+//                s.len(s.len() - l);
+//
+//                // s.data = s.data + l;
+//                s.data = Arrays.copyOfRange(s.data, l, s.data.length);
+//
+//                break;
+//            }
+//        }
+//
+//        if(s != null) {
+//        	int index = src.indexOf(s);
+//        	if( 0 <= index ) {
+//            	// TODO Performance is crap here
+//            	for(int i = 0; i <= index; i++) {
+//            		src.remove(0);
+//            	}
+//            }
+//        } else {
+//        	src.clear();
+//        	
+//        }
         // src.head = s;
         // seems like a no-op? no, it clear src, pointing at null
         return offset;
@@ -176,18 +216,16 @@ public class MDiff {
             int poffset) {
         
         /*
-         * move hunks in source that are less cut to dest, compensating for
-         * changes in offset. the last hunk may be split if necessary.
+         * move hunks in source that are less than cut to dest, 
+         * but compensate for changes in offset. 
+         * The last hunk may be split if necessary (oberlaps cut).
          */
-        // struct frag *d = dest->tail, *s = src->head;
         int offset = poffset;
-        
-
         Fragment s = null;
         // while (s != src->tail) {
         for (Fragment frag : src) {
             s = frag;
-            if (s.start + offset >= cut)
+            if (cut <= s.start + offset)
                 break; /* we've gone far enough */
 
             int postend = offset + s.start + s.len();
@@ -228,7 +266,7 @@ public class MDiff {
         int index = src.indexOf(s);
         if( 0 <= index ) {
         	// TODO Performance is crap here
-        	for(int i = 0; i <= index; i++) {
+        	for(int i = 0; i < index; i++) {
         		src.remove(0);
         	}
         }
@@ -258,15 +296,17 @@ public class MDiff {
         byte decode[] = new byte[12];
         while (dataPtr <= length) {
             // Read the fragment header without moving position
-            int backupPos = wrap.position();
-            wrap.get(decode, binPtr, 12);
-            wrap.position(backupPos);
+            wrap.position(binPtr);
+            wrap.get(decode, 0, 12);
+            wrap.position(binPtr);
 
             Fragment lt = new Fragment();
             result.add(lt);
+
             lt.start = (int) ntohl(decode, 0);
             lt.end = (int) ntohl(decode, 4);
             lt.len((int) ntohl(decode, 8));
+            
             if (lt.start > lt.end) {
                 break; /* sanity check */
             }
