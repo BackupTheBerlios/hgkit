@@ -15,26 +15,37 @@ public class RevlogTest {
 		
 		File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 		index = new File(".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
+		index = new File("../com.vectrace.MercurialEclipse/.hg/store/data/plugin.xml.i");
+		index = new File("../com.vectrace.MercurialEclipse/.hg/store/00changelog.i");
+		index = new File(".hg/store/00changelog.i");
 		
 		Revlog subject = new Revlog(index, index);
 		int numRev = subject.count();
-		System.out.println("Test file has : " + numRev + " revisions");
+		log("Test file has : " + numRev + " revisions");
 		RevlogEntry tip = subject.tip();
 		
 		NodeId last = null;
-		System.out.println(subject);
+		log(subject);
 		
-		System.out.println(last);
+		log(last);
 		String revision = subject.revision(tip.getId());
-		System.out.println(" ################################ ");
-		System.out.println(revision);
+		log(" ################################ ");
+		log(revision);
 
 		for(NodeId rev : subject.getRevisions()) {
 		    subject.revision(rev);
 		}
 	}
 	
-	@Ignore
+	private void log(Object revision) {
+	    if(revision != null) {
+	        System.out.println(revision.toString());
+	    } else {
+	        System.out.println("null");
+	    }
+    }
+
+    @Ignore
 	@Test
 	public void testGetAllRevision() throws Exception {
 //	    if( true ) return; 

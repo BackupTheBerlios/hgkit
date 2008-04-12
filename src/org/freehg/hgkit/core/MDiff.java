@@ -124,13 +124,12 @@ public class MDiff {
     		int poffset) {
 
     	int offset = poffset;
-        Fragment s = null;
         int postend, c, l;
 //         i think this discards everything up to "cut"
 //         a fragment may have to be split if it 
 //         overlaps "cut"
         for(Iterator<Fragment> iter = src.iterator(); iter.hasNext(); ) {
-            s = iter.next();
+            final Fragment s = iter.next();
             if (cut <= s.start + offset) {
                 break;
             }
@@ -155,58 +154,13 @@ public class MDiff {
                 s.len(s.len() - l);
 
                 // s.data = s.data + l;
+                // this should work, but doesnt, bug? 
+                // s.data = Arrays.copyOfRange(s.data, l, s.len());
                 s.data = Arrays.copyOfRange(s.data, l, s.data.length);
                 // no more needs to be discarded
                 break;
             }
         }
-        // i think this discards everything up to "cut"
-        // a fragment may have to be split if it 
-        // overlaps "cut"
-//        for (Fragment frag : src) {
-//            
-//            s = frag;
-//            if (cut <= s.start + offset) {
-//                break;
-//            }
-//
-//            postend = offset + s.start + s.len();
-//            if (postend <= cut) {
-//                offset += s.start + s.len() - s.end;
-//            } else {
-//                c = cut - offset;
-//                if (s.end < c) {
-//                    c = s.end;
-//                }
-//                l = cut - offset - s.start;
-//                if (s.len() < l)
-//                    l = s.len();
-//
-//                offset += s.start + l - c;
-//                s.start = c;
-//                s.len(s.len() - l);
-//
-//                // s.data = s.data + l;
-//                s.data = Arrays.copyOfRange(s.data, l, s.data.length);
-//
-//                break;
-//            }
-//        }
-//
-//        if(s != null) {
-//        	int index = src.indexOf(s);
-//        	if( 0 <= index ) {
-//            	// TODO Performance is crap here
-//            	for(int i = 0; i <= index; i++) {
-//            		src.remove(0);
-//            	}
-//            }
-//        } else {
-//        	src.clear();
-//        	
-//        }
-        // src.head = s;
-        // seems like a no-op? no, it clear src, pointing at null
         return offset;
     }
 
@@ -222,9 +176,10 @@ public class MDiff {
          */
         int offset = poffset;
         Fragment s = null;
-        // while (s != src->tail) {
-        for (Fragment frag : src) {
-            s = frag;
+
+        for(Iterator<Fragment> iter = src.iterator(); 
+                iter.hasNext(); ) {
+            s = iter.next();
             if (cut <= s.start + offset)
                 break; /* we've gone far enough */
 
@@ -234,6 +189,12 @@ public class MDiff {
                 offset += s.start + s.len() - s.end;
                 // *d++ = *s++;
                 dest.add(s);
+                // at the endf of this algorithm
+                // src should have s as head, this one could 
+                // be safely removed if there is another s here
+                if( iter.hasNext()) {
+                    iter.remove();
+                }
             } else {
                 /* This hunk must be broken up */
                 int cutAt = cut - offset;
@@ -261,18 +222,9 @@ public class MDiff {
                 break;
             }
         }
-
-        // move src's head to point to s
-        int index = src.indexOf(s);
-        if( 0 <= index ) {
-        	// TODO Performance is crap here
-        	for(int i = 0; i < index; i++) {
-        		src.remove(0);
-        	}
+        if(0 < src.size() && s != src.get(0)) {
+            throw new IllegalStateException("src head should be s");
         }
-        // d's tail already set by using lists
-        // dest->tail = d;
-        // src->head = s;
         return offset;
     }
 

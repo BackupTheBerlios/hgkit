@@ -6,26 +6,32 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.jcraft.jzlib.ZInputStream;
 
-class Util {
+final class Util {
 
-	static byte[] doDecompress(byte[] data) throws IOException {
+	private static final int BUFF_SIZE = 1024;
+    private static final char ZLIB_COMPRESSION = 'x';
+    private static final char UNCOMPRESSED = 'u';
+    static final int EOF = -1;
+
+    static byte[] doDecompress(byte[] data) throws IOException {
 	    // decompress the bytearray using what should be python zlib
 	    ByteArrayInputStream datain = new ByteArrayInputStream(data);
 	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream();
-	    byte[] buff = new byte[512];
+	    final byte[] buff = new byte[BUFF_SIZE];
+
 	    InputStream _dec = new ZInputStream(datain);
-	
 	    int read = 0;
-	    while (-1 != (read = _dec.read(buff))) {
+	    while (EOF != (read = _dec.read(buff))) {
 	        uncompressedOut.write(buff, 0, read);
 	    }
 	    return uncompressedOut.toByteArray();
 	}
 
-	static byte[] decompress(byte[] data) {
+	final static byte[] decompress(byte[] data) {
 		try {
 			if (data == null) {
 				return null;
@@ -38,13 +44,9 @@ class Util {
 			switch(dataHeader) {
 			    case 0:
 			        return data;
-			    
-			    case 'u':
-			        byte[] uncompressed = new byte[data.length - 1];
-			        ByteBuffer.wrap(data).get(uncompressed,1, uncompressed.length);
-			        return uncompressed;
-			    
-			    case 'x':
+			    case UNCOMPRESSED:
+			        return Arrays.copyOfRange(data, 1, data.length);
+			    case ZLIB_COMPRESSION:
 			        return doDecompress(data);
 			    
 			    default:
@@ -66,7 +68,4 @@ class Util {
 		}
 		return buffer.toByteArray();
 	}
-
-	static final int EOF = -1;
-
 }
