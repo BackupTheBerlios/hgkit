@@ -260,6 +260,7 @@ public class MDiff {
 
         byte decode[] = new byte[12];
         while (dataPtr <= length) {
+        	wrap.position(dataPtr);
             // Read the fragment header without moving position
             int backupPos = wrap.position();
             wrap.get(decode, binPtr, 12);
@@ -282,13 +283,15 @@ public class MDiff {
                 // break; /* big data + big (bogus) len can wrap around */
             }
 
-            lt.data = new byte[length - dataPtr];
-            if (0 < lt.data.length) {
-                wrap.position(dataPtr);
-                wrap.get(lt.data, 0, lt.data.length);
-            }
+            lt.data = Arrays.copyOfRange(bin, dataPtr, length - dataPtr);
+            dataPtr = length - dataPtr + binPtr + 12;
+//            lt.data = new byte[length - dataPtr];
+//            if (0 < lt.data.length) {
+//                wrap.position(dataPtr);
+//                wrap.get(lt.data, 0, lt.data.length);
+//                wrap.position(dataPtr);
+//            }
             // data = bin + 12;
-            dataPtr = binPtr + 12;
         }
 
         if( binPtr != length) {
