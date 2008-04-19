@@ -294,6 +294,6 @@ public class Revlog {
 		log("number of revlogs: " + this.index.size());
     }
 	private static void log(Object string) {
-		// sSystem.out.println(string.toString());
+		// System.out.println(string.toString());
 	}
 }

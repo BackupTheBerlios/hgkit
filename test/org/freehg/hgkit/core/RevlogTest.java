@@ -8,7 +8,6 @@ import org.junit.Test;
 
 public class RevlogTest {
 
-	@Ignore
 	@Test
 	public void testGetLatestRevision() {
 
@@ -41,13 +40,9 @@ public class RevlogTest {
 
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < 1000; i++) {
-			String revision = subject.revision(subject.tip().getId());
-
-				// count++;
-				// FileOutputStream fos = new
-				// FileOutputStream("rev"+count+".txt");
-				// fos.write(revision.getBytes());
-				// fos.close();
+			for (NodeId nodeId : subject.getRevisions()) {
+				String revision = subject.revision(nodeId);
+			}
 		}
 		long end = System.currentTimeMillis();
 		
