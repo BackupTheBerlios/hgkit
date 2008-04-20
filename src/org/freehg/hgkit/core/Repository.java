@@ -32,4 +32,9 @@ public class Repository {
 		String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
 		return new File(indexName);
 	}
+
+	public File getChangeLog() {
+		String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
+		return new File(logIndex);
+	}
 }

@@ -66,9 +66,38 @@ public final class NodeId {
 		}
 		return tos.toString();
 	}
+	
+	String asFull() {
+		StringBuilder tos = new StringBuilder();
+		for (int i = 0; i < SIZE; i++) {
+			int b = nodeid[i] & 0x0FF;
+			String hex = Integer.toHexString(Integer.valueOf(b));
+			
+			hex = hex.substring(0,1);
+			tos.append(hex);
+		}
+		return tos.toString();
+
+	}
 
 	@Override
 	public String toString() {
 		return asShort();
+	}
+
+	public static NodeId parse(String nodeId) {
+		byte[] bytes = new byte[SIZE];
+		for(int i = 0; i < SIZE; i++) {
+			char charAt = nodeId.charAt(i);
+			byte val = Integer.valueOf("" + charAt, 16).byteValue();
+			bytes[i] = val;
+		}
+		NodeId result = valueOf(bytes);
+		String asFull = result.asFull();
+		if(! nodeId.equals(asFull)) {
+			System.out.println("Warning: Bad parsing, " + nodeId + " != " + result.toString() );
+		}
+		return result;
+		
 	}
 }

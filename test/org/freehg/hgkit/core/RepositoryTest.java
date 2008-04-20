@@ -8,18 +8,29 @@ import org.junit.Test;
 
 public class RepositoryTest {
 
+	
+	@Test
+	public void getChangeLog() {
+		Repository subject = getSubject();
+		File log = subject.getChangeLog();
+		assertTrue(log.getAbsolutePath() + " must exist", log.exists());
+	}
 	@Test
 	public void testGetIndex() {
-		Repository subject = new Repository(".");
+		Repository subject = getSubject();
 		File theFile = new File("src/org/freehg/hgkit/HgStatusClient.java");
 		File index = subject.getIndex(theFile);
 		System.out.println(index);
 		assertTrue(index.exists());
 	}
+	private Repository getSubject() {
+		Repository subject = new Repository(".");
+		return subject;
+	}
 
 	@Test
 	public void testReadIndex() {
-		Repository subject = new Repository(".");
+		Repository subject = getSubject();
 		File theFile = new File("src/org/freehg/hgkit/core/MDiff.java");
 		File index = subject.getIndex(theFile);
 		Revlog revlog = new Revlog(index,index);
@@ -32,7 +43,7 @@ public class RepositoryTest {
 	
 	@Test
 	public void testAll() throws Exception {
-		Repository subject = new Repository(".");
+		Repository subject = getSubject();
 		walk(subject,new File("src"));
 	}
 	private void walk(Repository repo, File dir) {
