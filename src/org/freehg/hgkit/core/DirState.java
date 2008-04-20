@@ -13,7 +13,7 @@ public class DirState {
 
 	private Map<String, DirStateEntry> dirstate  = new HashMap<String, DirStateEntry>();
 	
-	public DirState(File dirState) {
+	DirState(File dirState) {
 		try {
 			FileInputStream fis = new FileInputStream(dirState);
 			DataInputStream in = new DataInputStream(new BufferedInputStream(fis));

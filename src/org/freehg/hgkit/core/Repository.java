@@ -8,6 +8,7 @@ public class Repository {
 	private static final String DATA = STORE + "/data/";
 	
 	private static final String INDEX_SUFFIX = ".i";
+	private static final String DIRSTATE = "dirstate";
 
 	private final File root;
 	
@@ -44,5 +45,14 @@ public class Repository {
 		File index = new File(logIndex);
 		return new Revlog(index,index);
 		
+	}
+
+	public DirState getDirState() {
+		String path = root.getAbsoluteFile() + "/" + HG + DIRSTATE;
+		File dirStateFile = new File(path);
+		if(! dirStateFile.exists()) {
+			throw new IllegalStateException("Unable to find dirstate file at location: " + path);
+		}
+		return new DirState(dirStateFile);
 	}
 }
