@@ -38,4 +38,11 @@ public class Repository {
 		File index = new File(logIndex);
 		return new Revlog(index,index);
 	}
+
+	public Revlog getManifest() {
+		String logIndex = root.getAbsolutePath() + "/" + STORE + "00manifest.i";
+		File index = new File(logIndex);
+		return new Revlog(index,index);
+		
+	}
 }

@@ -67,7 +67,7 @@ public final class NodeId {
 		return tos.toString();
 	}
 	
-	String asFull() {
+	public String asFull() {
 		StringBuilder tos = new StringBuilder();
 		for (int i = 0; i < SIZE; i++) {
 			int b = nodeid[i] & 0x0FF;
