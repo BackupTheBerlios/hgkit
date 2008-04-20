@@ -33,8 +33,9 @@ public class Repository {
 		return new File(indexName);
 	}
 
-	public File getChangeLog() {
+	public Revlog getChangeLog() {
 		String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
-		return new File(logIndex);
+		File index = new File(logIndex);
+		return new Revlog(index,index);
 	}
 }

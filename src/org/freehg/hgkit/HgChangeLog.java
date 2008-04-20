@@ -24,9 +24,8 @@ public class HgChangeLog {
 		
 	}
 	
-	public void getLog() {
-		File index = repo.getChangeLog();
-		Revlog revlog = new Revlog(index,index);
+	public List<ChangeLog> getLog() {
+		Revlog revlog = repo.getChangeLog();
 		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revlog.getRevisions().size());
 		
 		try {
@@ -43,6 +42,7 @@ public class HgChangeLog {
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
+		return logEntries;
 	}
 	private ChangeLog parse(String text) throws ParseException {
 		ChangeLog entry = new ChangeLog();

@@ -1,5 +1,6 @@
 package org.freehg.hgkit;
 
+import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.core.Repository;
 import org.junit.Test;
 
@@ -12,7 +13,9 @@ public class HgChangeLogTest {
 		Repository repo = new Repository(".");
 		HgChangeLog subject = new HgChangeLog(repo);
 		
-		subject.getLog();
+		for(ChangeLog changeLog : subject.getLog()) {
+			System.out.println(changeLog);
+		};
 		
 	}
 
