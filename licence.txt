@@ -1,3 +1,4 @@
-This project and all its resources are licenced under 
-Eclipse Public License Version 1.0 (&quot;EPL&quot;).  A copy of the EPL is available 
-at <a href="http://www.eclipse.org/legal/epl-v10.html">http://www.eclipse.org/legal/epl-v10.html</a>.
+This software is a derivate work of the python mercurial version and therefore 
+must be licensed as GPL.
+
+In the future it may become EPL if someone would take pity and permit that. 
