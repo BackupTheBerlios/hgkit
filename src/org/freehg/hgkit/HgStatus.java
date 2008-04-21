@@ -12,6 +12,11 @@ public class HgStatus {
         this.file = file;
     }
 
+    public HgStatus(File testee, Status status) {
+        file = testee;
+        this.status = status;
+    }
+
     public void setStatus(Status status) {
         this.status = status;
     }

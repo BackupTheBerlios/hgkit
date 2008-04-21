@@ -1,9 +1,13 @@
 package org.freehg.hgkit;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.freehg.hgkit.HgStatus.Status;
@@ -31,17 +35,36 @@ public class HgStatusClient {
 	    return doStatus(file, true);
 	}
 	public List<HgStatus> doStatus(final File file, final boolean recurse) {
-	    List<HgStatus> result = new ArrayList<HgStatus>();
+	    List<HgStatus> result = getStatus(file, recurse);
+	    result.addAll(getMissing());
+        return result;		
+	}
+
+    private List<HgStatus> getStatus(final File file, final boolean recurse) {
+        List<HgStatus> result = new ArrayList<HgStatus>();
+	    
 		if(recurse && isViableDir(file)) {
 			for(File sub : file.listFiles()) {
-				result.addAll(doStatus(sub, recurse));
+				result.addAll(getStatus(sub, recurse));
 			}
 			return result;
 		}
 		if( file.isFile()) {
     		result.add(getFileState(file));
 		}
-		return result;		
+		return result;
+    }
+	
+	private List<HgStatus> getMissing() {
+	    Collection<DirStateEntry> state = dirState.getDirState();
+	    List<HgStatus> missing = new ArrayList<HgStatus>();
+	    for (DirStateEntry entry : state) {
+	        File testee = repo.makeAbsolute(entry.getPath());
+	        if(!testee.exists()) {
+	            missing.add(new HgStatus(testee, Status.REMOVED));
+	        }
+        }
+	    return missing;
 	}
 
     private boolean isViableDir(final File file) {
@@ -89,7 +112,7 @@ public class HgStatusClient {
 		RevlogEntry tip = revlog.tip();
 		byte[] repoContent = revlog.revision(tip.getId());
 		try {
-		    FileInputStream local = new FileInputStream(file);
+		    InputStream local = new BufferedInputStream(new FileInputStream(file));
 		    for(int i = 0; i < file.length(); i++) {
 		        byte a = (byte) local.read();
 		        byte b = repoContent[i];
