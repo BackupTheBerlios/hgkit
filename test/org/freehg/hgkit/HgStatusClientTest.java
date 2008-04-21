@@ -3,6 +3,7 @@ package org.freehg.hgkit;
 import java.io.File;
 
 import org.freehg.hgkit.core.DirState;
+import org.freehg.hgkit.core.Repository;
 import org.junit.Test;
 
 
@@ -15,7 +16,8 @@ public class HgStatusClientTest {
 	public void testStatusClient() {
 		
 		long start = System.currentTimeMillis();
-		DirState state = new DirState(new File(".hg/dirstate"));
+		Repository repo = new Repository(".");
+		DirState state = repo.getDirState();
 		
 		HgStatusClient subject = new HgStatusClient(state);
 		

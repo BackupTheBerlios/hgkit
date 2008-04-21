@@ -17,8 +17,8 @@ import java.util.Set;
 public class Revlog {
 
     private static final String READ_ONLY = "r";
-
-    public static class RevlogEntry {
+    
+    public static final class RevlogEntry {
 
         /** The corresponding length of indexformatng >Qiiiiii20s12x */
         private static final int BINARY_LENGTH = 64;
@@ -197,6 +197,7 @@ public class Revlog {
             throw new IllegalStateException("Incompatible revision flag: "
                     + target.flags);
         }
+
 
         try {
             RandomAccessFile reader = new RandomAccessFile(this.dataFile, READ_ONLY);

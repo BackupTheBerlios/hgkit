@@ -24,34 +24,23 @@ public class HgStatusClient {
 			}
 			return;
 		}
-		System.out.println();
+		// System.out.println();
 		
 		DirStateEntry state = this.dirState.getState(file.getPath().replace("\\", "/"));
 		
-		System.out.print(file.getName() + " - ");
+		
 		if(state == null) {
-			System.out.println("Not managed");
-			return;
-		}
-		if( state.getState() == 'a') {
-			System.out.println("Added");
-			return;
-		}
-		
-		if( state.getState() == 'r') {
-			System.out.println("REMOVED");
-			return;
-		}
-		if( state.getState() == 'm') {
+			System.out.println("?");
+		}else if( state.getState() == 'a') {
+			System.out.println("A");
+		}else if( state.getState() == 'r') {
+			System.out.println("R");
+		} else if( state.getState() == 'm') {
 			System.out.println("3-way merged");
-			return;
-		}
-		
-		if( state.getState() == 'n') {
+		} if( state.getState() == 'n') {
 			checkStateNormal(file, state);
-			return;
 		}
-		
+		System.out.println(" - " + file.getName());		
 		// 1 Check dirstate
 		
 		// On (a)dded files the status is added
@@ -71,11 +60,11 @@ public class HgStatusClient {
 		long lastModified = file.lastModified() / 1000;
 //		System.out.println( state.getSize() + " == " + file.length() + " && " + state.getFileModTime() + " == " + lastModified);
 		if( state.getSize() == file.length() && state.getFileModTime() == lastModified) {
-			System.out.println("Not Changed");
+			System.out.print("C");
 			return;
 		}
 		if( state.getSize() != file.length()) {
-			System.out.println("Must have changed");
+			System.out.print("M");
 			return;
 		}
 		// 		if the filemod time has changed but the size haven't

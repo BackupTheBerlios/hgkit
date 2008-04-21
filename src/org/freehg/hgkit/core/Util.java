@@ -48,7 +48,6 @@ final class Util {
 			        return Arrays.copyOfRange(data, 1, data.length);
 			    case ZLIB_COMPRESSION:
 			        return doDecompress(data);
-			    
 			    default:
 			        throw new RuntimeException("Unknown compression type : "
 			                + (char) (dataHeader));

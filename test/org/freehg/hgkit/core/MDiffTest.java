@@ -54,4 +54,21 @@ public class MDiffTest {
 		
 		assertEquals("123456789", resultString);
 	}
+	@Test
+	public void testPerformance() {
+		StringBuilder longString = new StringBuilder();
+		for(int i = 0; i < 1000 * 1000; i++) {
+			longString.append("A");
+		}
+		String text = longString.toString();
+		
+		
+		List<byte[]> list = new ArrayList<byte[]>();
+		
+		for(int i = 0; i < 10000; i+= 3) {
+			list.add(newPatch(i + 2 + 4, 2, "PP"));
+			
+		}
+		byte[] result = MDiff.patches(text.getBytes(), list);
+	}
 }
