@@ -3,7 +3,10 @@ package org.freehg.hgkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.freehg.hgkit.HgStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
@@ -24,55 +27,56 @@ public class HgStatusClient {
 		this.dirState = repo.getDirState();
 	}
 	
-	public void doStatus(final File file) {
-		if(file.isDirectory()) {
+	public List<HgStatus> doStatus(final File file) {
+	    return doStatus(file, true);
+	}
+	public List<HgStatus> doStatus(final File file, final boolean recurse) {
+	    List<HgStatus> result = new ArrayList<HgStatus>();
+		if(recurse && file.isDirectory()) {
 			for(File sub : file.listFiles()) {
-				doStatus(sub);
+				result.addAll(doStatus(sub, recurse));
 			}
-			return;
+			return result;
 		}
-		// System.out.println();
-		
-		DirStateEntry state = this.dirState.getState(file.getPath().replace("\\", "/"));
-		
-		
-		if(state == null) {
-			System.out.println("?");
-		}else if( state.getState() == 'a') {
-			System.out.println("A");
-		}else if( state.getState() == 'r') {
-			System.out.println("R");
-		} else if( state.getState() == 'm') {
-			System.out.println("3-way merged");
-		} if( state.getState() == 'n') {
-			checkStateNormal(file, state);
+		if( file.isFile()) {
+    		result.add(getFileState(file));
 		}
-		System.out.println(" - " + file.getName());		
-		// 1 Check dirstate
-		
-		// On (a)dded files the status is added
-		// on (r)emoved files, the status is removed
-		// on m filees, the file is merged
-		
-		// files NOT found in dirstate are ?
-		// files found in dirstate but not in directory is "missing/deleted"
+		return result;		
 	}
 
-	private void checkStateNormal(File file, DirStateEntry state) {
+    private HgStatus getFileState(final File file) {
+        if(! file.isFile()) {
+            throw new IllegalArgumentException(file + " must be a file");
+        }
+        DirStateEntry state = this.dirState.getState(file.getPath().replace("\\", "/"));
+        
+        HgStatus status = new HgStatus(file);
+        if(state == null) {
+            status.setStatus(HgStatus.Status.NOT_TRACKED);
+        }else if( state.getState() == 'a') {
+            status.setStatus(HgStatus.Status.ADDED);
+        }else if( state.getState() == 'r') {
+            status.setStatus(HgStatus.Status.REMOVED);
+        } else if( state.getState() == 'm') {
+            status.setStatus(HgStatus.Status.MERGED);
+        } else if(state.getState() == 'n') {
+        	status.setStatus(checkStateNormal(file, state));
+        }
+        return status;
+    }
+
+	private Status checkStateNormal(File file, DirStateEntry state) {
 		// On (n)ormal files
 		// 		if size and mod time is same as in dirstate nothing has happened
 		// 		if the size HAS changed, the file must have changed
 		
 		// Hg uses seconds, java milliseconds
 		long lastModified = file.lastModified() / 1000;
-//		System.out.println( state.getSize() + " == " + file.length() + " && " + state.getFileModTime() + " == " + lastModified);
 		if( state.getSize() == file.length() && state.getFileModTime() == lastModified) {
-			System.out.print("C");
-			return;
+		    return HgStatus.Status.MANAGED;
 		}
 		if( state.getSize() != file.length()) {
-			System.out.print("M");
-			return;
+		    return HgStatus.Status.MODIFIED;
 		}
 		// 		if the filemod time has changed but the size haven't
 		// 		then we must compare against the repository version
@@ -85,21 +89,14 @@ public class HgStatusClient {
 		        byte a = (byte) local.read();
 		        byte b = repoContent[i];
 		        if( a != b) {
-		            System.out.print("Mn");
 		            local.close();
-		            return;
+		            return HgStatus.Status.MODIFIED;
 		        }
 		    }
 		    local.close();
 		} catch(IOException ex) {
 		    throw new RuntimeException(ex);
 		}
-		System.out.print("Cn");
-		// TODO Binary compare the repository version against the supplied version
-
-	}
-	
-	public void addedMethod() {
-	    // this method were added
+		return HgStatus.Status.MANAGED;
 	}
 }
