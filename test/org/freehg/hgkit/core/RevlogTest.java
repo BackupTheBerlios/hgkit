@@ -11,8 +11,8 @@ public class RevlogTest {
     @Test
     public void testGetLatestRevision() {
 
-        File index = new File(
-                ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+        File index = null;
+        
         index = new File(
                 ".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
         index = new File(
@@ -21,6 +21,9 @@ public class RevlogTest {
                 "../com.vectrace.MercurialEclipse/.hg/store/00changelog.i");
         index = new File(".hg/store/00changelog.i");
 
+        index = new File(
+        ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+
         Revlog subject = new Revlog(index, index);
         int numRev = subject.count();
         log("Test file has : " + numRev + " revisions");
@@ -28,12 +31,11 @@ public class RevlogTest {
 
         log(subject);
 
-        String revision = subject.revision(tip.getId());
-        log(" ################################ ");
-        log(revision);
-
         for (NodeId rev : subject.getRevisions()) {
-            subject.revision(rev);
+           System.out.print(rev.asShort());
+            String revision = subject.revision(rev);
+            System.out.println(" -- [OK]");
+            log(revision);
         }
     }
 

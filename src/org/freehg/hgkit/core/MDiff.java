@@ -30,12 +30,10 @@ class Fragment {
     @Override
     public String toString() {
         String txt = new String(this.data);
-        if(80 < txt.length() ) {
-            int max = Math.min(80, len());
-            txt = txt.substring(0,max);
-            if(len() > 80) {
-                txt += "...";
-            }
+        int max = Math.min(80, len());
+        txt = txt.substring(0,max);
+        if(len() > 80) {
+            txt += "...";
         }
         return start + " " + end + " " + len() + " " + txt;
     }
@@ -141,7 +139,8 @@ public class MDiff {
                 offset += s.start + s.len() - s.end;
                 iter.remove();
             } else {
-                // partial discarding
+                // partial discarding, move the content of s.data so that it 
+                // doesn't overlap cut
                 c = cut - offset;
                 if (s.end < c) {
                     c = s.end;
@@ -188,14 +187,9 @@ public class MDiff {
             if (postend <= cut) {
                 /* save this hunk as it is */
                 offset += s.start + s.len() - s.end;
-                // *d++ = *s++;
                 dest.add(s);
-                // at the endf of this algorithm
-                // src should have s as head, this one could 
-                // be safely removed if there is another s here
-                if( iter.hasNext()) {
-                    iter.remove();
-                }
+                iter.remove();
+
             } else {
                 /* This hunk must be broken up */
                 int cutAt = cut - offset;
@@ -275,14 +269,13 @@ public class MDiff {
                 // break; /* big data + big (bogus) len can wrap around */
             }
 
-            lt.data = Arrays.copyOfRange(bin, dataPtr, length - dataPtr);
-            dataPtr = length - dataPtr + binPtr + 12;
-//            lt.data = new byte[length - dataPtr];
-//            if (0 < lt.data.length) {
-//                wrap.position(dataPtr);
-//                wrap.get(lt.data, 0, lt.data.length);
-//                wrap.position(dataPtr);
-//            }
+            lt.data = new byte[length - dataPtr];
+            if (0 < lt.data.length) {
+                wrap.position(dataPtr);
+                wrap.get(lt.data, 0, lt.data.length);
+            }
+            // data = bin + 12;
+            dataPtr = binPtr + 12;
             // data = bin + 12;
         }
 
@@ -318,6 +311,7 @@ public class MDiff {
 
         ByteArrayOutputStream p = new ByteArrayOutputStream(len);
         
+        ArrayList<Fragment> lpatch = new ArrayList<Fragment>(patch);
         int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
