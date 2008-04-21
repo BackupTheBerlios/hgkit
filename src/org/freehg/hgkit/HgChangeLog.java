@@ -32,7 +32,7 @@ public class HgChangeLog {
 		for (NodeId nodeId : revlog.getRevisions()) {
 				System.out.println(nodeId);
 				System.out.println("---------------------------------");
-				String logString = revlog.revision(nodeId);
+				String logString = new String(revlog.revision(nodeId));
 				System.out.println(logString);
 				System.out.println("---------------------------------");
 				ChangeLog logEntry = parse(logString);

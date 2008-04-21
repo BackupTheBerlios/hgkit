@@ -17,7 +17,7 @@ import java.util.Set;
 public class Revlog {
 
     private static final String READ_ONLY = "r";
-    
+
     public static final class RevlogEntry {
 
         /** The corresponding length of indexformatng >Qiiiiii20s12x */
@@ -25,7 +25,7 @@ public class Revlog {
         private static RevlogEntry nullInstance;
 
         /**
-         * 
+         *
          * @param parent
          * @param data
          * @param off
@@ -182,14 +182,14 @@ public class Revlog {
     /**
      * return an uncompressed revision data of a given nodeid NOTE: hgkit
      * doesn't use caching for now
-     * 
+     *
      * @param node
      *            to nodeid to get data for
      * @return an uncompressed revision data
      */
-    public String revision(NodeId node) {
+    public byte[] revision(NodeId node) {
         if (node.equals(NULLID)) {
-            return "";
+            return new byte[0];
         }
 
         RevlogEntry target = nodemap.get(node);
@@ -212,7 +212,7 @@ public class Revlog {
                 patches.add(diff);
             }
             byte[] revisionData = MDiff.patches(baseData, patches);
-            return new String(revisionData);
+            return revisionData;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -302,7 +302,7 @@ public class Revlog {
             // logging is off
             return;
         }
-        
+
         if (msg != null) {
             System.out.println(msg.toString());
         } else {

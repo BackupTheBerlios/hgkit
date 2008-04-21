@@ -1,20 +1,27 @@
 package org.freehg.hgkit;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import org.freehg.hgkit.core.DirState;
+import org.freehg.hgkit.core.Repository;
+import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
+import org.freehg.hgkit.core.Revlog.RevlogEntry;
 
 
 public class HgStatusClient {
 
 	private DirState dirState;
+    private final Repository repo;
 	
-	public HgStatusClient(DirState state) {
-		if( state == null) {
-			throw new IllegalArgumentException("DirState may not be null");
+	public HgStatusClient(Repository repo) {
+		this.repo = repo;
+        if( repo== null) {
+			throw new IllegalArgumentException("Repository may not be null");
 		}
-		this.dirState = state;
+		this.dirState = repo.getDirState();
 	}
 	
 	public void doStatus(final File file) {
@@ -69,7 +76,25 @@ public class HgStatusClient {
 		}
 		// 		if the filemod time has changed but the size haven't
 		// 		then we must compare against the repository version
-		System.out.println("Must use repository to determine if it has changed");
+		Revlog revlog = repo.getRevlog(file);
+		RevlogEntry tip = revlog.tip();
+		byte[] repoContent = revlog.revision(tip.getId());
+		try {
+		    FileInputStream local = new FileInputStream(file);
+		    for(int i = 0; i < file.length(); i++) {
+		        byte a = (byte) local.read();
+		        byte b = repoContent[i];
+		        if( a != b) {
+		            System.out.print("Mn");
+		            local.close();
+		            return;
+		        }
+		    }
+		    local.close();
+		} catch(IOException ex) {
+		    throw new RuntimeException(ex);
+		}
+		System.out.print("Cn");
 		// TODO Binary compare the repository version against the supplied version
 
 	}

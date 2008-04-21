@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class RepositoryTest {
@@ -19,7 +20,7 @@ public class RepositoryTest {
 		Repository subject = getSubject();
 		File theFile = new File("src/org/freehg/hgkit/HgStatusClient.java");
 		File index = subject.getIndex(theFile);
-		System.out.println(index);
+		// System.out.println(index);
 		assertTrue(index.exists());
 	}
 	private Repository getSubject() {
@@ -35,30 +36,42 @@ public class RepositoryTest {
 		Revlog revlog = new Revlog(index,index);
 		
 		for(NodeId nodeId : revlog.getRevisions()) {
-			String revision = revlog.revision(nodeId);
-			System.out.println(revision);
+			revlog.revision(nodeId);
+			// System.out.println(revision);
 		}
+	}
+	
+	
+	private int numRevisions = 0;
+	
+	
+	@Before
+	public void setUp() {
+	    numRevisions = 0;
 	}
 	
 	@Test
 	public void testAll() throws Exception {
 		Repository subject = getSubject();
-		walk(subject,new File("src"));
+		int count = walk(subject,new File("src"));
+		System.out.println(count + " num files tested and " + numRevisions + " revivions");
 	}
-	private void walk(Repository repo, File dir) {
+	private int walk(Repository repo, File dir) {
+	    int count = 0;
 		for(File file : dir.listFiles()) {
 			if( file.isFile()) {
-				System.out.println(file);
 				testFile(repo, file);
+				count++;
 			}
 		}
 		for(File file : dir.listFiles()) {
 			if(file.isDirectory() 
 					&& !file.equals(dir.getParent())
 					&& !file.equals(dir)) {
-				walk(repo,file);
+				count += walk(repo,file);
 			}
 		}
+		return count;
 	}
 	
 	private void testFile(Repository repo, File file) {
@@ -66,6 +79,7 @@ public class RepositoryTest {
 		Revlog revlog = new Revlog(index,index);
 		for(NodeId nodeId : revlog.getRevisions()) {
 			revlog.revision(nodeId);
+			numRevisions++;
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class RevlogTest {
 
         for (NodeId rev : subject.getRevisions()) {
            System.out.print(rev.asShort());
-            String revision = subject.revision(rev);
+            String revision = new String(subject.revision(rev));
             System.out.println(" -- [OK]");
             log(revision);
         }
@@ -51,7 +51,7 @@ public class RevlogTest {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
             for (NodeId nodeId : subject.getRevisions()) {
-                String revision = subject.revision(nodeId);
+                subject.revision(nodeId);
             }
         }
         long end = System.currentTimeMillis();

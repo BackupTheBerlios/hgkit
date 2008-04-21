@@ -26,7 +26,7 @@ public class HgManifestClient {
 		for(NodeId nodeId : manifest.getRevisions()) {
 			System.out.println(nodeId.asFull());
 			System.out.println("-----------------------");
-			String text = manifest.revision(nodeId);
+			String text = new String(manifest.revision(nodeId));
 			List<ManifestEntry> entries = parse(text);
 			HgManifest manifestInstance = new HgManifest(nodeId, entries);
 			System.out.println(manifestInstance);

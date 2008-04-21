@@ -55,4 +55,9 @@ public class Repository {
 		}
 		return new DirState(dirStateFile);
 	}
+
+    public Revlog getRevlog(File file) {
+        File revIndex = getIndex(file);
+        return new Revlog(revIndex, revIndex);
+    }
 }
