@@ -3,7 +3,7 @@ package org.freehg.hgkit.core;
 import java.io.File;
 
 public class Repository {
-	private static final String HG = ".hg/";
+	public static final String HG = ".hg/";
 	private static final String STORE = HG + "store/";
 	private static final String DATA = STORE + "/data/";
 	
@@ -59,5 +59,14 @@ public class Repository {
     public Revlog getRevlog(File file) {
         File revIndex = getIndex(file);
         return new Revlog(revIndex, revIndex);
+    }
+
+    public File makeRelative(File file) {
+        String abs = file.getAbsolutePath();
+        if(!abs.startsWith(root.getAbsolutePath())) {
+            throw new IllegalArgumentException(file + " is not a child of " + root);
+        }
+        String relativePath = abs.substring(root.getAbsolutePath().length() + 1);
+        return new File(relativePath);
     }
 }

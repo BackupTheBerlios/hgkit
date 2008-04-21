@@ -32,7 +32,7 @@ public class HgStatusClient {
 	}
 	public List<HgStatus> doStatus(final File file, final boolean recurse) {
 	    List<HgStatus> result = new ArrayList<HgStatus>();
-		if(recurse && file.isDirectory()) {
+		if(recurse && isViableDir(file)) {
 			for(File sub : file.listFiles()) {
 				result.addAll(doStatus(sub, recurse));
 			}
@@ -44,13 +44,18 @@ public class HgStatusClient {
 		return result;		
 	}
 
+    private boolean isViableDir(final File file) {
+        return file.isDirectory() && ! file.getName().equals(".hg");
+    }
+
     private HgStatus getFileState(final File file) {
         if(! file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
         }
-        DirStateEntry state = this.dirState.getState(file.getPath().replace("\\", "/"));
+        File lfile = repo.makeRelative(file);
+        DirStateEntry state = this.dirState.getState(lfile.getPath().replace("\\", "/"));
         
-        HgStatus status = new HgStatus(file);
+        HgStatus status = new HgStatus(lfile);
         if(state == null) {
             status.setStatus(HgStatus.Status.NOT_TRACKED);
         }else if( state.getState() == 'a') {
