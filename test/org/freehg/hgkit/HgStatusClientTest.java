@@ -16,11 +16,12 @@ public class HgStatusClientTest {
 	public void testStatusClient() {
 		
 		long start = System.currentTimeMillis();
-		Repository repo = new Repository(".");
+//		Repository repo = new Repository(".");
+		Repository repo = new Repository("../test_repo");
 		
 		HgStatusClient subject = new HgStatusClient(repo);
 		
-		List<HgStatus> status = subject.doStatus(new File("src"));
+		List<HgStatus> status = subject.doStatus(new File("../test_repo").getAbsoluteFile());
 		for (HgStatus hgStatus : status) {
 		    System.out.println(hgStatus);
             

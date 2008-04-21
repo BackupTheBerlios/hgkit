@@ -29,10 +29,16 @@ public class Repository {
         if (!file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
         }
-        String filePath = file.getAbsolutePath();
-        String relativeRoot = filePath.substring(root.getAbsolutePath().length() - 1);
-        String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
-        return new File(indexName);
+        String filePath;
+		try {
+			filePath = file.getCanonicalPath();
+			String rootPath = Util.forwardSlashes(root.getCanonicalPath());
+			String relativeRoot = Util.forwardSlashes(filePath.substring(rootPath.length()));
+			String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
+			return new File(rootPath + "/" + indexName);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     public Revlog getChangeLog() {
