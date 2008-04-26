@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.freehg.hgkit.HgStatus.Status;
@@ -68,7 +67,7 @@ public class HgStatusClient {
 	}
 
     private boolean isViableDir(final File file) {
-        return file.isDirectory() && ! file.getName().equals(".hg");
+        return file.isDirectory() && !file.getName().contains(".hg");
     }
 
     private HgStatus getFileState(final File file) {
@@ -99,12 +98,13 @@ public class HgStatusClient {
 		// 		if the size HAS changed, the file must have changed
 		
 		// Hg uses seconds, java milliseconds
+	    if( state.getSize() != file.length()) {
+	        return HgStatus.Status.MODIFIED;
+	    }
+	    
 		long lastModified = file.lastModified() / 1000;
-		if( state.getSize() == file.length() && state.getFileModTime() == lastModified) {
+		if(state.getFileModTime() == lastModified) {
 		    return HgStatus.Status.MANAGED;
-		}
-		if( state.getSize() != file.length()) {
-		    return HgStatus.Status.MODIFIED;
 		}
 		// 		if the filemod time has changed but the size haven't
 		// 		then we must compare against the repository version

@@ -8,7 +8,10 @@ import java.nio.CharBuffer;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.freehg.hgkit.core.NodeId;
@@ -55,7 +58,7 @@ public class HgChangeLog {
 				
 				String dateLine = reader.readLine();
 				// TODO: Parse the dateformat, it is num seconds since epoch +- offset
-				// entry.when = DateFormat.getDateInstance().parse(dateLine);
+				entry.when = dateParse(dateLine);
 				
 				String fileLine = reader.readLine();
 				// read while line aint empty, its a file, the it is the comment
@@ -76,7 +79,15 @@ public class HgChangeLog {
 		return entry;
 	}
 	
-	public static class ChangeLog {
+	private Date dateParse(String dateLine) {
+	    String parts[] = dateLine.split(" ");
+	    long secondsSinceEpoc = Integer.parseInt(parts[0]);
+	    long offset = Integer.parseInt(parts[1]);
+	    long msSinceEpoc = 1000 * (secondsSinceEpoc + offset);
+        return new Date(msSinceEpoc);
+    }
+
+    public static class ChangeLog {
 		private NodeId revision;
 		private Date when;
 		private String author;
@@ -97,6 +108,14 @@ public class HgChangeLog {
 		}
 		public String getComment() {
 			return comment;
+		}
+		@Override
+		public String toString() {
+		    return revision.asShort() + " " 
+		    + when + " "
+		    + author + "\n"
+		    + comment + "\n" 
+		    + files;
 		}
 	}
 	

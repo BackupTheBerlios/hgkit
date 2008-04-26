@@ -16,17 +16,16 @@ public class HgStatusClientTest {
 	public void testStatusClient() {
 		
 		long start = System.currentTimeMillis();
-//		Repository repo = new Repository(".");
-		Repository repo = new Repository("../test_repo");
-		
+
+		Repository repo = new Repository("../com.vectrace.MercurialEclipse/");
 		HgStatusClient subject = new HgStatusClient(repo);
-		
-		List<HgStatus> status = subject.doStatus(new File("../test_repo").getAbsoluteFile());
+
+		List<HgStatus> status = subject.doStatus(new File("../com.vectrace.MercurialEclipse/"));
+		long end = System.currentTimeMillis();
 		for (HgStatus hgStatus : status) {
-		    System.out.println(hgStatus);
+		     System.out.println(hgStatus);
             
         }
-		long end = System.currentTimeMillis();
 		
 		System.out.println("Status walk took " + (end - start) + " ms");
 	}
