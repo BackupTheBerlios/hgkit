@@ -2,6 +2,7 @@ package org.freehg.hgkit.core;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -188,38 +189,17 @@ public class Revlog {
      * @return an uncompressed revision data
      */
     public byte[] revision(NodeId node) {
-        if (node.equals(NULLID)) {
-            return new byte[0];
-        }
-
-        RevlogEntry target = nodemap.get(node);
-        if ((target.flags & 0xFFFF) != 0) {
-            throw new IllegalStateException("Incompatible revision flag: "
-                    + target.flags);
-        }
-
-
-        try {
-            RandomAccessFile reader = new RandomAccessFile(this.dataFile, READ_ONLY);
-            RevlogEntry baseRev = index.get(target.baseRev);
-            byte[] baseData = Util.decompress(baseRev.loadBlock(reader));
-
-            List<byte[]> patches = new ArrayList<byte[]>(target.revision - target.baseRev + 1);
-            for (int rev = target.baseRev + 1; rev <= target.revision; rev++) {
-
-                RevlogEntry nextEntry = this.index.get(rev);
-                byte[] diff = Util.decompress(nextEntry.loadBlock(reader));
-                patches.add(diff);
-            }
-            byte[] revisionData = MDiff.patches(baseData, patches);
-            return revisionData;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	revision(node, out);
+    	return out.toByteArray();
     }
 
-    public RevlogEntry tip() {
+    private void revision(NodeId node, ByteArrayOutputStream out) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public RevlogEntry tip() {
         return index.get(count() - 1);
     }
 
