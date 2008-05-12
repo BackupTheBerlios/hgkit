@@ -21,7 +21,7 @@ public class HgStatusClient {
 
 	private DirState dirState;
     private final Repository repo;
-	
+
 	public HgStatusClient(Repository repo) {
 		this.repo = repo;
         if( repo== null) {
@@ -29,20 +29,20 @@ public class HgStatusClient {
 		}
 		this.dirState = repo.getDirState();
 	}
-	
+
 	public List<HgStatus> doStatus(final File file) {
 	    return doStatus(file, true);
 	}
 	public List<HgStatus> doStatus(final File file, final boolean recurse) {
 	    List<HgStatus> result = getStatus(file, recurse);
 	    result.addAll(getMissing());
-        return result;		
+        return result;
 	}
 
     private List<HgStatus> getStatus(final File file, final boolean recurse) {
         List<HgStatus> result = new ArrayList<HgStatus>();
-	    
-		if(recurse && isViableDir(file)) {
+
+		if(recurse && file.isDirectory() && !isIgnored(file)) {
 			for(File sub : file.listFiles()) {
 				result.addAll(getStatus(sub, recurse));
 			}
@@ -53,7 +53,7 @@ public class HgStatusClient {
 		}
 		return result;
     }
-	
+
 	private List<HgStatus> getMissing() {
 	    Collection<DirStateEntry> state = dirState.getDirState();
 	    List<HgStatus> missing = new ArrayList<HgStatus>();
@@ -66,8 +66,8 @@ public class HgStatusClient {
 	    return missing;
 	}
 
-    private boolean isViableDir(final File file) {
-        return file.isDirectory() && !file.getName().contains(".hg");
+    private boolean isIgnored(final File file) {
+        return file.getName().contains(".hg");
     }
 
     private HgStatus getFileState(final File file) {
@@ -76,7 +76,7 @@ public class HgStatusClient {
         }
         File lfile = repo.makeRelative(file);
         DirStateEntry state = this.dirState.getState(lfile.getPath().replace("\\", "/"));
-        
+
         HgStatus status = new HgStatus(lfile);
         if(state == null) {
             status.setStatus(HgStatus.Status.NOT_TRACKED);
@@ -96,12 +96,12 @@ public class HgStatusClient {
 		// On (n)ormal files
 		// 		if size and mod time is same as in dirstate nothing has happened
 		// 		if the size HAS changed, the file must have changed
-		
+
 		// Hg uses seconds, java milliseconds
 	    if( state.getSize() != file.length()) {
 	        return HgStatus.Status.MODIFIED;
 	    }
-	    
+
 		long lastModified = file.lastModified() / 1000;
 		if(state.getFileModTime() == lastModified) {
 		    return HgStatus.Status.MANAGED;
