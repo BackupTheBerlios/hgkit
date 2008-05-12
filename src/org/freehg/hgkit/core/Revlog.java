@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class Revlog {
     	return out.toByteArray();
     }
 
-    private void revision(NodeId node, ByteArrayOutputStream out) {
+    private void revision(NodeId node, OutputStream out) {
     	if (node.equals(NULLID)) {
             return;
         }
