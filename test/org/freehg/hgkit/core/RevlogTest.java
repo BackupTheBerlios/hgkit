@@ -2,7 +2,6 @@ package org.freehg.hgkit.core;
 
 import java.io.File;
 
-import org.freehg.hgkit.core.Revlog.RevlogEntry;
 import org.junit.Ignore;
 import org.junit.Test;
 

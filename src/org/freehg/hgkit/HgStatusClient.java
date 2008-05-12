@@ -13,8 +13,8 @@ import org.freehg.hgkit.HgStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
+import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
-import org.freehg.hgkit.core.Revlog.RevlogEntry;
 
 
 public class HgStatusClient {
