@@ -62,7 +62,7 @@ public class Revlog {
     	return out.toByteArray();
     }
 
-    private void revision(NodeId node, OutputStream out) {
+    public void revision(NodeId node, OutputStream out) {
     	if (node.equals(NULLID)) {
             return;
         }
