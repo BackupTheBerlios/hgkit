@@ -23,7 +23,7 @@ public class RevlogTest {
         index = new File(
         ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
-        Revlog subject = new Revlog(index, index);
+        Revlog subject = new Revlog(index);
         int numRev = subject.count();
         log("Test file has : " + numRev + " revisions");
         RevlogEntry tip = subject.tip();
@@ -44,7 +44,7 @@ public class RevlogTest {
         File index = new File(
                 ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
-        Revlog subject = new Revlog(index, index);
+        Revlog subject = new Revlog(index);
         int count = 0;
 
         long start = System.currentTimeMillis();

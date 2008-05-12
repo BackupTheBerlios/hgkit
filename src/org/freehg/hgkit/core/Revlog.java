@@ -33,10 +33,12 @@ public class Revlog {
     private Map<NodeId, RevlogEntry> nodemap;
     ArrayList<RevlogEntry> index;
 
-    private final File dataFile;
+	private final File indexFile;
 
-    public Revlog(File index, File dataFile) {
-        this.dataFile = dataFile;
+	private File dataFile;
+
+    public Revlog(File index) {
+        indexFile = index;
         try {
             parseIndex(index);
         } catch (IOException e) {
@@ -62,7 +64,7 @@ public class Revlog {
     	return out.toByteArray();
     }
 
-    private void revision(NodeId node, OutputStream out) {
+    public void revision(NodeId node, OutputStream out) {
     	if (node.equals(NULLID)) {
             return;
         }
@@ -75,7 +77,7 @@ public class Revlog {
 
 
         try {
-            RandomAccessFile reader = new RandomAccessFile(this.dataFile, READ_ONLY);
+            RandomAccessFile reader = new RandomAccessFile(getDataFile(), READ_ONLY);
             RevlogEntry baseRev = index.get(target.getBaseRev());
             byte[] baseData = Util.decompress(baseRev.loadBlock(reader));
 
@@ -91,6 +93,18 @@ public class Revlog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+	}
+
+	private File getDataFile() {
+		if(this.dataFile != null) {
+			return this.dataFile;
+		} else if(this.isDataInline) {
+			return this.indexFile;
+		}
+		String path = this.indexFile.getAbsolutePath();
+		String dataFilePath = path.substring(0, path.length() - ".i".length()) + ".d";
+		this.dataFile = new File(dataFilePath);
+		return this.dataFile;
 	}
 
 	public RevlogEntry tip() {
@@ -126,12 +140,33 @@ public class Revlog {
         nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
         this.index = new ArrayList<RevlogEntry>();
 
-        if (isDataInline) {
-            parseInlineIndex(reader);
-        } else {
-            throw new IllegalStateException(
-                    "Non inline data not implemented yet");
-        }
+        byte[] data = Util.readWholeFile(reader);
+		int length = data.length - RevlogEntry.BINARY_LENGTH;
+		
+		int indexCount = 0;
+		int indexOffset = 0;
+		
+		while (indexOffset <= length) {
+		    RevlogEntry entry = RevlogEntry.valueOf(this, data, indexOffset);
+		    if (indexCount == 0) {
+		        entry.setOffset(0);
+		    }
+		    entry.revision = indexCount;
+		    nodemap.put(entry.nodeId, entry);
+		    this.index.add(entry);
+		
+		    if (entry.getCompressedLength() < 0) {
+		        // What does this mean?
+		        System.err.println("e.compressedlength < 0");
+		        break;
+		    }
+		    if (isDataInline) {
+		    	indexOffset += entry.getCompressedLength();
+		    }
+		    indexOffset +=+ RevlogEntry.BINARY_LENGTH;
+		    indexCount++;
+		}
+    
         printIndex();
     }
 

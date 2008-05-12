@@ -44,13 +44,13 @@ public class Repository {
     public Revlog getChangeLog() {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
         File index = new File(logIndex);
-        return new Revlog(index,index);
+        return new Revlog(index);
     }
 
     public Revlog getManifest() {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00manifest.i";
         File index = new File(logIndex);
-        return new Revlog(index,index);
+        return new Revlog(index);
 
     }
 
@@ -65,7 +65,7 @@ public class Repository {
 
     public Revlog getRevlog(File file) {
         File revIndex = getIndex(file);
-        return new Revlog(revIndex, revIndex);
+        return new Revlog(revIndex);
     }
 
     public File makeRelative(File file) {
