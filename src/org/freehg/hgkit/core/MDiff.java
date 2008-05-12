@@ -1,6 +1,8 @@
 package org.freehg.hgkit.core;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,20 +44,25 @@ class Fragment {
 
 public class MDiff {
     
-    public static byte[] patches(byte[] in, 
-            List<byte[]> bins) {
-        // if there are no fragments we dont have to do anything
-        if (bins.size() < 1) {
-            return in;
-        }
-        // convert binary to fragments
-        List<Fragment> patch = fold(bins, 0, bins.size());
-        if (patch == null) {
-            return null;
-        }
-        // apply all fragments to in
-        byte[] result = apply(in, in.length, patch);
-		return result;
+    public static void patches(byte[] in, 
+            List<byte[]> bins, 
+            OutputStream out) {
+        // if there are no fragments we don't have to do anything
+    	try {
+	        if (bins.size() < 1) {
+				out.write(in);
+				return;
+	        }
+	        // convert binary to fragments
+	        List<Fragment> patch = fold(bins, 0, bins.size());
+	        if (patch == null) {
+	            throw new IllegalStateException("Error folding patches");
+	        }
+	        // apply all fragments to in
+	        apply(in, in.length, patch, out);
+    	} catch (IOException e) {
+    		throw new RuntimeException(e);
+    	}
     }
 
     private static LinkedList<Fragment> fold(List<byte[]> bins, 
@@ -305,34 +312,32 @@ public class MDiff {
     }
 
     
-    private static byte[] apply(byte[] orig, 
+    private static void apply(byte[] orig, 
             int len, 
-            List<Fragment> patch) {
-
-        ByteArrayOutputStream p = new ByteArrayOutputStream(len);
+            List<Fragment> patch, 
+            OutputStream out) throws IOException {
         
-        ArrayList<Fragment> lpatch = new ArrayList<Fragment>(patch);
         int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
             if (f.start < last || len < f.end) {
             	throw new IllegalStateException("invalid patch");
             }
-            p.write(orig, last, f.start - last);
-            p.write(f.data, 0, f.len());
+            out.write(orig, last, f.start - last);
+            out.write(f.data, 0, f.len());
             last = f.end;
             
             
         }
-        // memcpy(p, orig + last, len - last);
-        p.write(orig, last, len - last);
-        return p.toByteArray();
+        out.write(orig, last, len - last);
     }
 
 	public static byte[] patches(byte[] bytes, byte[] patch) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
 		list.add(patch);
-		return patches(bytes,list);
+		patches(bytes,list,out);
+		return out.toByteArray();
 		
 	}
 }

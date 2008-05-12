@@ -49,7 +49,9 @@ public class MDiffTest {
 		list.add(newPatch(7, 2, "89"));
 		
 		
-		byte[] result = MDiff.patches(text.getBytes(), list);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		MDiff.patches(text.getBytes(), list,out);
+		byte[] result = out.toByteArray();
 		String resultString = new String(result);
 		
 		assertEquals("123456789", resultString);
@@ -69,6 +71,6 @@ public class MDiffTest {
 			list.add(newPatch(i + 2 + 4, 2, "PP"));
 			
 		}
-		byte[] result = MDiff.patches(text.getBytes(), list);
+		MDiff.patches(text.getBytes(), list, System.out);
 	}
 }
