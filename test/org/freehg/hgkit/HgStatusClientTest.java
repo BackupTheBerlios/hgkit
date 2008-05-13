@@ -10,11 +10,11 @@ import org.junit.Test;
 
 public class HgStatusClientTest {
 
-	
-	
+
+
 	@Test
 	public void testStatusClient() {
-		
+
 		long start = System.currentTimeMillis();
 
 		Repository repo = new Repository("../com.vectrace.MercurialEclipse/");
@@ -24,9 +24,9 @@ public class HgStatusClientTest {
 		long end = System.currentTimeMillis();
 		for (HgStatus hgStatus : status) {
 		     System.out.println(hgStatus);
-            
+
         }
-		
+
 		System.out.println("Status walk took " + (end - start) + " ms");
 	}
 }

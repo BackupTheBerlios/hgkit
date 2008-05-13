@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +20,7 @@ class Fragment {
     /** where in this.data to begin read */
     int offset = 0;
 
-    // Maybe this can differ from data length
+    /** The length of the data to read, this can differ from data.length. Combine offset, data and mlength to get patch data. */
     int mlength = -1;
 
     /** The length of the fragment, may differ from end - start and data.length */
@@ -80,9 +79,7 @@ public class MDiff {
         /* recursively generate a patch of all bins between
          * start and end */
         if (start + 1 == end) {
-            /* trivial case, output a decoded list */
-            byte[] bytes = bins.get(start);
-            return decode(bytes, bytes.length);
+            return decode(bins.get(start));
         }
 
         /* divide and conquer, memory management is elsewhere */
@@ -246,18 +243,18 @@ public class MDiff {
      * decode a binary patch into a fragment list
      *
      * @param bin the binary patch
-     * @param length the length of the patch
      * @return a list of fragments
      */
-    static LinkedList<Fragment> decode(byte[] bin, int length) {
+    static LinkedList<Fragment> decode(byte[] bin) {
         // int start, int end, int len, byte[...] data
         LinkedList<Fragment> result = new LinkedList<Fragment>();
         ByteBuffer reader = ByteBuffer.wrap(bin);
-        while(reader.position() < length) {
+        //while(reader.position() < length) {
+        while(reader.hasRemaining()) {
         	Fragment lt = new Fragment();
             result.add(lt);
 
-            lt.start =  reader.getInt();
+            lt.start = reader.getInt();
             lt.end = reader.getInt();
             lt.len(reader.getInt());
 
@@ -274,7 +271,7 @@ public class MDiff {
             reader.position(reader.position() + lt.len());
         }
 
-        if( reader.position() != length) {
+        if( reader.hasRemaining()) {
             throw new IllegalStateException("patch cannot be decoded");
         }
         return result;
@@ -300,6 +297,13 @@ public class MDiff {
         out.write(orig, last, len - last);
     }
 
+    /**
+     * Deprecated Use {@link MDiff}{@link #patches(byte[], List, OutputStream)} instead
+     * @param bytes
+     * @param patch
+     * @return
+     */
+    @Deprecated
 	public static byte[] patches(byte[] bytes, byte[] patch) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
