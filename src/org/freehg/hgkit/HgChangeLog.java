@@ -1,17 +1,12 @@
 package org.freehg.hgkit;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.CharBuffer;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.freehg.hgkit.core.NodeId;
@@ -24,22 +19,17 @@ public class HgChangeLog {
 
 	public HgChangeLog(Repository repo) {
 		this.repo = repo;
-		
+
 	}
-	
+
 	public List<ChangeLog> getLog() {
 		Revlog revlog = repo.getChangeLog();
 		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revlog.getRevisions().size());
-		
+
 		try {
 		for (NodeId nodeId : revlog.getRevisions()) {
-				System.out.println(nodeId);
-				System.out.println("---------------------------------");
 				String logString = new String(revlog.revision(nodeId));
-				System.out.println(logString);
-				System.out.println("---------------------------------");
 				ChangeLog logEntry = parse(logString);
-
 				logEntries.add(logEntry);
 			}
 		} catch (ParseException e) {
@@ -55,11 +45,11 @@ public class HgChangeLog {
 			while(null != (line = reader.readLine())) {
 				entry.revision = NodeId.parse(line);
 				entry.author = reader.readLine();
-				
+
 				String dateLine = reader.readLine();
 				// TODO: Parse the dateformat, it is num seconds since epoch +- offset
 				entry.when = dateParse(dateLine);
-				
+
 				String fileLine = reader.readLine();
 				// read while line aint empty, its a file, the it is the comment
 				while(0 < fileLine.trim().length()) {
@@ -71,14 +61,14 @@ public class HgChangeLog {
 				theRest.flip();
 				String comment = theRest.toString();
 				entry.comment = comment;
-				
+
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		return entry;
 	}
-	
+
 	private Date dateParse(String dateLine) {
 	    String parts[] = dateLine.split(" ");
 	    long secondsSinceEpoc = Integer.parseInt(parts[0]);
@@ -93,7 +83,7 @@ public class HgChangeLog {
 		private String author;
 		private List<String> files = new ArrayList<String>();
 		private String comment;
-		
+
 		public NodeId getRevision() {
 			return revision;
 		}
@@ -111,12 +101,12 @@ public class HgChangeLog {
 		}
 		@Override
 		public String toString() {
-		    return revision.asShort() + " " 
+		    return revision.asShort() + " "
 		    + when + " "
 		    + author + "\n"
-		    + comment + "\n" 
+		    + comment + "\n"
 		    + files;
 		}
 	}
-	
+
 }
