@@ -5,22 +5,28 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 
 class Fragment {
+	/** Where in the "file" this fragment starts **/
     int start;
+    /** Where in the file this fragments ends */
     int end;
+    /** The data to be inserted into the file at this.start up to this.end */
     byte[] data;
+    /** where in this.data to begin read */
+    int offset = 0;
 
-    // Maybe this can differ from data length
+    /** The length of the data to read, this can differ from data.length. Combine offset, data and mlength to get patch data. */
     int mlength = -1;
+
+    /** The length of the fragment, may differ from end - start and data.length */
     int len() {
         if (mlength == -1) {
-            mlength = data.length;
+        	throw new IllegalStateException("Length not set yet");
         }
         return mlength;
     }
@@ -28,10 +34,11 @@ class Fragment {
     public void len(int len) {
         mlength = len;
     }
-    
+
     @Override
     public String toString() {
         String txt = new String(this.data);
+        txt = txt.substring(this.offset);
         int max = Math.min(80, len());
         txt = txt.substring(0,max);
         if(len() > 80) {
@@ -43,9 +50,9 @@ class Fragment {
 }
 
 public class MDiff {
-    
-    public static void patches(byte[] in, 
-            List<byte[]> bins, 
+
+    public static void patches(byte[] in,
+            List<byte[]> bins,
             OutputStream out) {
         // if there are no fragments we don't have to do anything
     	try {
@@ -65,16 +72,14 @@ public class MDiff {
     	}
     }
 
-    private static LinkedList<Fragment> fold(List<byte[]> bins, 
-            int start, 
+    private static LinkedList<Fragment> fold(List<byte[]> bins,
+            int start,
             int end) {
-        
-        /* recursively generate a patch of all bins between 
+
+        /* recursively generate a patch of all bins between
          * start and end */
         if (start + 1 == end) {
-            /* trivial case, output a decoded list */
-            byte[] bytes = bins.get(start);
-            return decode(bytes, bytes.length);
+            return decode(bins.get(start));
         }
 
         /* divide and conquer, memory management is elsewhere */
@@ -88,7 +93,7 @@ public class MDiff {
      * combine hunk lists a and b, while adjusting b for offset changes in
      * a this deletes a and b and returns the resultant list.
      */
-    private static LinkedList<Fragment> combine(LinkedList<Fragment> a, 
+    private static LinkedList<Fragment> combine(LinkedList<Fragment> a,
     		LinkedList<Fragment> b) {
 
         if (a == null || b == null) {
@@ -98,9 +103,9 @@ public class MDiff {
         int offset = 0;
         for (Fragment bFrag : b) {
             /* save old hunks */
-            offset = gather(combination, 
-            		a, 
-            		bFrag.start, 
+            offset = gather(combination,
+            		a,
+            		bFrag.start,
             		offset);
 
             /* discard replaced hunks */
@@ -111,6 +116,7 @@ public class MDiff {
             ct.start = bFrag.start - offset;
             ct.end = bFrag.end - post;
             ct.data = bFrag.data;
+            ct.offset = bFrag.offset;
             ct.len( bFrag.len());
             combination.add(ct);
 
@@ -125,28 +131,28 @@ public class MDiff {
     }
 
     // static int discard(struct flist *src, int cut, int offset) {
-    private static int discard(LinkedList<Fragment> src, 
-    		int cut, 
+    private static int discard(LinkedList<Fragment> src,
+    		int cut,
     		int poffset) {
 
     	int offset = poffset;
         int postend, c, l;
 //         i think this discards everything up to "cut"
-//         a fragment may have to be split if it 
+//         a fragment may have to be split if it
 //         overlaps "cut"
         for(Iterator<Fragment> iter = src.iterator(); iter.hasNext(); ) {
             final Fragment s = iter.next();
             if (cut <= s.start + offset) {
                 break;
             }
-            
+
             postend = offset + s.start + s.len();
             if (postend <= cut) {
                 // this one is discarded
                 offset += s.start + s.len() - s.end;
                 iter.remove();
             } else {
-                // partial discarding, move the content of s.data so that it 
+                // partial discarding, move the content of s.data so that it
                 // doesn't overlap cut
                 c = cut - offset;
                 if (s.end < c) {
@@ -161,9 +167,10 @@ public class MDiff {
                 s.len(s.len() - l);
 
                 // s.data = s.data + l;
-                // this should work, but doesnt, bug? 
+                // this should work, but doesnt, bug?
                 // s.data = Arrays.copyOfRange(s.data, l, s.len());
-                s.data = Arrays.copyOfRange(s.data, l, s.data.length);
+                s.offset += l;
+                // s.data = Arrays.copyOfRange(s.data, l, s.data.length);
                 // no more needs to be discarded
                 break;
             }
@@ -171,20 +178,20 @@ public class MDiff {
         return offset;
     }
 
-    private static int gather(LinkedList<Fragment> dest, 
-    		LinkedList<Fragment> src, 
+    private static int gather(LinkedList<Fragment> dest,
+    		LinkedList<Fragment> src,
             int cut,
             int poffset) {
-        
+
         /*
-         * move hunks in source that are less than cut to dest, 
-         * but compensate for changes in offset. 
+         * move hunks in source that are less than cut to dest,
+         * but compensate for changes in offset.
          * The last hunk may be split if necessary (oberlaps cut).
          */
         int offset = poffset;
         Fragment s = null;
 
-        for(Iterator<Fragment> iter = src.iterator(); 
+        for(Iterator<Fragment> iter = src.iterator();
                 iter.hasNext(); ) {
             s = iter.next();
             if (cut <= s.start + offset)
@@ -212,15 +219,16 @@ public class MDiff {
                 Fragment d = new Fragment();
                 d.start = s.start;
                 d.end = cutAt;
+
                 d.data = s.data;
+                d.offset = s.offset;
+
                 d.len(length);
-                // d++;
                 dest.add(d);
 
                 s.start = cutAt;
                 s.len(s.len() - length);
-                // s.data = s.data + l;
-                s.data = Arrays.copyOfRange(s.data, length, s.data.length);
+                s.offset += length;
                 break;
             }
         }
@@ -233,90 +241,47 @@ public class MDiff {
 
     /**
      * decode a binary patch into a fragment list
-     * 
+     *
      * @param bin the binary patch
-     * @param length the length of the patch
      * @return a list of fragments
      */
-    static LinkedList<Fragment> decode(byte[] bin, int length) {
-        // 12 is some sort of magic number
-        // Seems like a hunk-header size
-        // List<Fragment> result = new ArrayList<Fragment>();// 
+    static LinkedList<Fragment> decode(byte[] bin) {
+        // int start, int end, int len, byte[...] data
         LinkedList<Fragment> result = new LinkedList<Fragment>();
-        ByteBuffer wrap = ByteBuffer.wrap(bin);
-
-        int binPtr = 0;
-        int dataPtr = 12;
-
-
-        byte decode[] = new byte[12];
-        while (dataPtr <= length) {
-        	wrap.position(dataPtr);
-            // Read the fragment header without moving position
-            wrap.position(binPtr);
-            wrap.get(decode, 0, 12);
-            wrap.position(binPtr);
-
-            Fragment lt = new Fragment();
+        ByteBuffer reader = ByteBuffer.wrap(bin);
+        //while(reader.position() < length) {
+        while(reader.hasRemaining()) {
+        	Fragment lt = new Fragment();
             result.add(lt);
 
-            lt.start = (int) ntohl(decode, 0);
-            lt.end = (int) ntohl(decode, 4);
-            lt.len((int) ntohl(decode, 8));
-            
+            lt.start = reader.getInt();
+            lt.end = reader.getInt();
+            lt.len(reader.getInt());
+
             if (lt.start > lt.end) {
-                break; /* sanity check */
+            	break; /* sanity check */
             }
 
-            binPtr = dataPtr + lt.len();
+            lt.offset = reader.position();
+            lt.data = bin;
 
-            if (binPtr < dataPtr) {
-                throw new IllegalStateException(
-                        "Programmer Unsure of what  'big data + big (bogus) len can wrap around' means");
-                // break; /* big data + big (bogus) len can wrap around */
+            if( lt.len() < 0) {
+            	throw new IllegalStateException("Programmer Unsure of what  'big data + big (bogus) len can wrap around' means");
             }
-
-            lt.data = new byte[length - dataPtr];
-            if (0 < lt.data.length) {
-                wrap.position(dataPtr);
-                wrap.get(lt.data, 0, lt.data.length);
-            }
-            // data = bin + 12;
-            dataPtr = binPtr + 12;
-            // data = bin + 12;
+            reader.position(reader.position() + lt.len());
         }
 
-        if( binPtr != length) {
+        if( reader.hasRemaining()) {
             throw new IllegalStateException("patch cannot be decoded");
         }
         return result;
     }
 
-    static long ntohl(byte[] decode, int offset) {
-        // network order is bigendian, as is java by native
-        ByteBuffer buffer = ByteBuffer.wrap(decode);
-        buffer.position(offset);
-        int x = buffer.getInt();
-
-        if( x < -20000) {
-        	throw new IllegalStateException("Assumptions are wrong");
-        }
-        
-        long uint32 = ((x & 0x000000ffL) << 24) | ((x & 0x0000ff00L) << 8)
-                | ((x & 0x00ff0000L) >> 8) | ((x & 0xff000000L) >> 24);
-        if (true) {
-            return x;
-        }
-        return uint32;
-
-    }
-
-    
-    private static void apply(byte[] orig, 
-            int len, 
-            List<Fragment> patch, 
+    private static void apply(byte[] orig,
+            int len,
+            List<Fragment> patch,
             OutputStream out) throws IOException {
-        
+
         int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
@@ -324,20 +289,27 @@ public class MDiff {
             	throw new IllegalStateException("invalid patch");
             }
             out.write(orig, last, f.start - last);
-            out.write(f.data, 0, f.len());
+            out.write(f.data, f.offset, f.len());
             last = f.end;
-            
-            
+
+
         }
         out.write(orig, last, len - last);
     }
 
+    /**
+     * Deprecated Use {@link MDiff}{@link #patches(byte[], List, OutputStream)} instead
+     * @param bytes
+     * @param patch
+     * @return
+     */
+    @Deprecated
 	public static byte[] patches(byte[] bytes, byte[] patch) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
 		list.add(patch);
 		patches(bytes,list,out);
 		return out.toByteArray();
-		
+
 	}
 }

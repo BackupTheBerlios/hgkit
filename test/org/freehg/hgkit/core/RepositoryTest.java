@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class RepositoryTest {
 
-	
+
 	@Test
 	public void getChangeLog() {
 		Repository subject = getSubject();
@@ -33,6 +33,7 @@ public class RepositoryTest {
 		Repository subject = getSubject();
 		File theFile = new File("src/org/freehg/hgkit/core/MDiff.java");
 		File index = subject.getIndex(theFile);
+
 		Revlog revlog = new Revlog(index);
 		
 		for(NodeId nodeId : revlog.getRevisions()) {
@@ -40,11 +41,11 @@ public class RepositoryTest {
 			// System.out.println(revision);
 		}
 	}
-	
-	
+
+
 	private int numRevisions = 0;
-	
-	
+
+
 	@Before
 	public void setUp() {
 	    numRevisions = 0;

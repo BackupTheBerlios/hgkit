@@ -12,23 +12,34 @@ public class HgChangeLogTest {
 	@Test
 	public void testGetLog() {
 		
-		Repository repo = new Repository(".");
+		Repository repo = new Repository("mozilla-central");
 		HgChangeLog subject = new HgChangeLog(repo);
-		
+		long start = System.currentTimeMillis();
+		int count = 0;
 		for(ChangeLog changeLog : subject.getLog()) {
-		    System.out.println(changeLog.getRevision().asShort());
-		    System.out.println(changeLog.getWhen());
-		    System.out.println(changeLog.getAuthor());
-		    System.out.println(changeLog.getComment());
+		    log(changeLog.getRevision().asShort());
+		    log(changeLog.getWhen());
+		    log(changeLog.getAuthor());
+		    log(changeLog.getComment());
 
 		    List<String> files = changeLog.getFiles();
 		    for (String file : files) {
-                System.out.println("> " + file);
+                log("> " + file);
             }
-		    System.out.println("");
-		    System.out.println("");
+		    log("");
+		    log("");
+		    ++count;
 		    
 		};
+		long end = System.currentTimeMillis();
+		System.out.println("Took " + (end - start) + " ms to parse " + count);
+	}
+
+	private void log(Object o ) {
+		if(false) {
+			System.out.println(o.toString());
+		}
+		// TODO Auto-generated method stub
 		
 	}
 

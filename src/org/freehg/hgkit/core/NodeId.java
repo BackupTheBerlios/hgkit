@@ -95,7 +95,7 @@ public final class NodeId {
 		NodeId result = valueOf(bytes);
 		String asFull = result.asFull();
 		if(! nodeId.equals(asFull)) {
-			System.out.println("Warning: Bad parsing, " + nodeId + " != " + result.toString() );
+//			System.out.println("Warning: Bad parsing, " + nodeId + " != " + result.toString() );
 		}
 		return result;
 		

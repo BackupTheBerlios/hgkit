@@ -1,8 +1,11 @@
 package org.freehg.hgkit;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.CharBuffer;
 import java.text.DateFormat;
@@ -13,6 +16,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 
 import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
@@ -29,35 +33,36 @@ public class HgChangeLog {
 	
 	public List<ChangeLog> getLog() {
 		Revlog revlog = repo.getChangeLog();
-		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revlog.getRevisions().size());
+		Set<NodeId> revisions = revlog.getRevisions();
+		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revisions.size());
 		
 		try {
-		for (NodeId nodeId : revlog.getRevisions()) {
-				System.out.println(nodeId);
-				System.out.println("---------------------------------");
-				String logString = new String(revlog.revision(nodeId));
-				System.out.println(logString);
-				System.out.println("---------------------------------");
-				ChangeLog logEntry = parse(logString);
-
-				logEntries.add(logEntry);
+			ByteArrayOutputStream content = new ByteArrayOutputStream(4096);
+		for (NodeId nodeId : revisions) {
+				content.reset();
+				revlog.revision(nodeId, content);
+				ChangeLog logEntry = parse(new BufferedReader(
+						new InputStreamReader(
+								new ByteArrayInputStream(content.toByteArray())
+								)
+						)
+				);
+//				logEntries.add(logEntry);
 			}
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 		return logEntries;
 	}
-	private ChangeLog parse(String text) throws ParseException {
+	private ChangeLog parse(BufferedReader reader) throws ParseException {
+		if(true) return null;
 		ChangeLog entry = new ChangeLog();
-		BufferedReader reader = new BufferedReader(new StringReader(text));
 		String line = null;
 		try {
 			while(null != (line = reader.readLine())) {
 				entry.revision = NodeId.parse(line);
 				entry.author = reader.readLine();
-				
 				String dateLine = reader.readLine();
-				// TODO: Parse the dateformat, it is num seconds since epoch +- offset
 				entry.when = dateParse(dateLine);
 				
 				String fileLine = reader.readLine();
@@ -66,11 +71,14 @@ public class HgChangeLog {
 					entry.files.add(fileLine);
 					fileLine = reader.readLine();
 				}
-				CharBuffer theRest = CharBuffer.allocate(text.length());
-				reader.read(theRest);
-				theRest.flip();
-				String comment = theRest.toString();
-				entry.comment = comment;
+				StringBuilder therest = new StringBuilder();
+				char[] buff = new char[512];
+				int len = 0;
+				while(-1 != (len = reader.read(buff))) {
+					therest.append(buff,0, len);
+				}
+				
+				entry.comment = therest.toString();
 				
 			}
 		} catch (IOException e) {
