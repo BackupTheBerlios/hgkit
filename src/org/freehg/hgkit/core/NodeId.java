@@ -51,7 +51,7 @@ public final class NodeId {
 		}
 		return true;
 	}
-	
+
 	public String asShort() {
 		StringBuilder tos = new StringBuilder();
 		for (int i = 0; i < SHORT_SIZE; i++) {
@@ -66,13 +66,13 @@ public final class NodeId {
 		}
 		return tos.toString();
 	}
-	
+
 	public String asFull() {
 		StringBuilder tos = new StringBuilder();
 		for (int i = 0; i < SIZE; i++) {
 			int b = nodeid[i] & 0x0FF;
 			String hex = Integer.toHexString(Integer.valueOf(b));
-			
+
 			hex = hex.substring(0,1);
 			tos.append(hex);
 		}
@@ -95,9 +95,9 @@ public final class NodeId {
 		NodeId result = valueOf(bytes);
 		String asFull = result.asFull();
 		if(! nodeId.equals(asFull)) {
-//			System.out.println("Warning: Bad parsing, " + nodeId + " != " + result.toString() );
+			// FIXME Figure out when and why this happens!
 		}
 		return result;
-		
+
 	}
 }

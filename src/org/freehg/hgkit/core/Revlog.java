@@ -14,10 +14,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 public class Revlog {
 
-    private static final String READ_ONLY = "r";
+
+
+	private static final String READ_ONLY = "r";
 
     public static final int REVLOGV0 = 0;
     public static final int REVLOGNG = 1;
@@ -29,11 +32,14 @@ public class Revlog {
             | REVLOG_DEFAULT_FLAGS;
     /* FIXME: Create NULLID */
     private static final NodeId NULLID = null;
-    boolean isDataInline;
+
+	boolean isDataInline;
     private Map<NodeId, RevlogEntry> nodemap;
     ArrayList<RevlogEntry> index;
 
 	private final File indexFile;
+
+	private LinkedHashMap<RevlogEntry, byte[]> cache = new RevlogCache();
 
 	private File dataFile;
 
@@ -79,16 +85,33 @@ public class Revlog {
         try {
             RandomAccessFile reader = new RandomAccessFile(getDataFile(), READ_ONLY);
             RevlogEntry baseRev = index.get(target.getBaseRev());
-            byte[] baseData = Util.decompress(baseRev.loadBlock(reader));
-
+            byte[] baseData = cache.get(baseRev);
+            if(baseData == null) {
+            	baseData = Util.decompress(baseRev.loadBlock(reader));
+            }
             List<byte[]> patches = new ArrayList<byte[]>(target.revision - target.getBaseRev() + 1);
+
+            long worstCaseSize = baseData.length;
             for (int rev = target.getBaseRev() + 1; rev <= target.revision; rev++) {
 
                 RevlogEntry nextEntry = this.index.get(rev);
-                byte[] diff = Util.decompress(nextEntry.loadBlock(reader));
-                patches.add(diff);
+                if(cache.containsKey(nextEntry)) {
+                	baseData = cache.get(nextEntry);
+                	patches.clear();
+                } else {
+                	byte[] diff = Util.decompress(nextEntry.loadBlock(reader));
+                	patches.add(diff);
+                	worstCaseSize += diff.length;
+                }
             }
-            MDiff.patches(baseData, patches, out);
+            if(worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
+            	CacheOutputStream cacheOut = new CacheOutputStream(out, (int) worstCaseSize);
+            	MDiff.patches(baseData, patches, cacheOut);
+            	this.cache.put(target, cacheOut.cache.toByteArray());
+
+            } else {
+            	MDiff.patches(baseData, patches, out);
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -138,7 +161,7 @@ public class Revlog {
          */
 
         nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
-        this.index = new ArrayList<RevlogEntry>();
+        this.index = new ArrayList<RevlogEntry>(100);
 
         byte[] data = Util.readWholeFile(reader);
 		int length = data.length - RevlogEntry.BINARY_LENGTH;
@@ -169,33 +192,7 @@ public class Revlog {
     
         printIndex();
     }
-
-    private void parseInlineIndex(DataInputStream reader) throws IOException {
-        byte[] data = Util.readWholeFile(reader);
-        int length = data.length - RevlogEntry.BINARY_LENGTH;
-
-        int indexCount = 0;
-        int indexOffset = 0;
-
-        while (indexOffset <= length) {
-            RevlogEntry entry = RevlogEntry.valueOf(this, data, indexOffset);
-            if (indexCount == 0) {
-                entry.setOffset(0);
-            }
-            entry.revision = indexCount;
-            nodemap.put(entry.nodeId, entry);
-            this.index.add(entry);
-
-            if (entry.getCompressedLength() < 0) {
-                // What does this mean?
-                System.err.println("e.compressedlength < 0");
-                break;
-            }
-            indexOffset += entry.getCompressedLength() + RevlogEntry.BINARY_LENGTH;
-            indexCount++;
-        }
-    }
-
+    
     void printIndex() {
         log("-------------------------------------");
         log("rev off  len         base    linkRev    nodeid      p1      p2");
@@ -218,4 +215,47 @@ public class Revlog {
             System.out.println("null");
         }
     }
+
+    private static class CacheOutputStream extends OutputStream {
+
+    	private ByteArrayOutputStream cache;
+    	private final OutputStream redirect;
+		
+
+		private CacheOutputStream(OutputStream redirect, int size) {
+    		this.redirect = redirect;
+			this.cache = new ByteArrayOutputStream((int) size);
+    	}
+		@Override
+		public void write(int b) throws IOException {
+			this.cache.write(b);
+			this.redirect.write(b);
+		}
+    }
+    private class RevlogCache extends LinkedHashMap<RevlogEntry, byte[]> {
+		private static final long serialVersionUID = 6934630760462643470L;
+
+		static final int CACHE_SMALL_REVISIONS = 4024;
+		static final long MAX_CACHE_SIZE = 100000;
+		
+		private long cachedDataSize = 0;
+    	@Override
+    	protected boolean removeEldestEntry(Entry<RevlogEntry, byte[]> eldest) {
+    		boolean removeEldest = this.cachedDataSize > MAX_CACHE_SIZE;
+    		if(removeEldest) {
+    			cachedDataSize -= eldest.getValue().length;
+    		}
+			return removeEldest;
+    	}
+    	@Override
+    	public byte[] put(RevlogEntry key, byte[] value) {
+    		byte[] result = super.put(key, value);
+    		int prevSize = 0;
+    		if(result != null) {
+    			prevSize = result.length;
+    		}
+    		cachedDataSize += value.length - prevSize;
+			return result;
+    	}
+	}
 }

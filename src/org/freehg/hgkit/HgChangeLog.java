@@ -3,18 +3,12 @@ package org.freehg.hgkit;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.nio.CharBuffer;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 
@@ -28,11 +22,15 @@ public class HgChangeLog {
 
 	public HgChangeLog(Repository repo) {
 		this.repo = repo;
-		
+
 	}
-	
+
 	public List<ChangeLog> getLog() {
 		Revlog revlog = repo.getChangeLog();
+		return getLog(revlog);
+	}
+
+	List<ChangeLog> getLog(Revlog revlog) {
 		Set<NodeId> revisions = revlog.getRevisions();
 		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revisions.size());
 		
@@ -41,30 +39,26 @@ public class HgChangeLog {
 		for (NodeId nodeId : revisions) {
 				content.reset();
 				revlog.revision(nodeId, content);
-				ChangeLog logEntry = parse(new BufferedReader(
-						new InputStreamReader(
-								new ByteArrayInputStream(content.toByteArray())
-								)
-						)
-				);
-//				logEntries.add(logEntry);
+				ChangeLog logEntry = parse(new ByteArrayInputStream(content.toByteArray()));
+				logEntries.add(logEntry);
 			}
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 		return logEntries;
 	}
-	private ChangeLog parse(BufferedReader reader) throws ParseException {
-		if(true) return null;
+	private ChangeLog parse(final InputStream in) throws ParseException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		ChangeLog entry = new ChangeLog();
 		String line = null;
 		try {
 			while(null != (line = reader.readLine())) {
 				entry.revision = NodeId.parse(line);
 				entry.author = reader.readLine();
+
 				String dateLine = reader.readLine();
 				entry.when = dateParse(dateLine);
-				
+
 				String fileLine = reader.readLine();
 				// read while line aint empty, its a file, the it is the comment
 				while(0 < fileLine.trim().length()) {
@@ -86,7 +80,7 @@ public class HgChangeLog {
 		}
 		return entry;
 	}
-	
+
 	private Date dateParse(String dateLine) {
 	    String parts[] = dateLine.split(" ");
 	    long secondsSinceEpoc = Integer.parseInt(parts[0]);
@@ -101,7 +95,7 @@ public class HgChangeLog {
 		private String author;
 		private List<String> files = new ArrayList<String>();
 		private String comment;
-		
+
 		public NodeId getRevision() {
 			return revision;
 		}
@@ -119,12 +113,12 @@ public class HgChangeLog {
 		}
 		@Override
 		public String toString() {
-		    return revision.asShort() + " " 
+		    return revision.asShort() + " "
 		    + when + " "
 		    + author + "\n"
-		    + comment + "\n" 
+		    + comment + "\n"
 		    + files;
 		}
 	}
-	
+
 }
