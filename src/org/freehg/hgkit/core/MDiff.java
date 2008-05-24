@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-class Fragment {
+final class Fragment {
 	/** Where in the "file" this fragment starts **/
     int start;
     /** Where in the file this fragments ends */

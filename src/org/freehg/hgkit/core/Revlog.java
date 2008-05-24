@@ -194,7 +194,7 @@ public class Revlog {
 
 		isDataInline = (version & REVLOGNGINLINEDATA) != 0;
 		// Its pretty odd, but its the revlogFormat which is the "version"
-		long revlogFormat = version & 0xFFFF;
+		final long revlogFormat = version & 0xFFFF;
 		if (revlogFormat != REVLOGNG) {
 			throw new IllegalStateException("Revlog format MUST be NG");
 		}
@@ -229,8 +229,8 @@ public class Revlog {
 			if (isDataInline) {
 				indexOffset += entry.getCompressedLength();
 			}
-			indexOffset += +RevlogEntry.BINARY_LENGTH;
-			indexCount++;
+			indexOffset += RevlogEntry.BINARY_LENGTH;
+			++indexCount;
 		}
 
 		printIndex();

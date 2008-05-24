@@ -43,11 +43,7 @@ public final class RevlogEntry {
     */
    public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) {
 
-       byte[] mydata = new byte[BINARY_LENGTH];
-       for (int i = 0; i < BINARY_LENGTH; i++) {
-           mydata[i] = data[off + i];
-       }
-       ByteArrayInputStream copy = new ByteArrayInputStream(data, off,
+	   ByteArrayInputStream copy = new ByteArrayInputStream(data, off,
                BINARY_LENGTH);
        DataInputStream reader = new DataInputStream(copy);
        RevlogEntry entry = new RevlogEntry(parent);
@@ -60,8 +56,6 @@ public final class RevlogEntry {
        return entry;
    }
 
-
-
     public int getBaseRev() {
         return baseRev;
     }
@@ -71,16 +65,12 @@ public final class RevlogEntry {
     }
 
     public byte[] loadBlock(RandomAccessFile file) throws IOException {
-        Revlog.log("Loading block for: " + this.nodeId);
-
         long off = this.offset;
         if (parent.isDataInline) {
             off += (revision + 1) * RevlogEntry.BINARY_LENGTH;
         }
-
         file.seek(off);
         return read(file);
-
     }
 
     private byte[] read(RandomAccessFile file) throws IOException {
