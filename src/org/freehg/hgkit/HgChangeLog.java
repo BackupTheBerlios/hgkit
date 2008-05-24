@@ -26,7 +26,7 @@ public class HgChangeLog {
 	}
 
 	public List<ChangeLog> getLog() {
-		Revlog revlog = repo.getChangeLog();
+		Revlog revlog = repo.getChangeLog(0);
 		return getLog(revlog);
 	}
 
@@ -44,6 +44,8 @@ public class HgChangeLog {
 			}
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
+		} finally {
+			revlog.close();
 		}
 		return logEntries;
 	}

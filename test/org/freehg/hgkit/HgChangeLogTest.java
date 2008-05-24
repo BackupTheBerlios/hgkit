@@ -16,13 +16,13 @@ public class HgChangeLogTest {
 		Repository repo = new Repository("mozilla-central");
 		HgChangeLog subject = new HgChangeLog(repo);
 		long start = System.currentTimeMillis();
-		Revlog revlog = repo.getChangeLog();
+		Revlog revlog = repo.getChangeLog(0);
 		long end = System.currentTimeMillis();
 		System.out.println("Index took " + (end - start) );
 		int count = 0;
-		for(ChangeLog changeLog : subject.getLog(revlog)) {
-			++count;
-			if(true) continue;
+		List<ChangeLog> revisions = subject.getLog(revlog);
+		
+		for(ChangeLog changeLog : revisions) {
 		    log(changeLog.getRevision().asShort());
 		    log(changeLog.getWhen());
 		    log(changeLog.getAuthor());
@@ -45,8 +45,5 @@ public class HgChangeLogTest {
 		if(false) {
 			System.out.println(o.toString());
 		}
-		// TODO Auto-generated method stub
-		
 	}
-
 }

@@ -41,10 +41,10 @@ public class Repository {
 		}
     }
 
-    public Revlog getChangeLog() {
+    public Revlog getChangeLog(int style) {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
         File index = new File(logIndex);
-        return new Revlog(index);
+        return new Revlog(index, style);
     }
 
     public Revlog getManifest() {
