@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -41,7 +42,6 @@ public class Revlog {
 
 	private LinkedHashMap<RevlogEntry, byte[]> cache = new RevlogCache();
 
-	private File dataFile;
 	private RandomAccessFile reader = null;
 
 	private int styles = 0;
@@ -94,13 +94,10 @@ public class Revlog {
 		}
 
 		try {
-			if (reader == null) {
-				reader = new RandomAccessFile(getDataFile(), READ_ONLY);
-			}
 			RevlogEntry baseRev = index.get(target.getBaseRev());
 			byte[] baseData = cache.get(baseRev);
 			if (baseData == null) {
-				baseData = Util.decompress(baseRev.loadBlock(reader));
+				baseData = Util.decompress(baseRev.loadBlock(getDataFile()));
 			}
 			List<byte[]> patches = new ArrayList<byte[]>(target.revision
 					- target.getBaseRev() + 1);
@@ -113,7 +110,7 @@ public class Revlog {
 					baseData = cache.get(nextEntry);
 					patches.clear();
 				} else {
-					byte[] diff = Util.decompress(nextEntry.loadBlock(reader));
+					byte[] diff = Util.decompress(nextEntry.loadBlock(getDataFile()));
 					patches.add(diff);
 					worstCaseSize += diff.length;
 				}
@@ -133,8 +130,7 @@ public class Revlog {
 		} finally {
 			if ((styles & AUTO_CLOSE) != 0) {
 				try {
-					reader.close();
-					reader.close();
+					getDataFile().close();
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -150,17 +146,19 @@ public class Revlog {
 		}
 	}
 
-	private File getDataFile() {
-		if (this.dataFile != null) {
-			return this.dataFile;
-		} else if (this.isDataInline) {
-			return this.indexFile;
+	private RandomAccessFile getDataFile() throws FileNotFoundException {
+		if(this.reader != null && this.reader.getChannel().isOpen()) {
+			return this.reader;
 		}
-		String path = this.indexFile.getAbsolutePath();
-		String dataFilePath = path.substring(0, path.length() - ".i".length())
-				+ ".d";
-		this.dataFile = new File(dataFilePath);
-		return this.dataFile;
+		if (this.isDataInline) {
+			this.reader = new RandomAccessFile(this.indexFile, READ_ONLY);
+		} else {
+			String path = this.indexFile.getAbsolutePath();
+			String dataFilePath = path.substring(0, path.length() - ".i".length())
+					+ ".d";
+			this.reader = new RandomAccessFile(new File(dataFilePath), READ_ONLY);
+		}
+		return this.reader;
 	}
 
 	public RevlogEntry tip() {
