@@ -45,7 +45,9 @@ final class Util {
 			    case 0:
 			        return data;
 			    case UNCOMPRESSED:
-			        return Arrays.copyOfRange(data, 1, data.length);
+			    	byte[] copy = new byte[data.length - 1];
+			    	System.arraycopy(data, 1, copy, 0, data.length - 1);
+			    	return copy;
 			    case ZLIB_COMPRESSION:
 			        return doDecompress(data);
 			    default:
