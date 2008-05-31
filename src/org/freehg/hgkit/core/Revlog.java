@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.freehg.hgkit.util.RemoveMetaOutputStream;
+
 public class Revlog {
 
 	public static final int AUTO_CLOSE = 1;
@@ -79,8 +81,14 @@ public class Revlog {
 	}
 
 	public void revision(NodeId node, OutputStream out) {
+		revision(node, out, true);
+	}
+	public void revision(NodeId node, OutputStream out, boolean removeMeta) {
 		if (node.equals(NULLID)) {
 			return;
+		}
+		if(removeMeta) {
+			out = new RemoveMetaOutputStream(out);
 		}
 
 		final RevlogEntry target = nodemap.get(node);
