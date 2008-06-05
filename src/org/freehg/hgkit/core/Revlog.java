@@ -74,9 +74,10 @@ public class Revlog {
 	 *            to nodeid to get data for
 	 * @return an uncompressed revision data
 	 */
+	@Deprecated
 	public byte[] revision(NodeId node) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		revision(node, out);
+		revision(node, out, true);
 		return out.toByteArray();
 	}
 

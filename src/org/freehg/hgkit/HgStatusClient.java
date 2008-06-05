@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.freehg.hgkit.HgStatus.Status;
@@ -17,121 +19,149 @@ import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
-
 public class HgStatusClient {
 
-	private DirState dirState;
+    private static final char STATE_NORMAL = 'n';
+    private static final char STATE_MERGED = 'm';
+    private static final char STATE_REMOVED = 'r';
+    private static final char STATE_ADDED = 'a';
+    private DirState dirState;
     private final Repository repo;
-	private Ignore ignore;
+    private Ignore ignore;
 
-	public HgStatusClient(Repository repo) {
-		this.repo = repo;
-        if( repo== null) {
-			throw new IllegalArgumentException("Repository may not be null");
-		}
-		this.dirState = repo.getDirState();
-		this.ignore = repo.getIgnore();
-	}
+    public HgStatusClient(Repository repo) {
+        this.repo = repo;
+        if (repo == null) {
+            throw new IllegalArgumentException("Repository may not be null");
+        }
+        this.dirState = repo.getDirState();
+        this.ignore = repo.getIgnore();
+    }
 
-	public List<HgStatus> doStatus(final File file) {
-	    return doStatus(file, true);
-	}
-	public List<HgStatus> doStatus(final File file, final boolean recurse) {
-	    List<HgStatus> result = getStatus(file, recurse);
-	    result.addAll(getMissing());
+    public List<HgStatus> doStatus(final File file) {
+        return doStatus(file, true);
+    }
+
+    public List<HgStatus> doStatus(final File file, final boolean recurse) {
+        List<HgStatus> result = getStatus(file, recurse, isIgnored(file));
+        result.addAll(getMissing());
         return result;
-	}
+    }
 
-    private List<HgStatus> getStatus(final File file, final boolean recurse) {
+    private List<HgStatus> getStatus(final File file, final boolean recurse, boolean parentIgnored) {
+        if(Repository.isRepoPrivate(file)) {
+        	return Collections.EMPTY_LIST;
+        }
         List<HgStatus> result = new ArrayList<HgStatus>();
 
-		if(recurse && file.isDirectory() && !isIgnored(file)) {
-			for(File sub : file.listFiles()) {
-				result.addAll(getStatus(sub, recurse));
-			}
-			return result;
-		}
-		if( file.isFile()) {
-    		result.add(getFileState(file));
-		}
-		return result;
+        if (recurse && file.isDirectory()) {
+            for (File sub : file.listFiles()) {
+                result.addAll(getStatus(sub, recurse, parentIgnored | isIgnored(file)));
+            }
+            return result;
+        }
+        if (file.isFile()) {
+            result.add(getFileState(file, parentIgnored));
+        }
+        return result;
     }
 
-	private List<HgStatus> getMissing() {
-	    Collection<DirStateEntry> state = dirState.getDirState();
-	    List<HgStatus> missing = new ArrayList<HgStatus>();
-	    for (DirStateEntry entry : state) {
-	        File testee = repo.makeAbsolute(entry.getPath());
-	        if(!testee.exists()) {
-	            missing.add(new HgStatus(testee, Status.REMOVED));
-	        }
+    private List<HgStatus> getMissing() {
+        Collection<DirStateEntry> state = dirState.getDirState();
+        List<HgStatus> missing = new ArrayList<HgStatus>();
+        for (DirStateEntry entry : state) {
+            File testee = repo.makeAbsolute(entry.getPath());
+            if (!testee.exists()) {
+                missing.add(new HgStatus(testee, Status.REMOVED));
+            }
         }
-	    return missing;
-	}
+        return missing;
+    }
 
     private boolean isIgnored(final File file) {
-        return file.getName().contains(".hg") || ignore.isIgnored(file);
+        return file.getName().equalsIgnoreCase(".hg") || ignore.isIgnored(file);
     }
 
-    private HgStatus getFileState(final File file) {
-        if(! file.isFile()) {
+    private HgStatus getFileState(final File file, boolean parentIgnored) {
+        if (!file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
         }
-        File lfile = repo.makeRelative(file);
-        HgStatus status = new HgStatus(lfile);
-        if(isIgnored(file.getAbsoluteFile())) {
-        	status.setStatus(HgStatus.Status.IGNORED);
-        } else {
+        File relativeFile = repo.makeRelative(file);
+        HgStatus status = new HgStatus(relativeFile);
+        DirStateEntry state = this.dirState.getState(relativeFile.getPath().replace(
+                "\\", "/"));
 
-	        DirStateEntry state = this.dirState.getState(lfile.getPath().replace("\\", "/"));
-	        if(state == null) {
-	            status.setStatus(HgStatus.Status.NOT_TRACKED);
-	        }else if( state.getState() == 'a') {
-	            status.setStatus(HgStatus.Status.ADDED);
-	        }else if( state.getState() == 'r') {
-	            status.setStatus(HgStatus.Status.REMOVED);
-	        } else if( state.getState() == 'm') {
-	            status.setStatus(HgStatus.Status.MERGED);
-	        } else if(state.getState() == 'n') {
-	        	status.setStatus(checkStateNormal(file, state));
+        if(state != null) {
+	        switch(state.getState()) {
+	            case STATE_ADDED:
+	                status.setStatus(HgStatus.Status.ADDED);
+	                break;
+	            case STATE_REMOVED:
+	                status.setStatus(HgStatus.Status.REMOVED);
+	                break;
+	            case STATE_MERGED:
+	                status.setStatus(HgStatus.Status.MERGED);
+	                break;
+	            case STATE_NORMAL:
+	                status.setStatus(checkStateNormal(file, state));
+	                break;
+	            default:
+	        }
+        } else {
+	        status.setStatus(HgStatus.Status.NOT_TRACKED);
+	        if (parentIgnored || isIgnored(file.getAbsoluteFile())) {
+	        	status.setStatus(HgStatus.Status.IGNORED);
 	        }
         }
         return status;
     }
 
-	private Status checkStateNormal(File file, DirStateEntry state) {
-		// On (n)ormal files
-		// 		if size and mod time is same as in dirstate nothing has happened
-		// 		if the size HAS changed, the file must have changed
+    private Status checkStateNormal(File file, DirStateEntry state) {
+        // On (n)ormal files
+        // if size and mod time is same as in dirstate nothing has happened
+        // if the size HAS changed, the file must have changed
 
-		// Hg uses seconds, java milliseconds
-	    if( state.getSize() != file.length()) {
-	        return HgStatus.Status.MODIFIED;
-	    }
+        if (state.getSize() != file.length()) {
+            return HgStatus.Status.MODIFIED;
+        }
 
-		long lastModified = file.lastModified() / 1000;
-		if(state.getFileModTime() == lastModified) {
-		    return HgStatus.Status.MANAGED;
-		}
-		// 		if the filemod time has changed but the size haven't
-		// 		then we must compare against the repository version
-		Revlog revlog = repo.getRevlog(file);
-		RevlogEntry tip = revlog.tip();
-		byte[] repoContent = revlog.revision(tip.getId());
-		try {
-		    InputStream local = new BufferedInputStream(new FileInputStream(file));
-		    for(int i = 0; i < file.length(); i++) {
-		        byte a = (byte) local.read();
-		        byte b = repoContent[i];
-		        if( a != b) {
-		            local.close();
-		            return HgStatus.Status.MODIFIED;
-		        }
-		    }
-		    local.close();
-		} catch(IOException ex) {
-		    throw new RuntimeException(ex);
-		}
-		return HgStatus.Status.MANAGED;
-	}
+        // Hg uses seconds, java milliseconds
+        long lastModified = file.lastModified() / 1000;
+        if (state.getFileModTime() == lastModified) {
+            return HgStatus.Status.MANAGED;
+        }
+        // if the filemod time has changed but the size haven't
+        // then we must compare against the repository version
+        Revlog revlog = repo.getRevlog(file);
+        RevlogEntry tip = revlog.tip();
+
+        try {
+            InputStream local = new BufferedInputStream(new FileInputStream(
+                    file));
+            ComparingStream comparator = new ComparingStream(local);
+            revlog.revision(tip.getId(), comparator);
+            local.close();
+            if(comparator.equals) {
+                return HgStatus.Status.MANAGED;
+            }
+            return HgStatus.Status.MODIFIED;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static class ComparingStream extends OutputStream {
+        private boolean equals = true;
+        private final InputStream in;
+        ComparingStream(InputStream in) {
+            this.in = in;
+
+        }
+        @Override
+        public void write(int b) throws IOException {
+            if( b != in.read()) {
+                this.equals = false;
+            }
+        }
+    }
 }

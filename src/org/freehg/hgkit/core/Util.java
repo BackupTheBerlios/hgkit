@@ -2,7 +2,9 @@ package org.freehg.hgkit.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -72,5 +74,16 @@ final class Util {
 			buffer.write(buf, 0, read);
 		}
 		return buffer.toByteArray();
+	}
+	
+	public static void close(Closeable closable) {
+		if(closable == null) {
+			return;
+		}
+		try {
+			closable.close();
+		} catch (IOException e1) {
+			throw new RuntimeException(e1);
+		}
 	}
 }

@@ -17,7 +17,8 @@ public class HgStatusClientTest {
 
 		long start = System.currentTimeMillis();
 
-		Repository repo = new Repository("hg-stable");
+		//Repository repo = new Repository("hg-stable");
+		Repository repo = new Repository("../com.vectrace.MercurialEclipse");
 		HgStatusClient subject = new HgStatusClient(repo);
 
 		List<HgStatus> status = subject.doStatus(repo.getRoot());

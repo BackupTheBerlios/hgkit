@@ -112,4 +112,8 @@ public class Repository {
 	public File getRoot() {
 		return root;
 	}
+
+	public static boolean isRepoPrivate(File file) {
+		return file.getName().equalsIgnoreCase(".hg");
+	}
 }

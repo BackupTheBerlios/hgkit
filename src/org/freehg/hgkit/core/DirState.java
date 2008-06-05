@@ -14,13 +14,15 @@ public class DirState {
 	private Map<String, DirStateEntry> dirstate  = new HashMap<String, DirStateEntry>();
 	
 	DirState(File dirState) {
+		FileInputStream fis = null;
 		try {
-			FileInputStream fis = new FileInputStream(dirState);
+			fis = new FileInputStream(dirState);
 			DataInputStream in = new DataInputStream(new BufferedInputStream(fis));
 			parse(in);
 			in.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Util.close(fis);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -38,7 +40,7 @@ public class DirState {
 			int nameLength = in.readInt();
 
 			byte[] str = new byte[nameLength];
-			in.read(str);
+			in.readFully(str);
 			String path = new String(str);
 			DirStateEntry entry = new DirStateEntry(state, mode, size, fileModTime, path);
 			this.dirstate.put(path, entry);
