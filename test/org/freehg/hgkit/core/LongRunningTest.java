@@ -15,11 +15,11 @@ public class LongRunningTest {
 	@Test
 	public void testAll() throws Exception {
 		Repository subject = getSubject();
-		int count = walk(subject,new File("mozilla-central"));
+		int count = walk(subject,new File("hg-stable"));
 		System.out.println(count + " num files tested and " + numRevisions + " revivions");
 	}
 	private Repository getSubject() {
-		return new Repository("mozilla-central");
+		return new Repository("hg-stable");
 	}
 	private int walk(Repository repo, File dir) throws IOException {
 		String abs = dir.getAbsolutePath();
@@ -60,6 +60,7 @@ public class LongRunningTest {
 					}
 				}
 			});
+		this.numRevisions++;
 		stream.close();
 	}
 }

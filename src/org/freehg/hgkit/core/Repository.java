@@ -18,7 +18,11 @@ public class Repository {
         if(!root.exists()) {
             throw new IllegalArgumentException(root + " must exist");
         }
-        this.root = root;
+        try {
+			this.root = root.getCanonicalFile();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     public Repository(String string) {
@@ -39,6 +43,11 @@ public class Repository {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+    }
+    
+    public Ignore getIgnore() {
+    	File ignoreFile = new File(root.getAbsolutePath() + "/.hgignore");
+    	return new Ignore(this,ignoreFile);
     }
 
     public Revlog getChangeLog(int style) {
@@ -69,11 +78,20 @@ public class Repository {
     }
 
     public File makeRelative(File file) {
+    	try {
+			file = file.getCanonicalFile();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
         String abs = file.getAbsolutePath();
-        if(!abs.startsWith(root.getAbsolutePath())) {
+        String rootPath = root.getAbsolutePath();
+		if(!abs.startsWith(rootPath)) {
             throw new IllegalArgumentException(file + " is not a child of " + root);
         }
-        String relativePath = abs.substring(root.getAbsolutePath().length() + 1);
+        if(abs.length() == rootPath.length()) {
+        	return root;
+        }
+        String relativePath = abs.substring(rootPath.length() + 1);
         return new File(relativePath);
     }
 
@@ -90,4 +108,8 @@ public class Repository {
             throw new RuntimeException(e);
         }
     }
+
+	public File getRoot() {
+		return root;
+	}
 }

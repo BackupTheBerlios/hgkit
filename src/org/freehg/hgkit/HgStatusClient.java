@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.freehg.hgkit.HgStatus.Status;
 import org.freehg.hgkit.core.DirState;
+import org.freehg.hgkit.core.Ignore;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
@@ -21,6 +22,7 @@ public class HgStatusClient {
 
 	private DirState dirState;
     private final Repository repo;
+	private Ignore ignore;
 
 	public HgStatusClient(Repository repo) {
 		this.repo = repo;
@@ -28,6 +30,7 @@ public class HgStatusClient {
 			throw new IllegalArgumentException("Repository may not be null");
 		}
 		this.dirState = repo.getDirState();
+		this.ignore = repo.getIgnore();
 	}
 
 	public List<HgStatus> doStatus(final File file) {
@@ -67,7 +70,7 @@ public class HgStatusClient {
 	}
 
     private boolean isIgnored(final File file) {
-        return file.getName().contains(".hg");
+        return file.getName().contains(".hg") || ignore.isIgnored(file);
     }
 
     private HgStatus getFileState(final File file) {
@@ -75,19 +78,23 @@ public class HgStatusClient {
             throw new IllegalArgumentException(file + " must be a file");
         }
         File lfile = repo.makeRelative(file);
-        DirStateEntry state = this.dirState.getState(lfile.getPath().replace("\\", "/"));
-
         HgStatus status = new HgStatus(lfile);
-        if(state == null) {
-            status.setStatus(HgStatus.Status.NOT_TRACKED);
-        }else if( state.getState() == 'a') {
-            status.setStatus(HgStatus.Status.ADDED);
-        }else if( state.getState() == 'r') {
-            status.setStatus(HgStatus.Status.REMOVED);
-        } else if( state.getState() == 'm') {
-            status.setStatus(HgStatus.Status.MERGED);
-        } else if(state.getState() == 'n') {
-        	status.setStatus(checkStateNormal(file, state));
+        if(isIgnored(file.getAbsoluteFile())) {
+        	status.setStatus(HgStatus.Status.IGNORED);
+        } else {
+
+	        DirStateEntry state = this.dirState.getState(lfile.getPath().replace("\\", "/"));
+	        if(state == null) {
+	            status.setStatus(HgStatus.Status.NOT_TRACKED);
+	        }else if( state.getState() == 'a') {
+	            status.setStatus(HgStatus.Status.ADDED);
+	        }else if( state.getState() == 'r') {
+	            status.setStatus(HgStatus.Status.REMOVED);
+	        } else if( state.getState() == 'm') {
+	            status.setStatus(HgStatus.Status.MERGED);
+	        } else if(state.getState() == 'n') {
+	        	status.setStatus(checkStateNormal(file, state));
+	        }
         }
         return status;
     }

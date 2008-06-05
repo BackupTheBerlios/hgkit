@@ -17,10 +17,10 @@ public class HgStatusClientTest {
 
 		long start = System.currentTimeMillis();
 
-		Repository repo = new Repository("../com.vectrace.MercurialEclipse/");
+		Repository repo = new Repository("hg-stable");
 		HgStatusClient subject = new HgStatusClient(repo);
 
-		List<HgStatus> status = subject.doStatus(new File("../com.vectrace.MercurialEclipse/"));
+		List<HgStatus> status = subject.doStatus(repo.getRoot());
 		long end = System.currentTimeMillis();
 		for (HgStatus hgStatus : status) {
 		     System.out.println(hgStatus);
