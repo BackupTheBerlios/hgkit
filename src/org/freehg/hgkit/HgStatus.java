@@ -4,7 +4,7 @@ import java.io.File;
 
 public class HgStatus {
 
-    public enum Status { ADDED, REMOVED, MERGED, NOT_TRACKED, MANAGED, MODIFIED, IGNORED }; 
+    public enum Status { ADDED, REMOVED, DELETED, MERGED, NOT_TRACKED, MANAGED, MODIFIED, IGNORED }; 
     private final File file;
     private Status status;
 

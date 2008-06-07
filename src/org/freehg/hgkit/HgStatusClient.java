@@ -21,10 +21,10 @@ import org.freehg.hgkit.core.DirState.DirStateEntry;
 
 public class HgStatusClient {
 
+	private static final char STATE_MERGED = 'm';
+	private static final char STATE_ADDED = 'a';
+	private static final char STATE_REMOVED = 'r';
     private static final char STATE_NORMAL = 'n';
-    private static final char STATE_MERGED = 'm';
-    private static final char STATE_REMOVED = 'r';
-    private static final char STATE_ADDED = 'a';
     private DirState dirState;
     private final Repository repo;
     private Ignore ignore;
@@ -72,7 +72,7 @@ public class HgStatusClient {
         for (DirStateEntry entry : state) {
             File testee = repo.makeAbsolute(entry.getPath());
             if (!testee.exists()) {
-                missing.add(new HgStatus(testee, Status.REMOVED));
+                missing.add(new HgStatus(testee, Status.DELETED));
             }
         }
         return missing;
