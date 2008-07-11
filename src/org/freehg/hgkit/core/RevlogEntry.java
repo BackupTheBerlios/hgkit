@@ -20,7 +20,7 @@ public final class RevlogEntry {
 
     private long offset;
     private int baseRev;
-    private int linkRev;
+    int linkRev;
     private int flags;
     private int firstParentRev;
     private int secondParentRev;

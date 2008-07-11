@@ -29,17 +29,24 @@ public class HgChangeLog {
 		Revlog revlog = repo.getChangeLog(0);
 		return getLog(revlog);
 	}
+	
+	public ChangeLog getLog(NodeId nodeId) {
+		Revlog revlog = repo.getChangeLog(Revlog.AUTO_CLOSE);
+		try {
+			return getEntry(revlog, nodeId);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	List<ChangeLog> getLog(Revlog revlog) {
 		Set<NodeId> revisions = revlog.getRevisions();
 		List<ChangeLog> logEntries = new ArrayList<ChangeLog>(revisions.size());
 		
 		try {
-			ByteArrayOutputStream content = new ByteArrayOutputStream(4096);
-		for (NodeId nodeId : revisions) {
-				content.reset();
-				revlog.revision(nodeId, content);
-				ChangeLog logEntry = parse(new ByteArrayInputStream(content.toByteArray()));
+			for (NodeId nodeId : revisions) {
+				ChangeLog logEntry = getEntry(revlog, nodeId);
+				
 				logEntries.add(logEntry);
 			}
 		} catch (ParseException e) {
@@ -49,13 +56,24 @@ public class HgChangeLog {
 		}
 		return logEntries;
 	}
+
+	private ChangeLog getEntry(Revlog revlog, NodeId nodeId)
+			throws ParseException {
+		ByteArrayOutputStream content = new ByteArrayOutputStream(4096);
+		revlog.revision(nodeId, content);
+		
+		ChangeLog logEntry = parse(new ByteArrayInputStream(content.toByteArray()));
+		logEntry.changeId = nodeId;
+		logEntry.revision = revlog.index(nodeId);
+		return logEntry;
+	}
 	private ChangeLog parse(final InputStream in) throws ParseException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		ChangeLog entry = new ChangeLog();
 		String line = null;
 		try {
 			while(null != (line = reader.readLine())) {
-				entry.revision = NodeId.parse(line);
+				entry.nodeId = NodeId.parse(line);
 				entry.author = reader.readLine();
 
 				String dateLine = reader.readLine();
@@ -92,15 +110,22 @@ public class HgChangeLog {
     }
 
     public static class ChangeLog {
-		private NodeId revision;
+		public NodeId nodeId;
+		public int revision;
+		private NodeId changeId;
 		private Date when;
 		private String author;
 		private List<String> files = new ArrayList<String>();
 		private String comment;
 
-		public NodeId getRevision() {
+		public NodeId getChangeId() {
+			return changeId;
+		}
+		
+		public int getRevision() {
 			return revision;
 		}
+		
 		public Date getWhen() {
 			return when;
 		}
@@ -115,12 +140,11 @@ public class HgChangeLog {
 		}
 		@Override
 		public String toString() {
-		    return revision.asShort() + " "
+		    return changeId.asShort() + " "
 		    + when + " "
 		    + author + "\n"
 		    + comment + "\n"
 		    + files;
 		}
 	}
-
 }

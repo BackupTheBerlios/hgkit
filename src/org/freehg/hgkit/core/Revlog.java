@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
 public class Revlog {
@@ -64,6 +65,28 @@ public class Revlog {
 
 	public Set<NodeId> getRevisions() {
 		return Collections.unmodifiableSet(this.nodemap.keySet());
+	}
+	
+	public int index(NodeId nodeId) {
+		return nodemap.get(nodeId).revision;
+	}
+	public NodeId node(int index) {
+		List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId,RevlogEntry>>(this.nodemap.entrySet());
+		for (Entry<NodeId, RevlogEntry> entry : entries) {
+			if(entry.getValue().revision == index) {
+				return entry.getKey();
+			}
+		}
+		throw new IllegalArgumentException(this + " has no such revision");
+	}
+	public NodeId linkrev(int linkrev) {
+		List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId,RevlogEntry>>(this.nodemap.entrySet());
+		for (Entry<NodeId, RevlogEntry> entry : entries) {
+			if(entry.getValue().linkRev == linkrev) {
+				return entry.getKey();
+			}
+		}
+		throw new IllegalArgumentException(this + " has no such revision");
 	}
 
 	/**

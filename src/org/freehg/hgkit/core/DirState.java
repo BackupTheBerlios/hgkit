@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class DirState {
 
+	private NodeId currentId;
 	private Map<String, DirStateEntry> dirstate  = new HashMap<String, DirStateEntry>();
 	
 	DirState(File dirState) {
@@ -60,7 +61,8 @@ public class DirState {
 	}
 
 	private void parseHeader(DataInputStream in) throws IOException {
-		in.skip(40);
+		this.currentId = NodeId.read(in);
+		in.skip(20);
 	}
 
 	public class DirStateEntry {
@@ -103,5 +105,9 @@ public class DirState {
 		public String toString() {
 			return mode + "	" + (char) state + "	" + size + "	" + fileModTime + "	" + path;
 		}
+	}
+
+	public NodeId getId() {
+		return this.currentId;
 	}
 }

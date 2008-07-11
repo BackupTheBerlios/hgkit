@@ -23,7 +23,7 @@ public class HgChangeLogTest {
 		List<ChangeLog> revisions = subject.getLog(revlog);
 		
 		for(ChangeLog changeLog : revisions) {
-		    log(changeLog.getRevision().asShort());
+		    log(changeLog.getChangeId().asShort());
 		    log(changeLog.getWhen());
 		    log(changeLog.getAuthor());
 		    log(changeLog.getComment());

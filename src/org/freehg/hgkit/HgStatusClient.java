@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.HgStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Ignore;
+import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
@@ -28,6 +30,8 @@ public class HgStatusClient {
     private DirState dirState;
     private final Repository repo;
     private Ignore ignore;
+	private ChangeLog logEntry;
+	private HgManifest manifest;
 
     public HgStatusClient(Repository repo) {
         this.repo = repo;
@@ -36,6 +40,12 @@ public class HgStatusClient {
         }
         this.dirState = repo.getDirState();
         this.ignore = repo.getIgnore();
+        
+        HgManifestClient manifestClient = new HgManifestClient(repo);
+        HgChangeLog logClient = new HgChangeLog(repo);
+        logEntry = logClient.getLog(dirState.getId());
+        manifest = manifestClient.getManifest(logEntry);
+        
     }
 
     public List<HgStatus> doStatus(final File file) {
@@ -109,7 +119,7 @@ public class HgStatusClient {
 	        }
         } else {
 	        status.setStatus(HgStatus.Status.NOT_TRACKED);
-	        if (parentIgnored || isIgnored(file.getAbsoluteFile())) {
+	        if (parentIgnored || isIgnored(relativeFile)) {
 	        	status.setStatus(HgStatus.Status.IGNORED);
 	        }
         }
@@ -120,8 +130,8 @@ public class HgStatusClient {
         // On (n)ormal files
         // if size and mod time is same as in dirstate nothing has happened
         // if the size HAS changed, the file must have changed
-
-        if (state.getSize() != file.length()) {
+    	// After an update, dirstate is not written back and contains -1
+        if (0 <= state.getSize() && state.getSize() != file.length()) {
             return HgStatus.Status.MODIFIED;
         }
 
@@ -133,13 +143,13 @@ public class HgStatusClient {
         // if the filemod time has changed but the size haven't
         // then we must compare against the repository version
         Revlog revlog = repo.getRevlog(file);
-        RevlogEntry tip = revlog.tip();
-
+        
         try {
+        	
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
-            revlog.revision(tip.getId(), comparator);
+            revlog.revision(manifest.getState(state.getPath()), comparator);
             local.close();
             if(comparator.equals) {
                 return HgStatus.Status.MANAGED;

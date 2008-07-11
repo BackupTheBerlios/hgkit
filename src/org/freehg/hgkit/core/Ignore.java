@@ -40,7 +40,9 @@ public final class Ignore {
     	if(this.ignores.isEmpty()) {
     		return false;
     	}
-    	file = repo.makeRelative(file);
+    	if(file.isAbsolute()) {
+    		file = repo.makeRelative(file);
+    	}
         for (IgnoreEntry ignore : this.ignores) {
             if(ignore.ignores(file.getPath())) {
                 return true;

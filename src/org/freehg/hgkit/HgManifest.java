@@ -1,18 +1,26 @@
 package org.freehg.hgkit;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.freehg.hgkit.core.NodeId;
 
 public class HgManifest {
 
 	private NodeId stateId;
-	private List<ManifestEntry> state = new ArrayList<ManifestEntry>();
+	private Map<String, NodeId> state = new HashMap<String,NodeId>();
 
 	HgManifest(NodeId stateId, List<ManifestEntry> state) {
+		
 		this.stateId = stateId;
-		this.state = state;
+		for (ManifestEntry manifestEntry : state) {
+			this.state.put(manifestEntry.filename, manifestEntry.nodeId);
+		}
+	}
+	
+	public NodeId getState(String filename) {
+		return state.get(filename);
 	}
 
 	public static final class ManifestEntry {
