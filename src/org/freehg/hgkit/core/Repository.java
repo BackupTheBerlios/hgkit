@@ -56,10 +56,10 @@ public class Repository {
         return new ChangeLog(index, style);
     }
 
-    public Revlog getManifest() {
+    public Manifest getManifest() {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00manifest.i";
         File index = new File(logIndex);
-        return new Revlog(index);
+        return new Manifest(index);
 
     }
 

@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.freehg.hgkit.FileStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Ignore;
+import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.ChangeLog.Entry;
@@ -28,8 +30,8 @@ public class HgStatusClient {
     private DirState dirState;
     private final Repository repo;
     private Ignore ignore;
-	private HgManifest manifest;
-
+	private Map<String, NodeId> nodeStateByName;
+	
     public HgStatusClient(Repository repo) {
         this.repo = repo;
         if (repo == null) {
@@ -39,10 +41,9 @@ public class HgStatusClient {
         this.ignore = repo.getIgnore();
         
         org.freehg.hgkit.core.ChangeLog log = repo.getChangeLog(0);
-        HgManifestClient manifestClient = new HgManifestClient(repo);
-        
         Entry entry = log.get(dirState.getId());
-        manifest = manifestClient.getManifest(entry);
+        nodeStateByName = repo.getManifest().get(entry);
+        
         
     }
 
@@ -147,7 +148,7 @@ public class HgStatusClient {
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
-            revlog.revision(manifest.getState(state.getPath()), comparator);
+            revlog.revision(nodeStateByName.get(state.getPath()), comparator);
             local.close();
             if(comparator.equals) {
                 return FileStatus.Status.MANAGED;

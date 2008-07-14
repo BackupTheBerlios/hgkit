@@ -1,12 +1,7 @@
 package org.freehg.hgkit;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.junit.Test;
