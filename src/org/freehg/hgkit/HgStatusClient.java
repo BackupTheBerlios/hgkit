@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.freehg.hgkit.HgChangeLog.ChangeLog;
-import org.freehg.hgkit.HgStatus.Status;
+import org.freehg.hgkit.FileStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Ignore;
 import org.freehg.hgkit.core.NodeId;
@@ -48,21 +48,21 @@ public class HgStatusClient {
         
     }
 
-    public List<HgStatus> doStatus(final File file) {
+    public List<FileStatus> doStatus(final File file) {
         return doStatus(file, true);
     }
 
-    public List<HgStatus> doStatus(final File file, final boolean recurse) {
-        List<HgStatus> result = getStatus(file, recurse, isIgnored(file));
+    public List<FileStatus> doStatus(final File file, final boolean recurse) {
+        List<FileStatus> result = getStatus(file, recurse, isIgnored(file));
         result.addAll(getMissing());
         return result;
     }
 
-    private List<HgStatus> getStatus(final File file, final boolean recurse, boolean parentIgnored) {
+    private List<FileStatus> getStatus(final File file, final boolean recurse, boolean parentIgnored) {
         if(Repository.isRepoPrivate(file)) {
         	return Collections.EMPTY_LIST;
         }
-        List<HgStatus> result = new ArrayList<HgStatus>();
+        List<FileStatus> result = new ArrayList<FileStatus>();
 
         if (recurse && file.isDirectory()) {
             for (File sub : file.listFiles()) {
@@ -76,13 +76,13 @@ public class HgStatusClient {
         return result;
     }
 
-    private List<HgStatus> getMissing() {
+    private List<FileStatus> getMissing() {
         Collection<DirStateEntry> state = dirState.getDirState();
-        List<HgStatus> missing = new ArrayList<HgStatus>();
+        List<FileStatus> missing = new ArrayList<FileStatus>();
         for (DirStateEntry entry : state) {
             File testee = repo.makeAbsolute(entry.getPath());
             if (!testee.exists()) {
-                missing.add(new HgStatus(testee, Status.DELETED));
+                missing.add(new FileStatus(testee, Status.DELETED));
             }
         }
         return missing;
@@ -92,25 +92,25 @@ public class HgStatusClient {
         return file.getName().equalsIgnoreCase(".hg") || ignore.isIgnored(file);
     }
 
-    private HgStatus getFileState(final File file, boolean parentIgnored) {
+    private FileStatus getFileState(final File file, boolean parentIgnored) {
         if (!file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
         }
         File relativeFile = repo.makeRelative(file);
-        HgStatus status = new HgStatus(relativeFile);
+        FileStatus status = new FileStatus(relativeFile);
         DirStateEntry state = this.dirState.getState(relativeFile.getPath().replace(
                 "\\", "/"));
 
         if(state != null) {
 	        switch(state.getState()) {
 	            case STATE_ADDED:
-	                status.setStatus(HgStatus.Status.ADDED);
+	                status.setStatus(FileStatus.Status.ADDED);
 	                break;
 	            case STATE_REMOVED:
-	                status.setStatus(HgStatus.Status.REMOVED);
+	                status.setStatus(FileStatus.Status.REMOVED);
 	                break;
 	            case STATE_MERGED:
-	                status.setStatus(HgStatus.Status.MERGED);
+	                status.setStatus(FileStatus.Status.MERGED);
 	                break;
 	            case STATE_NORMAL:
 	                status.setStatus(checkStateNormal(file, state));
@@ -118,9 +118,9 @@ public class HgStatusClient {
 	            default:
 	        }
         } else {
-	        status.setStatus(HgStatus.Status.NOT_TRACKED);
+	        status.setStatus(FileStatus.Status.NOT_TRACKED);
 	        if (parentIgnored || isIgnored(relativeFile)) {
-	        	status.setStatus(HgStatus.Status.IGNORED);
+	        	status.setStatus(FileStatus.Status.IGNORED);
 	        }
         }
         return status;
@@ -132,29 +132,29 @@ public class HgStatusClient {
         // if the size HAS changed, the file must have changed
     	// After an update, dirstate is not written back and contains -1
         if (0 <= state.getSize() && state.getSize() != file.length()) {
-            return HgStatus.Status.MODIFIED;
+            return FileStatus.Status.MODIFIED;
         }
 
         // Hg uses seconds, java milliseconds
         long lastModified = file.lastModified() / 1000;
         if (state.getFileModTime() == lastModified) {
-            return HgStatus.Status.MANAGED;
+            return FileStatus.Status.MANAGED;
         }
         // if the filemod time has changed but the size haven't
         // then we must compare against the repository version
         Revlog revlog = repo.getRevlog(file);
         
         try {
-        	
+        	System.out.println("Comparing against stored revision");
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
             revlog.revision(manifest.getState(state.getPath()), comparator);
             local.close();
             if(comparator.equals) {
-                return HgStatus.Status.MANAGED;
+                return FileStatus.Status.MANAGED;
             }
-            return HgStatus.Status.MODIFIED;
+            return FileStatus.Status.MODIFIED;
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
