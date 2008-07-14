@@ -7,12 +7,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.HgManifest.ManifestEntry;
 import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
-import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.ChangeLog.Entry;
 
 

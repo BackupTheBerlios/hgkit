@@ -11,14 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.FileStatus.Status;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Ignore;
-import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
-import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
