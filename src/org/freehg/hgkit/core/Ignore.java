@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.freehg.hgkit.util.GlobExpressions;
+
 public final class Ignore {
 
     private List<IgnoreEntry> ignores = new ArrayList<IgnoreEntry>();

@@ -1,4 +1,4 @@
-package org.freehg.hgkit.core;
+package org.freehg.hgkit.util;
 
 import java.io.File;
 import java.util.regex.Pattern;

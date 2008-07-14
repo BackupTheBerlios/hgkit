@@ -1,5 +1,7 @@
 package org.freehg.hgkit.core;
 
+import org.freehg.hgkit.util.GlobExpressions;
+
 import junit.framework.TestCase;
 
 public class GlobExpressionsTest extends TestCase {
