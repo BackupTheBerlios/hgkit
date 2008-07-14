@@ -1,10 +1,11 @@
 package org.freehg.hgkit.core;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,12 +18,13 @@ public class Manifest extends Revlog {
 	public Map<String, NodeId> get(ChangeLog.Entry changelog) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		super.revision(changelog.getManifestId(), out);
-		String text = out.toString();
-		return parse(text);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
+		return parse(reader);
 	}
 	
-	private Map<String, NodeId> parse(String text) {
-		BufferedReader reader = new BufferedReader(new StringReader(text));
+	private Map<String, NodeId> parse(BufferedReader reader) {
+		
+		
 		Map<String, NodeId> nodefilemap = new HashMap<String, NodeId>();
 		try {
 			String line = null;
