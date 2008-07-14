@@ -2,6 +2,7 @@ package org.freehg.hgkit.core;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import org.junit.Before;
@@ -37,8 +38,7 @@ public class RepositoryTest {
 		Revlog revlog = new Revlog(index);
 		
 		for(NodeId nodeId : revlog.getRevisions()) {
-			revlog.revision(nodeId);
-			// System.out.println(revision);
+			revlog.revision(nodeId, new ByteArrayOutputStream());
 		}
 	}
 

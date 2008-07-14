@@ -2,9 +2,9 @@ package org.freehg.hgkit;
 
 import java.util.List;
 
-import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
+import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.junit.Test;
 
 
@@ -13,16 +13,17 @@ public class HgChangeLogTest {
 	@Test
 	public void testGetLog() {
 		
-		Repository repo = new Repository("mozilla-central");
-		HgChangeLog subject = new HgChangeLog(repo);
+		Repository repo = new Repository("hg-stable");
+		org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog(0);
+		
 		long start = System.currentTimeMillis();
 		Revlog revlog = repo.getChangeLog(0);
 		long end = System.currentTimeMillis();
 		System.out.println("Index took " + (end - start) );
 		int count = 0;
-		List<ChangeLog> revisions = subject.getLog(revlog);
+		List<Entry> revisions = subject.getLog();
 		
-		for(ChangeLog changeLog : revisions) {
+		for(Entry changeLog : revisions) {
 		    log(changeLog.getChangeId().asShort());
 		    log(changeLog.getWhen());
 		    log(changeLog.getAuthor());

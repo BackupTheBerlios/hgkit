@@ -13,6 +13,7 @@ import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
+import org.freehg.hgkit.core.ChangeLog.Entry;
 
 
 public class HgManifestClient {
@@ -24,17 +25,19 @@ public class HgManifestClient {
 		
 	}
 	
-	public HgManifest getManifest(ChangeLog logEntry) {
+	public HgManifest getManifest(Entry entry) {
 		Revlog revlog = repo.getManifest();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		revlog.revision(logEntry.nodeId, out);
-		return new HgManifest(logEntry.getChangeId(), parse(out.toString()));
+		revlog.revision(entry.getManifestId(), out);
+		return new HgManifest(entry.getChangeId(), parse(out.toString()));
 		
 	}
 	
 	public HgManifest getManifest(NodeId revision) {
 		Revlog manifest = repo.getManifest();
-		String text = new String(manifest.revision(revision));
+		ByteArrayOutputStream data = new ByteArrayOutputStream();
+		manifest.revision(revision,data);
+		String text = data.toString();
 		List<ManifestEntry> entries = parse(text);
 		HgManifest manifestInstance = new HgManifest(revision, entries);
 		return manifestInstance;
@@ -45,7 +48,9 @@ public class HgManifestClient {
 		for(NodeId nodeId : manifest.getRevisions()) {
 			System.out.println(nodeId.asFull());
 			System.out.println("-----------------------");
-			String text = new String(manifest.revision(nodeId));
+			ByteArrayOutputStream data = new ByteArrayOutputStream();
+			manifest.revision(nodeId,data);
+			String text = data.toString();
 			List<ManifestEntry> entries = parse(text);
 			HgManifest manifestInstance = new HgManifest(nodeId, entries);
 			System.out.println(manifestInstance);

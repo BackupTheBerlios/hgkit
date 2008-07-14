@@ -1,5 +1,6 @@
 package org.freehg.hgkit.core;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import org.junit.Ignore;
@@ -32,7 +33,9 @@ public class RevlogTest {
 
         for (NodeId rev : subject.getRevisions()) {
            System.out.print(rev.asShort());
-            String revision = new String(subject.revision(rev));
+           ByteArrayOutputStream out = new ByteArrayOutputStream();
+           	subject.revision(rev, out);
+            String revision = out.toString();
             System.out.println(" -- [OK]");
             log(revision);
         }
@@ -50,7 +53,7 @@ public class RevlogTest {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
             for (NodeId nodeId : subject.getRevisions()) {
-                subject.revision(nodeId);
+                subject.revision(nodeId, new ByteArrayOutputStream());
             }
         }
         long end = System.currentTimeMillis();

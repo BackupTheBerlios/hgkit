@@ -19,6 +19,7 @@ import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
+import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
 public class HgStatusClient {
@@ -30,7 +31,6 @@ public class HgStatusClient {
     private DirState dirState;
     private final Repository repo;
     private Ignore ignore;
-	private ChangeLog logEntry;
 	private HgManifest manifest;
 
     public HgStatusClient(Repository repo) {
@@ -41,10 +41,11 @@ public class HgStatusClient {
         this.dirState = repo.getDirState();
         this.ignore = repo.getIgnore();
         
+        org.freehg.hgkit.core.ChangeLog log = repo.getChangeLog(0);
         HgManifestClient manifestClient = new HgManifestClient(repo);
-        HgChangeLog logClient = new HgChangeLog(repo);
-        logEntry = logClient.getLog(dirState.getId());
-        manifest = manifestClient.getManifest(logEntry);
+        
+        Entry entry = log.get(dirState.getId());
+        manifest = manifestClient.getManifest(entry);
         
     }
 

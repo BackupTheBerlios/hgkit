@@ -50,10 +50,10 @@ public class Repository {
     	return new Ignore(this,ignoreFile);
     }
 
-    public Revlog getChangeLog(int style) {
+    public ChangeLog getChangeLog(int style) {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
         File index = new File(logIndex);
-        return new Revlog(index, style);
+        return new ChangeLog(index, style);
     }
 
     public Revlog getManifest() {

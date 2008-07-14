@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.freehg.hgkit.HgChangeLog.ChangeLog;
 import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
 public class Revlog {
@@ -89,29 +88,16 @@ public class Revlog {
 		throw new IllegalArgumentException(this + " has no such revision");
 	}
 
-	/**
-	 * return an uncompressed revision data of a given nodeid NOTE: hgkit
-	 * doesn't use caching for now
-	 * 
-	 * @param node
-	 *            to nodeid to get data for
-	 * @return an uncompressed revision data
-	 */
-	@Deprecated
-	public byte[] revision(NodeId node) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		revision(node, out, true);
-		return out.toByteArray();
-	}
 
 	public void revision(NodeId node, OutputStream out) {
 		revision(node, out, true);
 	}
-	public void revision(NodeId node, OutputStream out, boolean removeMeta) {
+
+	public void revision(NodeId node, OutputStream out, boolean noMetaData) {
 		if (node.equals(NULLID)) {
 			return;
 		}
-		if(removeMeta) {
+		if(noMetaData) {
 			out = new RemoveMetaOutputStream(out);
 		}
 
