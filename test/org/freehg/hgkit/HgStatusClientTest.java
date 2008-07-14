@@ -2,6 +2,8 @@ package org.freehg.hgkit;
 
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.junit.Test;
@@ -55,7 +57,7 @@ public class HgStatusClientTest {
 		List<FileStatus> status = subject.doStatus(repo.getRoot());
 		long end = System.currentTimeMillis();
 		for (FileStatus hgStatus : status) {
-			// Assert.assertEquals(FileStatus.Status.MANAGED, hgStatus.getStatus());
+			Assert.assertEquals(hgStatus.getFile().toString(), FileStatus.Status.MANAGED, hgStatus.getStatus());
 			if(FileStatus.Status.MANAGED != hgStatus.getStatus()) {
 				System.err.println(hgStatus + " should have been managed");
 			}

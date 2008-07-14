@@ -144,7 +144,7 @@ public class HgStatusClient {
         Revlog revlog = repo.getRevlog(file);
         
         try {
-        	System.out.println("Comparing against stored revision");
+        	System.out.println("Comparing " + file + " against stored revision");
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
@@ -168,7 +168,10 @@ public class HgStatusClient {
         }
         @Override
         public void write(int b) throws IOException {
-            if( b != in.read()) {
+            int fromStream = in.read();
+            b &= 0xFF;
+            fromStream &= 0xFF;
+			if( b != fromStream) {
                 this.equals = false;
             }
         }

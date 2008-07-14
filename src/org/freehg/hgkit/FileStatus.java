@@ -29,4 +29,8 @@ public class FileStatus {
         return status + " " + file.getPath();
     }
 
+	public File getFile() {
+		return this.file;
+	}
+
 }

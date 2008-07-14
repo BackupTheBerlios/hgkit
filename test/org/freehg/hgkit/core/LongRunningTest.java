@@ -5,7 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
+import junit.framework.Assert;
+
+import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.junit.Test;
 
 public class LongRunningTest {
@@ -49,8 +53,16 @@ public class LongRunningTest {
 	private void testFile(Repository repo, final File file) throws IOException {
 		final File index = repo.getIndex(file);
 		Revlog revlog = new Revlog(index);
+		ChangeLog changelog = repo.getChangeLog(0);
+		Entry log = changelog.get(repo.getDirState().getId());
+		Map<String, NodeId> manifest = repo.getManifest().get(log);
 		final FileInputStream stream = new FileInputStream(file);
-		revlog.revision(revlog.tip().nodeId, new OutputStream() {
+		// paths are always stored with / instead of \
+		NodeId fileNode = manifest.get(repo.makeRelative(file).toString().replace("\\", "/"));
+		if(fileNode == null) {
+			Assert.fail("Could not lookup manifest entry for file " + file);
+		}
+		revlog.revision(fileNode, new OutputStream() {
 				@Override
 				public void write(int b) throws IOException {
 					int fromFile = stream.read() & 0xFF;
