@@ -9,17 +9,19 @@ import java.io.OutputStream;
 import org.junit.Test;
 
 public class LongRunningTest {
-
+    
+    private static final String TEST_REPO = System.getProperty("hgkit.test.repo", "hg-stable");
+    
 	private int numRevisions;
 
 	@Test
 	public void testAll() throws Exception {
 		Repository subject = getSubject();
-		int count = walk(subject,new File("hg-stable"));
+		int count = walk(subject,new File(TEST_REPO));
 		System.out.println(count + " num files tested and " + numRevisions + " revivions");
 	}
 	private Repository getSubject() {
-		return new Repository("hg-stable");
+		return new Repository(TEST_REPO);
 	}
 	private int walk(Repository repo, File dir) throws IOException {
 		String abs = dir.getAbsolutePath();

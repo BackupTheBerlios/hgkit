@@ -12,11 +12,13 @@ public class HgStatusClientTest {
 
 
 
-	@Test
+    private static final String TEST_REPO = System.getProperty("hgkit.test.repo", "hg-stable");
+
+    @Test
 	public void testStatusClient() throws Exception {
 		long start = System.currentTimeMillis();
 
-		Repository repo = new Repository("hg-stable");
+		Repository repo = new Repository(TEST_REPO);
 		String cmd = "hg up -C";
 		Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
 		// Repository repo = new Repository("../com.vectrace.MercurialEclipse");
@@ -35,12 +37,12 @@ public class HgStatusClientTest {
 	public void testStatusClientNasty() throws Exception {
 		
 		
-		Repository repo = new Repository("hg-stable");
+		Repository repo = new Repository(TEST_REPO);
 		List<Entry> log = repo.getChangeLog(0).getLog();
 		int count = 0;
 		for (Entry changeLog : log) {
 			if(count++ % 100 == 0) {
-				repo = new Repository("hg-stable");
+				repo = new Repository(TEST_REPO);
 				String cmd = "hg up -C -r " + changeLog.getChangeId().asShort();
 				System.out.println(cmd);
 				Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();

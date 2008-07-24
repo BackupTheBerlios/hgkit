@@ -10,10 +10,12 @@ import org.junit.Test;
 
 public class HgChangeLogTest {
 
-	@Test
+    private static final String TEST_REPO = System.getProperty("hgkit.test.repo", "hg-stable");
+
+    @Test
 	public void testGetLog() {
 		
-		Repository repo = new Repository("hg-stable");
+		Repository repo = new Repository(TEST_REPO);
 		org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog(0);
 		
 		long start = System.currentTimeMillis();
