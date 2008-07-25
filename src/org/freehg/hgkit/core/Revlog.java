@@ -46,15 +46,13 @@ public class Revlog {
 
 	private RandomAccessFile reader = null;
 
-	private int styles = 0;
-
 	public Revlog(File index) {
 		this(index, AUTO_CLOSE);
 	}
 
+	@Deprecated
 	public Revlog(File index, int style) {
 		indexFile = index;
-		this.styles = style;
 		try {
 			parseIndex(index);
 		} catch (IOException e) {
@@ -146,12 +144,10 @@ public class Revlog {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} finally {
-			if ((styles & AUTO_CLOSE) != 0) {
-				try {
-					getDataFile().close();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
+			try {
+				getDataFile().close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -250,8 +246,6 @@ public class Revlog {
 			indexOffset += RevlogEntry.BINARY_LENGTH;
 			++indexCount;
 		}
-
-		printIndex();
 	}
 
 	void printIndex() {

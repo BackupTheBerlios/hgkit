@@ -46,10 +46,17 @@ public class Repository {
     }
     
     public Ignore getIgnore() {
-    	File ignoreFile = new File(root.getAbsolutePath() + "/.hgignore");
+    	StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(root.getAbsolutePath());
+		stringBuilder.append("/.hgignore");
+		File ignoreFile = new File(stringBuilder.toString());
     	return new Ignore(this,ignoreFile);
     }
 
+    public ChangeLog getChangeLog() {
+    	return getChangeLog(0);
+    }
+    @Deprecated
     public ChangeLog getChangeLog(int style) {
         String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
         File index = new File(logIndex);
@@ -64,7 +71,8 @@ public class Repository {
     }
 
     public DirState getDirState() {
-        String path = root.getAbsoluteFile() + "/" + HG + DIRSTATE;
+    	
+        String path = new StringBuilder(root.getAbsolutePath()).append('/').append(HG).append(DIRSTATE).toString();
         File dirStateFile = new File(path);
         if(! dirStateFile.exists()) {
             throw new IllegalStateException("Unable to find dirstate file at location: " + path);
