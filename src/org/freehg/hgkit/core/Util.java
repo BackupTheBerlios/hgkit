@@ -65,7 +65,7 @@ final class Util {
 	static String forwardSlashes(String path) {
 		return path.replace('\\', '/');
 	}
-	static byte[] readWholeFile(DataInputStream reader) throws IOException {
+	static byte[] readWholeFile(InputStream reader) throws IOException {
 		byte[] buf = new byte[512];
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream(reader
 				.available());

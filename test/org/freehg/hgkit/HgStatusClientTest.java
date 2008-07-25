@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.Entry;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -14,23 +15,24 @@ public class HgStatusClientTest {
 
 	@Test
 	public void testStatusClient() throws Exception {
-		long start = System.currentTimeMillis();
 
 		Repository repo = new Repository("hg-stable");
 		String cmd = "hg up -C";
 		Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
 		// Repository repo = new Repository("../com.vectrace.MercurialEclipse");
+		long start = System.currentTimeMillis();
 		HgStatusClient subject = new HgStatusClient(repo);
 
 		List<FileStatus> status = subject.doStatus(repo.getRoot());
 		long end = System.currentTimeMillis();
 		for (FileStatus hgStatus : status) {
-		     System.out.println(hgStatus);
+//		     System.out.println(hgStatus);
 
         }
 
 		System.out.println("Status walk took " + (end - start) + " ms");
 	}
+	@Ignore
 	@Test
 	public void testStatusClientNasty() throws Exception {
 		

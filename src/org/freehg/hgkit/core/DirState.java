@@ -1,6 +1,6 @@
 package org.freehg.hgkit.core;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,12 +18,13 @@ public class DirState {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(dirState);
-			DataInputStream in = new DataInputStream(new BufferedInputStream(fis));
+			byte[] data = Util.readWholeFile(fis);
+			DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 			parse(in);
-			in.close();
 		} catch (IOException e) {
-			Util.close(fis);
 			throw new RuntimeException(e);
+		} finally {
+			Util.close(fis);
 		}
 	}
 
@@ -44,7 +45,10 @@ public class DirState {
 			in.readFully(str);
 			String path = new String(str);
 			DirStateEntry entry = new DirStateEntry(state, mode, size, fileModTime, path);
-			this.dirstate.put(path, entry);
+			// put with both / and \ as path separator
+			this.dirstate.put(path.replace('/', '\\'), entry);
+			this.dirstate.put(path.replace('\\', '/'), entry);
+			
 		}
 	}
 	/**

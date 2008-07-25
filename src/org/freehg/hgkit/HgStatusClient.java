@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.freehg.hgkit.FileStatus.Status;
+import org.freehg.hgkit.core.ChangeLog;
 import org.freehg.hgkit.core.DirState;
 import org.freehg.hgkit.core.Ignore;
 import org.freehg.hgkit.core.NodeId;
@@ -33,18 +34,12 @@ public class HgStatusClient {
 	private Map<String, NodeId> nodeStateByName;
 	
     public HgStatusClient(Repository repo) {
-        this.repo = repo;
+		 this.repo = repo;
         if (repo == null) {
             throw new IllegalArgumentException("Repository may not be null");
         }
         this.dirState = repo.getDirState();
         this.ignore = repo.getIgnore();
-        
-        org.freehg.hgkit.core.ChangeLog log = repo.getChangeLog(0);
-        Entry entry = log.get(dirState.getId());
-        nodeStateByName = repo.getManifest().get(entry);
-        
-        
     }
 
     public List<FileStatus> doStatus(final File file) {
@@ -97,8 +92,7 @@ public class HgStatusClient {
         }
         File relativeFile = repo.makeRelative(file);
         FileStatus status = new FileStatus(relativeFile);
-        DirStateEntry state = this.dirState.getState(relativeFile.getPath().replace(
-                "\\", "/"));
+        DirStateEntry state = this.dirState.getState(relativeFile.getPath());
 
         if(state != null) {
 	        switch(state.getState()) {
@@ -144,11 +138,11 @@ public class HgStatusClient {
         Revlog revlog = repo.getRevlog(file);
         
         try {
-        	System.out.println("Comparing against stored revision");
+        	// System.out.println("Comparing against stored revision");
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
-            revlog.revision(nodeStateByName.get(state.getPath()), comparator);
+            revlog.revision(getNodeStateByName().get(state.getPath()), comparator);
             local.close();
             if(comparator.equals) {
                 return FileStatus.Status.MANAGED;
@@ -159,7 +153,22 @@ public class HgStatusClient {
         }
     }
 
-    private static class ComparingStream extends OutputStream {
+	/**
+	 * @return the nodeStateByName
+	 */
+	private Map<String, NodeId> getNodeStateByName() {
+		if(this.nodeStateByName == null) {
+			long start = System.currentTimeMillis();
+	        ChangeLog log = repo.getChangeLog();
+	        Entry entry = log.get(dirState.getId());
+	        this.nodeStateByName = repo.getManifest().get(entry);
+	        long end = System.currentTimeMillis();
+			System.out.println(">>> took " + (end - start) + " ms");
+		}
+		return nodeStateByName;
+	}
+
+	private static class ComparingStream extends OutputStream {
         private boolean equals = true;
         private final InputStream in;
         ComparingStream(InputStream in) {
