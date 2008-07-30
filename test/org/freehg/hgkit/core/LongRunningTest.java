@@ -53,7 +53,7 @@ public class LongRunningTest {
 	private void testFile(Repository repo, final File file) throws IOException {
 		final File index = repo.getIndex(file);
 		Revlog revlog = new Revlog(index);
-		ChangeLog changelog = repo.getChangeLog(0);
+		ChangeLog changelog = repo.getChangeLog();
 		ChangeSet log = changelog.get(repo.getDirState().getId());
 		Map<String, NodeId> manifest = repo.getManifest().get(log);
 		final FileInputStream stream = new FileInputStream(file);

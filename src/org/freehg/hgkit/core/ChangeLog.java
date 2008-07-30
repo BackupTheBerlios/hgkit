@@ -18,10 +18,6 @@ public final class ChangeLog extends Revlog {
 	ChangeLog(File index) {
 		super(index);
 	}
-	@Deprecated
-	ChangeLog(File index, int style) {
-		super(index);
-	}
 	
 	public ChangeSet get(int revision) {
 		NodeId node = super.node(revision);

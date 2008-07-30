@@ -40,7 +40,7 @@ public class HgStatusClientTest {
 		
 		
 		Repository repo = new Repository("hg-stable");
-		List<ChangeSet> log = repo.getChangeLog(0).getLog();
+		List<ChangeSet> log = repo.getChangeLog().getLog();
 		int count = 0;
 		for (ChangeSet changeLog : log) {
 			if(count++ % 100 == 0) {

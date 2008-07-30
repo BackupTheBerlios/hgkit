@@ -14,10 +14,10 @@ public class HgChangeLogTest {
 	public void testGetLog() {
 		
 		Repository repo = new Repository("hg-stable");
-		org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog(0);
+		org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog();
 		
 		long start = System.currentTimeMillis();
-		Revlog revlog = repo.getChangeLog(0);
+		Revlog revlog = repo.getChangeLog();
 		long end = System.currentTimeMillis();
 		System.out.println("Index took " + (end - start) );
 		int count = 0;

@@ -14,7 +14,7 @@ public class RepositoryTest {
 	@Test
 	public void getChangeLog() {
 		Repository subject = getSubject();
-		subject.getChangeLog(0).close();
+		subject.getChangeLog().close();
 	}
 	@Test
 	public void testGetIndex() {
