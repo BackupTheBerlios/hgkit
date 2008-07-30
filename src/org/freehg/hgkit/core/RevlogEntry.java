@@ -8,7 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public final class RevlogEntry {
+final class RevlogEntry {
 
     /** The corresponding length of indexformatng (python) >Qiiiiii20s12x */
     static final int BINARY_LENGTH = 64;
