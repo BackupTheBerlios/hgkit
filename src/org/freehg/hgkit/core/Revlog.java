@@ -88,19 +88,26 @@ public class Revlog {
 
 
 	public Revlog revision(NodeId node, OutputStream out) {
-		revision(node, out, true);
-		return this;
+		return revision(node, out, true);
 	}
 
 	public Revlog revision(NodeId node, OutputStream out, boolean noMetaData) {
 		if (node.equals(NULLID)) {
 			return this;
 		}
+		final RevlogEntry target = nodemap.get(node);
+		return revision(target, out, noMetaData);
+	}
+	
+	protected Revlog revision(int index, OutputStream out, boolean noMetaData) {
+		return revision(this.index.get(index), out, noMetaData);
+	}
+
+	protected Revlog revision(final RevlogEntry target, OutputStream out,
+			boolean noMetaData) {
 		if(noMetaData) {
 			out = new RemoveMetaOutputStream(out);
 		}
-
-		final RevlogEntry target = nodemap.get(node);
 		if ((target.getFlags() & 0xFFFF) != 0) {
 			throw new IllegalStateException("Incompatible revision flag: "
 					+ target.getFlags());

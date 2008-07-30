@@ -5,7 +5,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.freehg.hgkit.core.Repository;
-import org.freehg.hgkit.core.ChangeLog.Entry;
+import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -40,9 +40,9 @@ public class HgStatusClientTest {
 		
 		
 		Repository repo = new Repository("hg-stable");
-		List<Entry> log = repo.getChangeLog(0).getLog();
+		List<ChangeSet> log = repo.getChangeLog(0).getLog();
 		int count = 0;
-		for (Entry changeLog : log) {
+		for (ChangeSet changeLog : log) {
 			if(count++ % 100 == 0) {
 				repo = new Repository("hg-stable");
 				String cmd = "hg up -C -r " + changeLog.getChangeId().asShort();

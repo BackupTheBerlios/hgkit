@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
-import org.freehg.hgkit.core.ChangeLog.Entry;
+import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.junit.Test;
 
 
@@ -21,9 +21,9 @@ public class HgChangeLogTest {
 		long end = System.currentTimeMillis();
 		System.out.println("Index took " + (end - start) );
 		int count = 0;
-		List<Entry> revisions = subject.getLog();
+		List<ChangeSet> revisions = subject.getLog();
 		
-		for(Entry changeLog : revisions) {
+		for(ChangeSet changeLog : revisions) {
 		    log(changeLog.getChangeId().asShort());
 		    log(changeLog.getWhen());
 		    log(changeLog.getAuthor());

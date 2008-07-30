@@ -19,7 +19,7 @@ import org.freehg.hgkit.core.Ignore;
 import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
-import org.freehg.hgkit.core.ChangeLog.Entry;
+import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
 public final class HgStatusClient {
@@ -160,7 +160,7 @@ public final class HgStatusClient {
 		if(this.nodeStateByName == null) {
 			long start = System.currentTimeMillis();
 	        ChangeLog log = repo.getChangeLog();
-	        Entry entry = log.get(dirState.getId());
+	        ChangeSet entry = log.get(dirState.getId());
 	        this.nodeStateByName = repo.getManifest().get(entry);
 	        long end = System.currentTimeMillis();
 			System.out.println(">>> took " + (end - start) + " ms");

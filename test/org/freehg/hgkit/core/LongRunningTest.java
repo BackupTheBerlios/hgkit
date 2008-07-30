@@ -9,7 +9,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.freehg.hgkit.core.ChangeLog.Entry;
+import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.junit.Test;
 
 public class LongRunningTest {
@@ -54,7 +54,7 @@ public class LongRunningTest {
 		final File index = repo.getIndex(file);
 		Revlog revlog = new Revlog(index);
 		ChangeLog changelog = repo.getChangeLog(0);
-		Entry log = changelog.get(repo.getDirState().getId());
+		ChangeSet log = changelog.get(repo.getDirState().getId());
 		Map<String, NodeId> manifest = repo.getManifest().get(log);
 		final FileInputStream stream = new FileInputStream(file);
 		// paths are always stored with / instead of \

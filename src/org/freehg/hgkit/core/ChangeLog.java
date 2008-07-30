@@ -11,7 +11,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 
 public final class ChangeLog extends Revlog {
@@ -19,31 +18,41 @@ public final class ChangeLog extends Revlog {
 	ChangeLog(File index) {
 		super(index);
 	}
+	@Deprecated
 	ChangeLog(File index, int style) {
-		super(index, style);
+		super(index);
 	}
 	
-	public Entry get(int revision) {
+	public ChangeSet get(int revision) {
 		NodeId node = super.node(revision);
 		return this.get(node);
 	}
 	
-	public Entry get(NodeId node) {
+	public ChangeSet get(NodeId node) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		super.revision(node, out).close();
-		return new Entry(node, index(node), out.toByteArray());
+		return new ChangeSet(node, index(node), out.toByteArray());
 	}
 	
-	public List<Entry> getLog() {
-		List<Entry> log = new ArrayList<Entry>(count());
-		Set<NodeId> revisions = getRevisions();
-		for (NodeId node : revisions) {
-			log.add(get(node));
+	public List<ChangeSet> getLog() {
+		try {
+			int length = count();
+			List<ChangeSet> log = new ArrayList<ChangeSet>(length);
+			for(int revision = 0; revision < length; revision++) {
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				RevlogEntry revlogEntry = index.get(revision);
+				super.revision(revlogEntry, out, false);
+				ChangeSet entry = new ChangeSet(revlogEntry.nodeId, revision, out.toByteArray());
+				log.add(entry);
+				
+			}
+			return log;
+		} finally {
+			close();
 		}
-		return log;
 	}
 	
-	public class Entry {
+	public static class ChangeSet {
 		
 		private NodeId manifestId;
 		private int revision;
@@ -101,7 +110,8 @@ public final class ChangeLog extends Revlog {
 					when = dateParse(dateLine);
 
 					String fileLine = reader.readLine();
-					// read while line aint empty, its a file, the it is the comment
+					// read while line aint empty, its a file, the it is the
+					// comment
 					while(0 < fileLine.trim().length()) {
 						files.add(fileLine);
 						fileLine = reader.readLine();
@@ -130,7 +140,7 @@ public final class ChangeLog extends Revlog {
 	    }
 		
 		
-		Entry(NodeId changeId, int revision, byte[] data) {
+		ChangeSet(NodeId changeId, int revision, byte[] data) {
 			
 			try {
 				parse(new ByteArrayInputStream(data));
