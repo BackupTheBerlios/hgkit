@@ -111,27 +111,25 @@ public class Revlog {
 		}
 
 		try {
-			RevlogEntry baseRev = index.get(target.getBaseRev());
-			byte[] baseData = cache.get(baseRev);
-			if (baseData == null) {
-				baseData = Util.decompress(baseRev.loadBlock(getDataFile()));
-			}
 			List<byte[]> patches = new ArrayList<byte[]>(target.revision
 					- target.getBaseRev() + 1);
-
-			long worstCaseSize = baseData.length;
-			for (int rev = target.getBaseRev() + 1; rev <= target.revision; ++rev) {
-
-				RevlogEntry nextEntry = this.index.get(rev);
-				if (cache.containsKey(nextEntry)) {
-					baseData = cache.get(nextEntry);
-					patches.clear();
-				} else {
-					byte[] diff = Util.decompress(nextEntry.loadBlock(getDataFile()));
-					patches.add(diff);
-					worstCaseSize += diff.length;
+			byte[] baseData = null;
+			for(int i = target.revision; i >= target.getBaseRev(); i--) {
+				RevlogEntry entry = index.get(i);
+				byte[] fromCache = cache.get(entry);
+				if(fromCache != null) {
+					baseData = fromCache;
+					break;
 				}
+				if(baseData != null) {
+					patches.add(baseData);
+				}
+				baseData = Util.decompress(entry.loadBlock(getDataFile()));
 			}
+			Collections.reverse(patches);
+			// FIXME worst case size value is calculated wrong (but kinda works)
+			long worstCaseSize = baseData.length;
+
 			if (worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
 				CacheOutputStream cacheOut = new CacheOutputStream(out,
 						(int) worstCaseSize);
