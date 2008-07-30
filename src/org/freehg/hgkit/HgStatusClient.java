@@ -22,7 +22,7 @@ import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.ChangeLog.Entry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
-public class HgStatusClient {
+public final class HgStatusClient {
 
 	private static final char STATE_MERGED = 'm';
 	private static final char STATE_ADDED = 'a';
@@ -34,12 +34,11 @@ public class HgStatusClient {
 	private Map<String, NodeId> nodeStateByName;
 	
     public HgStatusClient(Repository repo) {
-		 this.repo = repo;
-        if (repo == null) {
-            throw new IllegalArgumentException("Repository may not be null");
-        }
+    	if (repo == null) {
+    		throw new IllegalArgumentException("Repository may not be null");
+    	}
+		this.repo = repo;
         this.dirState = repo.getDirState();
-        this.ignore = repo.getIgnore();
     }
 
     public List<FileStatus> doStatus(final File file) {
@@ -63,8 +62,7 @@ public class HgStatusClient {
                 result.addAll(getStatus(sub, recurse, parentIgnored | isIgnored(file)));
             }
             return result;
-        }
-        if (file.isFile()) {
+        } else if (file.isFile()) {
             result.add(getFileState(file, parentIgnored));
         }
         return result;
@@ -83,7 +81,7 @@ public class HgStatusClient {
     }
 
     private boolean isIgnored(final File file) {
-        return file.getName().equalsIgnoreCase(".hg") || ignore.isIgnored(file);
+        return file.getName().equalsIgnoreCase(".hg") || getIgnore().isIgnored(file);
     }
 
     private FileStatus getFileState(final File file, boolean parentIgnored) {
@@ -96,6 +94,9 @@ public class HgStatusClient {
 
         if(state != null) {
 	        switch(state.getState()) {
+		        case STATE_NORMAL:
+		        	status.setStatus(checkStateNormal(file, state));
+		        	break;
 	            case STATE_ADDED:
 	                status.setStatus(FileStatus.Status.ADDED);
 	                break;
@@ -105,15 +106,13 @@ public class HgStatusClient {
 	            case STATE_MERGED:
 	                status.setStatus(FileStatus.Status.MERGED);
 	                break;
-	            case STATE_NORMAL:
-	                status.setStatus(checkStateNormal(file, state));
-	                break;
 	            default:
 	        }
         } else {
-	        status.setStatus(FileStatus.Status.NOT_TRACKED);
 	        if (parentIgnored || isIgnored(relativeFile)) {
 	        	status.setStatus(FileStatus.Status.IGNORED);
+	        } else {
+	        	status.setStatus(FileStatus.Status.NOT_TRACKED);
 	        }
         }
         return status;
@@ -167,6 +166,16 @@ public class HgStatusClient {
 			System.out.println(">>> took " + (end - start) + " ms");
 		}
 		return nodeStateByName;
+	}
+
+	/**
+	 * @return the ignore
+	 */
+	private Ignore getIgnore() {
+		if(this.ignore == null) {
+			this.ignore = repo.getIgnore();
+		}
+		return ignore;
 	}
 
 	private static class ComparingStream extends OutputStream {
