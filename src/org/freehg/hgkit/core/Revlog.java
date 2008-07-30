@@ -21,8 +21,6 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
 public class Revlog {
 
-	public static final int AUTO_CLOSE = 1;
-
 	private static final String READ_ONLY = "r";
 
 	public static final int REVLOGV0 = 0;
@@ -47,11 +45,6 @@ public class Revlog {
 	private RandomAccessFile reader = null;
 
 	public Revlog(File index) {
-		this(index, AUTO_CLOSE);
-	}
-
-	@Deprecated
-	public Revlog(File index, int style) {
 		indexFile = index;
 		try {
 			parseIndex(index);
