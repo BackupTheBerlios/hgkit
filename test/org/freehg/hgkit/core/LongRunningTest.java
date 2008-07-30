@@ -71,7 +71,7 @@ public class LongRunningTest {
 						throw new IllegalStateException("Tip of file: " + file + " did not match HgKit revision : " + b + " != " + fromFile);
 					}
 				}
-			});
+			}).close();
 		this.numRevisions++;
 		stream.close();
 	}

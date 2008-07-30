@@ -87,13 +87,14 @@ public class Revlog {
 	}
 
 
-	public void revision(NodeId node, OutputStream out) {
+	public Revlog revision(NodeId node, OutputStream out) {
 		revision(node, out, true);
+		return this;
 	}
 
-	public void revision(NodeId node, OutputStream out, boolean noMetaData) {
+	public Revlog revision(NodeId node, OutputStream out, boolean noMetaData) {
 		if (node.equals(NULLID)) {
-			return;
+			return this;
 		}
 		if(noMetaData) {
 			out = new RemoveMetaOutputStream(out);
@@ -106,7 +107,7 @@ public class Revlog {
 		}
 		if (cache.containsKey(target)) {
 			writeFromCache(target, out);
-			return;
+			return this;
 		}
 
 		try {
@@ -143,13 +144,8 @@ public class Revlog {
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} finally {
-			try {
-				getDataFile().close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		} 
+		return this;
 	}
 
 	private void writeFromCache(final RevlogEntry target, OutputStream out) {

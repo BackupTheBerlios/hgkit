@@ -30,7 +30,7 @@ public final class ChangeLog extends Revlog {
 	
 	public Entry get(NodeId node) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		super.revision(node, out);
+		super.revision(node, out).close();
 		return new Entry(node, index(node), out.toByteArray());
 	}
 	

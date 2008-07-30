@@ -40,6 +40,7 @@ public class RepositoryTest {
 		for(NodeId nodeId : revlog.getRevisions()) {
 			revlog.revision(nodeId, new ByteArrayOutputStream());
 		}
+		revlog.close();
 	}
 
 

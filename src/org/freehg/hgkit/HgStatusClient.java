@@ -142,7 +142,7 @@ public final class HgStatusClient {
             InputStream local = new BufferedInputStream(new FileInputStream(
                     file));
             ComparingStream comparator = new ComparingStream(local);
-            revlog.revision(getNodeStateByName().get(state.getPath()), comparator);
+            revlog.revision(getNodeStateByName().get(state.getPath()), comparator).close();
             local.close();
             if(comparator.equals) {
                 return FileStatus.Status.MANAGED;

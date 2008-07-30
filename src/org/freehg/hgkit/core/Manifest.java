@@ -17,7 +17,7 @@ public class Manifest extends Revlog {
 	
 	public Map<String, NodeId> get(ChangeLog.Entry changelog) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		super.revision(changelog.getManifestId(), out);
+		super.revision(changelog.getManifestId(), out).close();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
 		return parse(reader);
 	}
