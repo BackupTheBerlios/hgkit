@@ -56,7 +56,7 @@ public class Repository {
     public ChangeLog getChangeLog() {
     	String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
     	File index = new File(logIndex);
-    	return new ChangeLog(index);
+    	return new ChangeLog(this, index);
     }
 
     public Manifest getManifest() {
