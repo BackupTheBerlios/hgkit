@@ -3,14 +3,9 @@ package org.freehg.hgkit.core;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
-import com.jcraft.jzlib.ZInputStream;
+import java.util.zip.InflaterInputStream;
 
 final class Util {
 
@@ -22,11 +17,11 @@ final class Util {
     static final int EOF = -1;
 
     static byte[] doDecompress(byte[] data) throws IOException {
-	    // decompress the bytearray using what should be python zlib
-	    ByteArrayInputStream datain = new ByteArrayInputStream(data);
+    	ByteArrayInputStream datain = new ByteArrayInputStream(data);
 	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
 
-	    InputStream _dec = new ZInputStream(datain);
+	    // decompress the bytearray using what should be python zlib
+		InputStream _dec = new InflaterInputStream(datain);
 	    int read = 0;
 	    while (EOF != (read = _dec.read(buff))) {
 	        uncompressedOut.write(buff, 0, read);
