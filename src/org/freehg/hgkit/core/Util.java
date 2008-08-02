@@ -32,7 +32,7 @@ final class Util {
 			byte dataHeader = data[0];
 			switch(dataHeader) {
 			    case UNCOMPRESSED:
-			    	byte[] copy = new byte[data.length - 1];
+			    	final byte[] copy = new byte[data.length - 1];
 			    	System.arraycopy(data, 1, copy, 0, data.length - 1);
 			    	return copy;
 			    case ZLIB_COMPRESSION:
