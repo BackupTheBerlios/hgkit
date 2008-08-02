@@ -1,31 +1,22 @@
 package org.freehg.hgkit.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.InflaterInputStream;
+import java.util.zip.InflaterOutputStream;
 
 final class Util {
 
 	private static final char ZLIB_COMPRESSION = 'x';
 	private static final char UNCOMPRESSED = 'u';
 
-	private static final int BUFF_SIZE = 4096;
-	private static final byte[] buff = new byte[BUFF_SIZE];
     static final int EOF = -1;
 
     static byte[] doDecompress(byte[] data) throws IOException {
-    	ByteArrayInputStream datain = new ByteArrayInputStream(data);
 	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
-
 	    // decompress the bytearray using what should be python zlib
-		InputStream _dec = new InflaterInputStream(datain);
-	    int read = 0;
-	    while (EOF != (read = _dec.read(buff))) {
-	        uncompressedOut.write(buff, 0, read);
-	    }
+	    new InflaterOutputStream(uncompressedOut).write(data);
 	    return uncompressedOut.toByteArray();
 	}
 
