@@ -39,6 +39,7 @@ public class RevlogTest {
             System.out.println(" -- [OK]");
             log(revision);
         }
+        subject.close();
     }
 
     @Test
@@ -56,6 +57,7 @@ public class RevlogTest {
                 subject.revision(nodeId, new ByteArrayOutputStream());
             }
         }
+        subject.close();
         long end = System.currentTimeMillis();
 
         System.out.println("Took " + (end - start) + " ms");

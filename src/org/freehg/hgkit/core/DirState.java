@@ -5,14 +5,18 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DirState {
 
 	private NodeId currentId;
 	private Map<String, DirStateEntry> dirstate  = new HashMap<String, DirStateEntry>();
+	private List<DirStateEntry> values = new ArrayList<DirStateEntry>(1024);
 	
 	DirState(File dirState) {
 		FileInputStream fis = null;
@@ -31,6 +35,7 @@ public class DirState {
 	private void parse(DataInputStream in) throws IOException {
 		
 		dirstate.clear();
+		values.clear();
 		// ">c l l l l"
 		// state, mode, size, fileModTime, nameLength, bytes[namelength] as name (String) 
 		parseHeader(in);
@@ -48,6 +53,7 @@ public class DirState {
 			// put with both / and \ as path separator
 			this.dirstate.put(path.replace('/', '\\'), entry);
 			this.dirstate.put(path.replace('\\', '/'), entry);
+			this.values.add(entry);
 			
 		}
 	}
@@ -61,7 +67,7 @@ public class DirState {
 	}
 	
 	public Collection<DirStateEntry> getDirState() {
-	    return this.dirstate.values();
+	    return Collections.unmodifiableList(this.values);
 	}
 
 	private void parseHeader(DataInputStream in) throws IOException {

@@ -245,7 +245,7 @@ public class MDiff {
      * @param bin the binary patch
      * @return a list of fragments
      */
-    static LinkedList<Fragment> decode(byte[] bin) {
+    private static LinkedList<Fragment> decode(byte[] bin) {
         // int start, int end, int len, byte[...] data
         LinkedList<Fragment> result = new LinkedList<Fragment>();
         ByteBuffer reader = ByteBuffer.wrap(bin);
@@ -304,7 +304,7 @@ public class MDiff {
      * @return
      */
     @Deprecated
-	public static byte[] patches(byte[] bytes, byte[] patch) {
+	static byte[] patches(byte[] bytes, byte[] patch) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
 		list.add(patch);

@@ -21,8 +21,6 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
 public class Revlog {
 
-	public static final int AUTO_CLOSE = 1;
-
 	private static final String READ_ONLY = "r";
 
 	public static final int REVLOGV0 = 0;
@@ -47,11 +45,6 @@ public class Revlog {
 	private RandomAccessFile reader = null;
 
 	public Revlog(File index) {
-		this(index, AUTO_CLOSE);
-	}
-
-	@Deprecated
-	public Revlog(File index, int style) {
 		indexFile = index;
 		try {
 			parseIndex(index);
@@ -87,50 +80,56 @@ public class Revlog {
 	}
 
 
-	public void revision(NodeId node, OutputStream out) {
-		revision(node, out, true);
+	public Revlog revision(NodeId node, OutputStream out) {
+		return revision(node, out, true);
 	}
 
-	public void revision(NodeId node, OutputStream out, boolean noMetaData) {
+	public Revlog revision(NodeId node, OutputStream out, boolean noMetaData) {
 		if (node.equals(NULLID)) {
-			return;
+			return this;
 		}
+		final RevlogEntry target = nodemap.get(node);
+		return revision(target, out, noMetaData);
+	}
+	
+	protected Revlog revision(int index, OutputStream out, boolean noMetaData) {
+		return revision(this.index.get(index), out, noMetaData);
+	}
+
+	protected Revlog revision(final RevlogEntry target, OutputStream out,
+			boolean noMetaData) {
 		if(noMetaData) {
 			out = new RemoveMetaOutputStream(out);
 		}
-
-		final RevlogEntry target = nodemap.get(node);
 		if ((target.getFlags() & 0xFFFF) != 0) {
 			throw new IllegalStateException("Incompatible revision flag: "
 					+ target.getFlags());
 		}
 		if (cache.containsKey(target)) {
 			writeFromCache(target, out);
-			return;
+			return this;
 		}
 
 		try {
-			RevlogEntry baseRev = index.get(target.getBaseRev());
-			byte[] baseData = cache.get(baseRev);
-			if (baseData == null) {
-				baseData = Util.decompress(baseRev.loadBlock(getDataFile()));
-			}
 			List<byte[]> patches = new ArrayList<byte[]>(target.revision
 					- target.getBaseRev() + 1);
-
-			long worstCaseSize = baseData.length;
-			for (int rev = target.getBaseRev() + 1; rev <= target.revision; ++rev) {
-
-				RevlogEntry nextEntry = this.index.get(rev);
-				if (cache.containsKey(nextEntry)) {
-					baseData = cache.get(nextEntry);
-					patches.clear();
-				} else {
-					byte[] diff = Util.decompress(nextEntry.loadBlock(getDataFile()));
-					patches.add(diff);
-					worstCaseSize += diff.length;
+			byte[] baseData = null;
+			for(int i = target.revision; i >= target.getBaseRev(); i--) {
+				RevlogEntry entry = index.get(i);
+				byte[] fromCache = cache.get(entry);
+				if(fromCache != null) {
+					baseData = fromCache;
+					break;
 				}
+				if(baseData != null) {
+					patches.add(baseData);
+				}
+				baseData = Util.decompress(entry.loadBlock(getDataFile()));
 			}
+			Collections.reverse(patches);
+			// FIXME worst case size value is calculated wrong (but kinda works)
+			long worstCaseSize = baseData.length;
+
 			if (worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
 				CacheOutputStream cacheOut = new CacheOutputStream(out,
 						(int) worstCaseSize);
@@ -143,13 +142,8 @@ public class Revlog {
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} finally {
-			try {
-				getDataFile().close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		} 
+		return this;
 	}
 
 	private void writeFromCache(final RevlogEntry target, OutputStream out) {

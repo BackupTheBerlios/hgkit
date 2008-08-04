@@ -14,16 +14,17 @@ import com.jcraft.jzlib.ZInputStream;
 
 final class Util {
 
-	private static final int BUFF_SIZE = 1024;
-    private static final char ZLIB_COMPRESSION = 'x';
-    private static final char UNCOMPRESSED = 'u';
+	private static final char ZLIB_COMPRESSION = 'x';
+	private static final char UNCOMPRESSED = 'u';
+
+	private static final int BUFF_SIZE = 4096;
+	private static final byte[] buff = new byte[BUFF_SIZE];
     static final int EOF = -1;
 
     static byte[] doDecompress(byte[] data) throws IOException {
 	    // decompress the bytearray using what should be python zlib
 	    ByteArrayInputStream datain = new ByteArrayInputStream(data);
-	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream();
-	    final byte[] buff = new byte[BUFF_SIZE];
+	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
 
 	    InputStream _dec = new ZInputStream(datain);
 	    int read = 0;
@@ -44,14 +45,14 @@ final class Util {
 	
 			byte dataHeader = data[0];
 			switch(dataHeader) {
-			    case 0:
-			        return data;
 			    case UNCOMPRESSED:
 			    	byte[] copy = new byte[data.length - 1];
 			    	System.arraycopy(data, 1, copy, 0, data.length - 1);
 			    	return copy;
 			    case ZLIB_COMPRESSION:
 			        return doDecompress(data);
+			    case 0:
+			    	return data;
 			    default:
 			        throw new RuntimeException("Unknown compression type : "
 			                + (char) (dataHeader));

@@ -10,40 +10,86 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import org.freehg.hgkit.FileStatus;
 
 
 public final class ChangeLog extends Revlog {
 	
-	ChangeLog(File index) {
+	private final Repository repo;
+
+	ChangeLog(Repository repo, File index) {
 		super(index);
-	}
-	ChangeLog(File index, int style) {
-		super(index, style);
+		this.repo = repo;
 	}
 	
-	public Entry get(int revision) {
+	public ChangeSet get(int revision) {
 		NodeId node = super.node(revision);
 		return this.get(node);
 	}
 	
-	public Entry get(NodeId node) {
+	public ChangeSet get(NodeId node) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		super.revision(node, out);
-		return new Entry(node, index(node), out.toByteArray());
+		super.revision(node, out).close();
+		return new ChangeSet(node, index(node), out.toByteArray());
 	}
 	
-	public List<Entry> getLog() {
-		List<Entry> log = new ArrayList<Entry>(count());
-		Set<NodeId> revisions = getRevisions();
-		for (NodeId node : revisions) {
-			log.add(get(node));
+	public List<FileStatus> getFileStatus(ChangeSet changeset) {
+		Manifest manifest = repo.getManifest();
+		int revision = changeset.getRevision();
+		// TODO Beware of rev 0
+		Map<String, NodeId> currMan = manifest.get(changeset);
+		Map<String, NodeId> prevMan = new HashMap<String, NodeId>();
+		if(revision > 0) {
+			ChangeSet prev = get(revision - 1);
+			prevMan = manifest.get(prev);
 		}
-		return log;
+		Set<String> allKeys = new HashSet<String>();
+		allKeys.addAll(currMan.keySet());
+		allKeys.addAll(prevMan.keySet());
+		List<FileStatus> result = new ArrayList<FileStatus>();
+
+		// in both keyset == modified
+		// only in prev == removed
+		// only in curr == added
+		for (String string : allKeys) {
+			FileStatus status = null;
+			if(currMan.containsKey(string) && prevMan.containsKey(string)) {
+				status = new FileStatus(new File(string), FileStatus.Status.MODIFIED);
+			} else if(currMan.containsKey(string)) {
+				status = new FileStatus(new File(string), FileStatus.Status.ADDED);
+			} else { // prevMan contains
+				status = new FileStatus(new File(string), FileStatus.Status.REMOVED);
+			}
+			result.add(status);
+		}
+		return result;
 	}
 	
-	public class Entry {
+	public List<ChangeSet> getLog() {
+		try {
+			int length = count();
+			List<ChangeSet> log = new ArrayList<ChangeSet>(length);
+			for(int revision = 0; revision < length; revision++) {
+				RevlogEntry revlogEntry = index.get(revision);
+				ByteArrayOutputStream out = new ByteArrayOutputStream((int) revlogEntry.getUncompressedLength());
+				super.revision(revlogEntry, out, false);
+				ChangeSet entry = new ChangeSet(revlogEntry.nodeId, revision, out.toByteArray());
+				log.add(entry);
+				
+			}
+			return log;
+		} finally {
+			close();
+		}
+	}
+	
+	public static class ChangeSet {
 		
 		private NodeId manifestId;
 		private int revision;
@@ -101,7 +147,8 @@ public final class ChangeLog extends Revlog {
 					when = dateParse(dateLine);
 
 					String fileLine = reader.readLine();
-					// read while line aint empty, its a file, the it is the comment
+					// read while line aint empty, its a file, the it is the
+					// comment
 					while(0 < fileLine.trim().length()) {
 						files.add(fileLine);
 						fileLine = reader.readLine();
@@ -130,7 +177,7 @@ public final class ChangeLog extends Revlog {
 	    }
 		
 		
-		Entry(NodeId changeId, int revision, byte[] data) {
+		ChangeSet(NodeId changeId, int revision, byte[] data) {
 			
 			try {
 				parse(new ByteArrayInputStream(data));

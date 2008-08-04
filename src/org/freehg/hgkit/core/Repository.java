@@ -54,13 +54,9 @@ public class Repository {
     }
 
     public ChangeLog getChangeLog() {
-    	return getChangeLog(0);
-    }
-    @Deprecated
-    public ChangeLog getChangeLog(int style) {
-        String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
-        File index = new File(logIndex);
-        return new ChangeLog(index, style);
+    	String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
+    	File index = new File(logIndex);
+    	return new ChangeLog(this, index);
     }
 
     public Manifest getManifest() {
