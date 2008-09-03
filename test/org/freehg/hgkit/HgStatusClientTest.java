@@ -19,7 +19,7 @@ public class HgStatusClientTest {
 	public void testStatusClient() throws Exception {
 
 		Repository repo = new Repository(TEST_REPO);
-		String cmd = "hg up -C";
+		String cmd = "/Users/mirko/bin/hg up -C";
 		Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
 		// Repository repo = new Repository("../com.vectrace.MercurialEclipse");
 		long start = System.currentTimeMillis();
@@ -28,7 +28,7 @@ public class HgStatusClientTest {
 		List<FileStatus> status = subject.doStatus(repo.getRoot());
 		long end = System.currentTimeMillis();
 		for (FileStatus hgStatus : status) {
-//		     System.out.println(hgStatus);
+		     System.out.println(hgStatus);
 
         }
 
