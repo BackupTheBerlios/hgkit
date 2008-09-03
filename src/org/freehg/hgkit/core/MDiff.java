@@ -56,17 +56,13 @@ public class MDiff {
             OutputStream out) {
         // if there are no fragments we don't have to do anything
     	try {
-	        if (bins.size() < 1) {
-				out.write(in);
-				return;
-	        }
 	        // convert binary to fragments
 	        List<Fragment> patch = fold(bins, 0, bins.size());
 	        if (patch == null) {
 	            throw new IllegalStateException("Error folding patches");
 	        }
 	        // apply all fragments to in
-	        apply(in, in.length, patch, out);
+	        apply(in, patch, out);
     	} catch (IOException e) {
     		throw new RuntimeException(e);
     	}
@@ -75,7 +71,9 @@ public class MDiff {
     private static LinkedList<Fragment> fold(List<byte[]> bins,
             int start,
             int end) {
-
+    	if(bins.size() < 1) {
+    		return new LinkedList<Fragment>();
+    	}
         /* recursively generate a patch of all bins between
          * start and end */
         if (start + 1 == end) {
@@ -278,10 +276,9 @@ public class MDiff {
     }
 
     private static void apply(byte[] orig,
-            int len,
             List<Fragment> patch,
             OutputStream out) throws IOException {
-
+    	int len = orig.length;
         int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds

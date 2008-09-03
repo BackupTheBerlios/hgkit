@@ -1,36 +1,22 @@
 package org.freehg.hgkit.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
-import com.jcraft.jzlib.ZInputStream;
+import java.util.zip.InflaterOutputStream;
 
 final class Util {
 
 	private static final char ZLIB_COMPRESSION = 'x';
 	private static final char UNCOMPRESSED = 'u';
 
-	private static final int BUFF_SIZE = 4096;
-	private static final byte[] buff = new byte[BUFF_SIZE];
     static final int EOF = -1;
 
     static byte[] doDecompress(byte[] data) throws IOException {
-	    // decompress the bytearray using what should be python zlib
-	    ByteArrayInputStream datain = new ByteArrayInputStream(data);
 	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
-
-	    InputStream _dec = new ZInputStream(datain);
-	    int read = 0;
-	    while (EOF != (read = _dec.read(buff))) {
-	        uncompressedOut.write(buff, 0, read);
-	    }
+	    // decompress the bytearray using what should be python zlib
+	    new InflaterOutputStream(uncompressedOut).write(data);
 	    return uncompressedOut.toByteArray();
 	}
 
@@ -46,7 +32,7 @@ final class Util {
 			byte dataHeader = data[0];
 			switch(dataHeader) {
 			    case UNCOMPRESSED:
-			    	byte[] copy = new byte[data.length - 1];
+			    	final byte[] copy = new byte[data.length - 1];
 			    	System.arraycopy(data, 1, copy, 0, data.length - 1);
 			    	return copy;
 			    case ZLIB_COMPRESSION:
