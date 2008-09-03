@@ -1,10 +1,11 @@
 package org.freehg.hgkit.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.InflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 final class Util {
 
@@ -16,7 +17,13 @@ final class Util {
     static byte[] doDecompress(byte[] data) throws IOException {
 	    ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
 	    // decompress the bytearray using what should be python zlib
-	    new InflaterOutputStream(uncompressedOut).write(data);
+	    final byte[] buffer = new byte[1024];
+        final InflaterInputStream inflaterInputStream = new InflaterInputStream(new ByteArrayInputStream(data));
+        int len = inflaterInputStream.read(buffer);
+        while (len != -1) {
+            uncompressedOut.write(buffer, 0, len);
+            len = inflaterInputStream.read(buffer);
+        }
 	    return uncompressedOut.toByteArray();
 	}
 
