@@ -2,3 +2,4 @@ syntax: glob
 
 mercurial-src
 bin
+.settings/org.eclipse.jdt.ui.prefs
