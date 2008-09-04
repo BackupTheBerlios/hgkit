@@ -38,9 +38,9 @@ public class HgChangeLogTest {
         List<ChangeSet> revisions = subject.getLog();
         end = System.currentTimeMillis();
 
-//        for (ChangeSet changeLog : revisions) {
-//            print(changeLog);
-//        }
+        // for (ChangeSet changeLog : revisions) {
+        // print(changeLog);
+        // }
         System.out.println("Took " + (end - start) + " ms to parse " + revisions.size());
     }
 

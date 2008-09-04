@@ -24,11 +24,12 @@ public class TestHelper {
     }
 
     /**
-     * @return
+     * @return a file pointing to a copy of hgkit.
      */
     public static File createRepoCopy() {
         File sourceDirectory = new File(".hg");
-        final File targetDir = new File(System.getProperty("java.io.tmpdir"), "hgkit-test");        
+
+        final File targetDir = new File("bin", "hgkit-test");
         try {
             FileHelper.copyDirectory(sourceDirectory, new File(targetDir.getAbsolutePath(), ".hg"));
         } catch (IOException e) {
