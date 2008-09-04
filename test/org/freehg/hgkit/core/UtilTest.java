@@ -1,7 +1,6 @@
 /**
  * UtilTest.java 03.09.2008
- * 
- * Copyright (c) 2008 1 & 1 AG, Karlsruhe. All rights reserved.
+ *  
  * 
  */
 
