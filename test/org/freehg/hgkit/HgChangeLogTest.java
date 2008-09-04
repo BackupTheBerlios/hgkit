@@ -1,10 +1,15 @@
 package org.freehg.hgkit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
+import org.freehg.hgkit.core.ChangeLog;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.freehg.hgkit.util.FileHelper;
@@ -31,13 +36,16 @@ public class HgChangeLogTest {
 
         long start = System.currentTimeMillis();
         Repository repo = new Repository(repoDir.getAbsolutePath());
-        org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog();
+        ChangeLog subject = repo.getChangeLog();
 
         long end = System.currentTimeMillis();
         System.out.println("Index took " + (end - start));
         List<ChangeSet> revisions = subject.getLog();
         end = System.currentTimeMillis();
-
+        final ChangeSet initialChangeSet = revisions.get(0);
+        assertEquals("HemPc@PC212826566277", initialChangeSet.getAuthor());
+        assertEquals("c9629f6b37d8", initialChangeSet.getChangeId().toString());        
+        assertEquals(1206558630000L, initialChangeSet.getWhen().getTime());
         // for (ChangeSet changeLog : revisions) {
         // print(changeLog);
         // }
