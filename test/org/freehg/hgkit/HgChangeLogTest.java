@@ -1,18 +1,36 @@
 package org.freehg.hgkit;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
+import org.freehg.hgkit.util.FileHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class HgChangeLogTest {
+
+    private static File repoDir;
+
+    @BeforeClass
+    public static void createCopy() {
+        repoDir = TestHelper.createRepoCopy();
+    }
+
+    @AfterClass
+    public static void deleteCopy() {
+        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    }
 
     @Test
     public void testGetLog() {
 
         long start = System.currentTimeMillis();
-        Repository repo = new Repository("hg-stable");
+        Repository repo = new Repository(repoDir.getAbsolutePath());
         org.freehg.hgkit.core.ChangeLog subject = repo.getChangeLog();
 
         long end = System.currentTimeMillis();
@@ -20,13 +38,13 @@ public class HgChangeLogTest {
         List<ChangeSet> revisions = subject.getLog();
         end = System.currentTimeMillis();
 
-        // for(ChangeSet changeLog : revisions) {
-        // print(changeLog);
-        // ++count;
-        // };
+//        for (ChangeSet changeLog : revisions) {
+//            print(changeLog);
+//        }
         System.out.println("Took " + (end - start) + " ms to parse " + revisions.size());
     }
 
+    @SuppressWarnings("unused")
     private void print(ChangeSet changeLog) {
         log(changeLog.getChangeId().asShort());
         log(changeLog.getWhen());
@@ -47,7 +65,7 @@ public class HgChangeLogTest {
     }
 
     private void log(Object o) {
-        if (false) {
+        if (true) {
             System.out.println(o.toString());
         }
     }
