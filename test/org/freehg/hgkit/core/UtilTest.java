@@ -31,8 +31,8 @@ public class UtilTest {
     /**
      * 
      */
-    private static final byte[] COMPRESSED_ABC = new byte[] { 'x', (byte) 0x9c,
-            'K', 'L', 'J', 0x06, 0x00, 0x02, 'M', 0x01, '\'' };
+    private static final byte[] COMPRESSED_ABC = new byte[] { 'x', (byte) 0x9c, 'K', 'L', 'J', 0x06, 0x00, 0x02, 'M',
+            0x01, '\'' };
 
     /**
      * Test method for {@link org.freehg.hgkit.core.Util#doDecompress(byte[])}.
@@ -61,25 +61,45 @@ public class UtilTest {
         uncompressed[0] = 0;
         assertEquals(uncompressed, Util.decompress(uncompressed));
     }
-    
+
     /**
      * Test method for {@link org.freehg.hgkit.core.Util#decompress(byte[])}.
      * Tests decompressing a whole file.
      */
     @Test
     public final void testDecompressWholeFile() {
-        final byte[] passwd;
+        final byte[] uncompressed_passwd;
         final byte[] compressed_passwd;
+        uncompressed_passwd = readResource("/passwd");
+        compressed_passwd = readResource("/compressed_passwd");
+        assertEquals(new String(uncompressed_passwd), new String(Util.decompress(compressed_passwd)));
+    }
+
+    /**
+     * Reads resource into byte array and closes it immediately.
+     * 
+     * @param name resource name.
+     * @return
+     * @throws IOException
+     */
+    private byte[] readResource(final String name) {
+        final byte[] resourceBytes;
+        InputStream in = UtilTest.class.getResourceAsStream(name);
         try {
-            passwd = Util.readWholeFile(UtilTest.class.getResourceAsStream("/passwd"));
-            compressed_passwd = Util.readWholeFile(UtilTest.class.getResourceAsStream("/compressed_passwd"));
+            try {
+                resourceBytes = Util.readWholeFile(in);
+            } finally {
+                in.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        assertArrayEquals(passwd, Util.decompress(compressed_passwd));
+        return resourceBytes;
     }
+
     /**
      * Test method for {@link org.freehg.hgkit.core.Util#decompress(byte[])}.
+     * Tests invalid data.
      */
     @Test(expected = RuntimeException.class)
     public final void testDecompressError() {
@@ -89,27 +109,28 @@ public class UtilTest {
     /**
      * Test method for
      * {@link org.freehg.hgkit.core.Util#forwardSlashes(java.lang.String)}.
+     * 
+     * Simple tests for simple function :-).
      */
     @Test
     public final void testForwardSlashes() {
         assertEquals("/", Util.forwardSlashes("\\"));
+        assertEquals("/me/myself/and/i//", Util.forwardSlashes("\\me\\myself\\and\\i\\\\"));
     }
 
     /**
      * Test method for
      * {@link org.freehg.hgkit.core.Util#readWholeFile(java.io.InputStream)}.
-     * 
-     * @throws IOException
+     *    
      */
     @Test
-    public final void testReadWholeFile() throws IOException {
+    public final void testReadWholeFile() {
         final String prefix = "##\n# User Database";
         final String suffix = "_unknown:*:99:99:Unknown User:/var/empty:/usr/bin/false\n";
-        InputStream in = UtilTest.class.getResourceAsStream("/passwd");
-        String passwd = new String(Util.readWholeFile(in));
-        assertTrue("Should start with '" + prefix + "'", passwd.startsWith(prefix));        
-        assertTrue("Should end with '" + suffix + "'", passwd.endsWith(suffix));
-        assertEquals(2888, passwd.length());
+        String uncompressed_passwd = new String(readResource("/passwd"));
+        assertTrue("Should start with '" + prefix + "'", uncompressed_passwd.startsWith(prefix));
+        assertTrue("Should end with '" + suffix + "'", uncompressed_passwd.endsWith(suffix));
+        assertEquals(2888, uncompressed_passwd.length());
     }
 
     /**
@@ -121,21 +142,21 @@ public class UtilTest {
         Util.close(null);
         Util.close(UtilTest.class.getResourceAsStream("/passwd"));
     }
-    
+
     /**
      * Test method for
-     * {@link org.freehg.hgkit.core.Util#close(java.io.Closeable)}.
-     * @throws IOException 
+     * {@link org.freehg.hgkit.core.Util#close(java.io.Closeable)}. Tests wether
+     * our close really converts {@link IOException} to {@link RuntimeException}
+     * .
      */
-    @Test(expected=RuntimeException.class)
-    public final void testCloseException() throws IOException {
-        Util.close(
-        new Closeable() {
+    @Test(expected = RuntimeException.class)
+    public final void testCloseException() {
+        Util.close(new Closeable() {
 
             public void close() throws IOException {
-                throw new IOException("Oops");                
+                throw new IOException("Oops");
             }
-            
+
         });
     }
 
