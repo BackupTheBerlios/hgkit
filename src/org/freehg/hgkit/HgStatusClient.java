@@ -24,20 +24,27 @@ import org.freehg.hgkit.core.DirState.DirStateEntry;
 
 public final class HgStatusClient {
 
-	private static final char STATE_MERGED = 'm';
-	private static final char STATE_ADDED = 'a';
-	private static final char STATE_REMOVED = 'r';
+    private static final char STATE_MERGED = 'm';
+
+    private static final char STATE_ADDED = 'a';
+
+    private static final char STATE_REMOVED = 'r';
+
     private static final char STATE_NORMAL = 'n';
+
     private DirState dirState;
+
     private final Repository repo;
+
     private Ignore ignore;
-	private Map<String, NodeId> nodeStateByName;
-	
+
+    private Map<String, NodeId> nodeStateByName;
+
     public HgStatusClient(Repository repo) {
-    	if (repo == null) {
-    		throw new IllegalArgumentException("Repository may not be null");
-    	}
-		this.repo = repo;
+        if (repo == null) {
+            throw new IllegalArgumentException("Repository may not be null");
+        }
+        this.repo = repo;
         this.dirState = repo.getDirState();
     }
 
@@ -52,8 +59,8 @@ public final class HgStatusClient {
     }
 
     private List<FileStatus> getStatus(final File file, final boolean recurse, boolean parentIgnored) {
-        if(Repository.isRepoPrivate(file)) {
-        	return Collections.EMPTY_LIST;
+        if (Repository.isRepoPrivate(file)) {
+            return Collections.EMPTY_LIST;
         }
         List<FileStatus> result = new ArrayList<FileStatus>();
 
@@ -92,28 +99,28 @@ public final class HgStatusClient {
         FileStatus status = new FileStatus(relativeFile);
         DirStateEntry state = this.dirState.getState(relativeFile.getPath());
 
-        if(state != null) {
-	        switch(state.getState()) {
-		        case STATE_NORMAL:
-		        	status.setStatus(checkStateNormal(file, state));
-		        	break;
-	            case STATE_ADDED:
-	                status.setStatus(FileStatus.Status.ADDED);
-	                break;
-	            case STATE_REMOVED:
-	                status.setStatus(FileStatus.Status.REMOVED);
-	                break;
-	            case STATE_MERGED:
-	                status.setStatus(FileStatus.Status.MERGED);
-	                break;
-	            default:
-	        }
+        if (state != null) {
+            switch (state.getState()) {
+            case STATE_NORMAL:
+                status.setStatus(checkStateNormal(file, state));
+                break;
+            case STATE_ADDED:
+                status.setStatus(FileStatus.Status.ADDED);
+                break;
+            case STATE_REMOVED:
+                status.setStatus(FileStatus.Status.REMOVED);
+                break;
+            case STATE_MERGED:
+                status.setStatus(FileStatus.Status.MERGED);
+                break;
+            default:
+            }
         } else {
-	        if (parentIgnored || isIgnored(relativeFile)) {
-	        	status.setStatus(FileStatus.Status.IGNORED);
-	        } else {
-	        	status.setStatus(FileStatus.Status.NOT_TRACKED);
-	        }
+            if (parentIgnored || isIgnored(relativeFile)) {
+                status.setStatus(FileStatus.Status.IGNORED);
+            } else {
+                status.setStatus(FileStatus.Status.NOT_TRACKED);
+            }
         }
         return status;
     }
@@ -122,7 +129,7 @@ public final class HgStatusClient {
         // On (n)ormal files
         // if size and mod time is same as in dirstate nothing has happened
         // if the size HAS changed, the file must have changed
-    	// After an update, dirstate is not written back and contains -1
+        // After an update, dirstate is not written back and contains -1
         if (0 <= state.getSize() && state.getSize() != file.length()) {
             return FileStatus.Status.MODIFIED;
         }
@@ -135,16 +142,15 @@ public final class HgStatusClient {
         // if the filemod time has changed but the size haven't
         // then we must compare against the repository version
         Revlog revlog = repo.getRevlog(file);
-        
-        try {
-        	// System.out.println("Comparing against stored revision");
 
-            InputStream local = new BufferedInputStream(new FileInputStream(
-                    file));
+        try {
+            // System.out.println("Comparing against stored revision");
+
+            InputStream local = new BufferedInputStream(new FileInputStream(file));
             ComparingStream comparator = new ComparingStream(local);
             revlog.revision(getNodeStateByName().get(state.getPath()), comparator).close();
             local.close();
-            if(comparator.equals) {
+            if (comparator.equals) {
                 return FileStatus.Status.MANAGED;
             }
             return FileStatus.Status.MODIFIED;
@@ -153,44 +159,47 @@ public final class HgStatusClient {
         }
     }
 
-	/**
-	 * @return the nodeStateByName
-	 */
-	private Map<String, NodeId> getNodeStateByName() {
-		if(this.nodeStateByName == null) {
-			long start = System.currentTimeMillis();
-	        ChangeLog log = repo.getChangeLog();
-	        ChangeSet entry = log.get(dirState.getId());
-	        this.nodeStateByName = repo.getManifest().get(entry);
-	        long end = System.currentTimeMillis();
-			System.out.println(">>> took " + (end - start) + " ms");
-		}
-		return nodeStateByName;
-	}
+    /**
+     * @return the nodeStateByName
+     */
+    private Map<String, NodeId> getNodeStateByName() {
+        if (this.nodeStateByName == null) {
+            long start = System.currentTimeMillis();
+            ChangeLog log = repo.getChangeLog();
+            ChangeSet entry = log.get(dirState.getId());
+            this.nodeStateByName = repo.getManifest().get(entry);
+            long end = System.currentTimeMillis();
+            System.out.println(">>> took " + (end - start) + " ms");
+        }
+        return nodeStateByName;
+    }
 
-	/**
-	 * @return the ignore
-	 */
-	private Ignore getIgnore() {
-		if(this.ignore == null) {
-			this.ignore = repo.getIgnore();
-		}
-		return ignore;
-	}
+    /**
+     * @return the ignore
+     */
+    private Ignore getIgnore() {
+        if (this.ignore == null) {
+            this.ignore = repo.getIgnore();
+        }
+        return ignore;
+    }
 
-	private static class ComparingStream extends OutputStream {
+    private static class ComparingStream extends OutputStream {
         private boolean equals = true;
+
         private final InputStream in;
+
         ComparingStream(InputStream in) {
             this.in = in;
 
         }
+
         @Override
         public void write(int b) throws IOException {
             int fromStream = in.read();
             b &= 0xFF;
             fromStream &= 0xFF;
-			if( b != fromStream) {
+            if (b != fromStream) {
                 this.equals = false;
             }
         }
