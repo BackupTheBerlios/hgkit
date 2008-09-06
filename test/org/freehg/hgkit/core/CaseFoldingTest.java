@@ -13,6 +13,7 @@ public class CaseFoldingTest {
     @Test
     public void testFold() {
         String result = CaseFolding.fold(TEST_STRING);
+        System.err.println(result);
         assertFalse(result.equals(TEST_STRING));
     }
 
