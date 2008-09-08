@@ -49,4 +49,8 @@ public class CaseFoldingTest {
         assertEquals(unfolded, result);        
     }
 
+    @Test(expected=AssertionError.class)
+    public void testErrorInUnfold() {
+        CaseFolding.unfold(folded + "A");
+    }
 }

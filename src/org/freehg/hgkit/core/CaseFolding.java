@@ -121,7 +121,11 @@ public final class CaseFolding {
             } else {
                 keyCharacters = new char[] { foldedName.charAt(i++) };
             }
-            unfolded.append(UNFOLD_MAP.get(new String(keyCharacters)));
+            final String key = new String(keyCharacters);
+            if (!UNFOLD_MAP.containsKey(key)) {
+                throw new AssertionError("UNFOLD_MAP does not contain " + key);
+            }
+            unfolded.append(UNFOLD_MAP.get(key));
         }
         return unfolded.toString();
     }
