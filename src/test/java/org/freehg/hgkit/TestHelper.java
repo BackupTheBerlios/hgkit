@@ -29,7 +29,7 @@ public class TestHelper {
     public static File createRepoCopy() {
         File sourceDirectory = new File(".hg");
 
-        final File targetDir = new File("bin", "hgkit-test");
+        final File targetDir = new File("target", "hgkit-test");
         try {
             FileHelper.copyDirectory(sourceDirectory, new File(targetDir.getAbsolutePath(), ".hg"));
         } catch (IOException e) {

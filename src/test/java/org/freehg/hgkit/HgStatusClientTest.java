@@ -1,23 +1,40 @@
 package org.freehg.hgkit;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
+import org.freehg.hgkit.util.FileHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class HgStatusClientTest {
 
-    private static final String TEST_REPO = System.getProperty("hgkit.test.repo", "hg-stable");
+    private static File repoDir;
+
+    @BeforeClass
+    public static void createCopy() {
+        repoDir = TestHelper.createRepoCopy();
+    }
+
+    @AfterClass
+    public static void deleteCopy() {
+        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    }
 
     @Test
     public void testStatusClient() throws Exception {
 
-        Repository repo = new Repository(TEST_REPO);
+        Repository repo = new Repository(repoDir.getAbsolutePath());
+        System.err.println(repo.getRoot().getAbsolutePath());
         String cmd = "/Users/mirko/bin/hg up -C";
         Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
-        // Repository repo = new Repository("../com.vectrace.MercurialEclipse");
         long start = System.currentTimeMillis();
         HgStatusClient subject = new HgStatusClient(repo);
 
@@ -33,14 +50,14 @@ public class HgStatusClientTest {
 
     @Ignore
     @Test
-    public void testStatusClientNasty() throws Exception {
+    public void testStatusClientNasty() throws InterruptedException, IOException {
 
-        Repository repo = new Repository(TEST_REPO);
+        Repository repo = new Repository(repoDir.getAbsolutePath());
         List<ChangeSet> log = repo.getChangeLog().getLog();
         int count = 0;
         for (ChangeSet changeSet : log) {
             if (count++ % 100 == 0) {
-                repo = new Repository(TEST_REPO);
+                repo = new Repository(repoDir.getAbsoluteFile());
                 String cmd = "hg up -C -r " + changeSet.getChangeId().asShort();
                 System.out.println(cmd);
                 Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
