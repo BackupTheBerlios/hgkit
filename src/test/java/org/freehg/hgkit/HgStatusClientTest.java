@@ -29,11 +29,11 @@ public class HgStatusClientTest {
     }
 
     @Test
-    public void testStatusClient() throws Exception {
-
+    public void testStatusClient() throws InterruptedException, IOException {
         Repository repo = new Repository(repoDir.getAbsolutePath());
         System.err.println(repo.getRoot().getAbsolutePath());
-        String cmd = "/Users/mirko/bin/hg up -C";
+        // hg must be found in your PATH!
+        final String cmd = "hg update --clean";
         Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
         long start = System.currentTimeMillis();
         HgStatusClient subject = new HgStatusClient(repo);
@@ -58,7 +58,7 @@ public class HgStatusClientTest {
         for (ChangeSet changeSet : log) {
             if (count++ % 100 == 0) {
                 repo = new Repository(repoDir.getAbsoluteFile());
-                String cmd = "hg up -C -r " + changeSet.getChangeId().asShort();
+                final String cmd = "hg update --clean --rev " + changeSet.getChangeId().asShort();
                 System.out.println(cmd);
                 Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
                 doStatus(repo);
