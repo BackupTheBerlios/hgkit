@@ -9,6 +9,22 @@
     <url>http://hgkit.berlios.de/</url>
     <description>HgKit aims to be a java library for managing
         mercurial (hg) repositories.</description>
+    <issueManagement>
+        <system>berlios</system>
+        <url>https://developer.berlios.de/bugs/?group_id=10058</url>
+    </issueManagement>
+    <scm>
+        <connection>scm:hg:http://hg.berlios.de/repos/hgkit</connection>
+        <developerConnection>scm:hg:http://hg.berlios.de/repos/hgkit</developerConnection>
+        <url>http://hg.berlios.de/repos/hgkit</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>shell.berlios.de</id>
+            <name>HgKit Website on berlios</name>
+            <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/</url>
+        </site>
+    </distributionManagement>
     <build>
         <plugins>
             <plugin>
