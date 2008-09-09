@@ -7,6 +7,8 @@
     <version>1.0-SNAPSHOT</version>
     <name>hgkit</name>
     <url>http://hgkit.berlios.de/</url>
+    <description>HgKit aims to be a java library for managing
+        mercurial (hg) repositories.</description>
     <build>
         <plugins>
             <plugin>
