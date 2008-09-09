@@ -1,6 +1,6 @@
 package org.freehg.hgkit.core;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -11,7 +11,17 @@ import org.junit.Test;
 public class RepositoryTest {
 
 
-	@Test
+	/**
+     * 
+     */
+    private static final String HG_STATUS_CLIENT_SOURCE = "src/main/java/org/freehg/hgkit/HgStatusClient.java";
+    /**
+     * 
+     */
+    private static final String MDIFF_SOURCE = "src/main/java/org/freehg/hgkit/core/MDiff.java";
+
+
+    @Test
 	public void getChangeLog() {
 		Repository subject = getSubject();
 		subject.getChangeLog().close();
@@ -19,11 +29,12 @@ public class RepositoryTest {
 	@Test
 	public void testGetIndex() {
 		Repository subject = getSubject();
-		File theFile = new File("src/org/freehg/hgkit/HgStatusClient.java");
+		File theFile = new File(HG_STATUS_CLIENT_SOURCE);
 		File index = subject.getIndex(theFile);
 		// System.out.println(index);
 		assertTrue(index.exists());
 	}
+	
 	private Repository getSubject() {
 		Repository subject = new Repository(".");
 		return subject;
@@ -32,7 +43,7 @@ public class RepositoryTest {
 	@Test
 	public void testReadIndex() {
 		Repository subject = getSubject();
-		File theFile = new File("src/org/freehg/hgkit/core/MDiff.java");
+		File theFile = new File(MDIFF_SOURCE);
 		File index = subject.getIndex(theFile);
 
 		Revlog revlog = new Revlog(index);
