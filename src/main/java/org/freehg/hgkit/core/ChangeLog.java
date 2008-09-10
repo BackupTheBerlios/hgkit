@@ -117,7 +117,7 @@ public final class ChangeLog extends Revlog {
         }
 
         public Date getWhen() {
-            return when;
+            return (Date)when.clone();
         }
 
         public String getAuthor() {

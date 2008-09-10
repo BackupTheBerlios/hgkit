@@ -31,7 +31,7 @@ public class FileHelper {
      * Delete directory recursively.
      * 
      * @param path
-     * @return
+     * @return false if directory could not be deleted.
      */
     public static boolean deleteDirectory(File path) {
         if (path.exists()) {
@@ -71,15 +71,17 @@ public class FileHelper {
 
             InputStream in = new FileInputStream(sourceLocation);
             OutputStream out = new FileOutputStream(targetLocation);
-
-            // Copy the bits from instream to outstream
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+            try {
+                // Copy the bits from instream to outstream
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                in.close();
+                out.close();
             }
-            in.close();
-            out.close();
         }
     }
 }

@@ -81,7 +81,8 @@ public class DirState {
         in.skip(20);
     }
 
-    public class DirStateEntry {
+    public static class DirStateEntry {
+        
         private long size;
 
         private long mode;

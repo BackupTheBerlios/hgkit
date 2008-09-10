@@ -293,7 +293,8 @@ public class Revlog {
         }
     }
 
-    private class RevlogCache extends LinkedHashMap<RevlogEntry, byte[]> {
+    private static class RevlogCache extends LinkedHashMap<RevlogEntry, byte[]> {
+        
         private static final long serialVersionUID = 6934630760462643470L;
 
         static final int CACHE_SMALL_REVISIONS = 4024;
