@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Changes</title>
+    </properties>
+    <body>
+        <release
+            version="SNAPSHOT"
+            date="__NEXT__"
+            description="">
+            <action
+                dev="mfriedenhagen"
+                type="new">Inital</action>
+        </release>
+    </body>
+</document>
