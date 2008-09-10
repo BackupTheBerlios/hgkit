@@ -29,7 +29,7 @@ public final class Ignore {
 
     private final Repository repo;
 
-    public Ignore(Repository repo) {
+    Ignore(Repository repo) {
         this.repo = repo;
     }
 
@@ -45,11 +45,12 @@ public final class Ignore {
     }
 
     public boolean isIgnored(File file) {
+        File relativeFile = file; 
         if (this.ignores.isEmpty()) {
             return false;
         }
         if (file.isAbsolute()) {
-            file = repo.makeRelative(file);
+            relativeFile = repo.makeRelative(file);
         }
         for (IgnoreEntry ignore : this.ignores) {
             if (ignore.ignores(file.getPath())) {
@@ -62,19 +63,28 @@ public final class Ignore {
     void parse(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         try {
-            String readLine = null;
-            while (null != (readLine = reader.readLine())) {
-                String line = readLine.trim();
-                if (0 < line.length()) {
-                    try {
-                        parseLine(line);
-                    } catch (PatternSyntaxException ex) {
-                        // TODO: Write this to repository.errorHandler()
-                    }
-                }
-            }
+            parse(reader);
         } finally {
             reader.close();
+        }
+    }
+
+    /**
+     * Take a reader, this for easier tests.
+     * @param reader
+     * @throws IOException
+     */
+    void parse(BufferedReader reader) throws IOException {
+        String readLine = null;
+        while (null != (readLine = reader.readLine())) {
+            String line = readLine.trim();
+            if (0 < line.length()) {
+                try {
+                    parseLine(line);
+                } catch (PatternSyntaxException ex) {
+                    // TODO: Write this to repository.errorHandler()
+                }
+            }
         }
     }
 
