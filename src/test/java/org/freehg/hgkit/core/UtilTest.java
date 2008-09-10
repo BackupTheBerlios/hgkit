@@ -14,6 +14,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.freehg.hgkit.util.FileHelper;
 import org.junit.Test;
 
 /**
@@ -135,23 +136,23 @@ public class UtilTest {
 
     /**
      * Test method for
-     * {@link org.freehg.hgkit.core.Util#close(java.io.Closeable)}.
+     * {@link org.freehg.hgkit.util.FileHelper#close(java.io.Closeable)}.
      */
     @Test
     public final void testClose() {
-        Util.close(null);
-        Util.close(UtilTest.class.getResourceAsStream("/passwd"));
+        FileHelper.close(null);
+        FileHelper.close(UtilTest.class.getResourceAsStream("/passwd"));
     }
 
     /**
      * Test method for
-     * {@link org.freehg.hgkit.core.Util#close(java.io.Closeable)}. Tests wether
+     * {@link org.freehg.hgkit.util.FileHelper#close(java.io.Closeable)}. Tests wether
      * our close really converts {@link IOException} to {@link RuntimeException}
      * .
      */
     @Test(expected = RuntimeException.class)
     public final void testCloseException() {
-        Util.close(new Closeable() {
+        FileHelper.close(new Closeable() {
 
             public void close() throws IOException {
                 throw new IOException("Oops");

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.freehg.hgkit.util.FileHelper;
+
 public class DirState {
 
     private NodeId currentId;
@@ -30,7 +32,7 @@ public class DirState {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            Util.close(fis);
+            FileHelper.close(fis);
         }
     }
 
