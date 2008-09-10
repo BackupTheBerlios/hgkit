@@ -15,6 +15,7 @@ def main():
         remoteid = getRepoId("http://hg.berlios.de/repos/hgkit")
         logging.info("localid=%s, remoteid=%s" % (localid, remoteid))
         if localid != remoteid:
+            os.system("hg pull --update")
             os.system("mvn clean site")
         time.sleep(60)
 
