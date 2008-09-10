@@ -9,7 +9,7 @@ def getRepoId(path):
     finally:
         h.close()
 
-def main():
+def main(sleep=60):
     while True:
         localid = getRepoId(".")
         remoteid = getRepoId("http://hg.berlios.de/repos/hgkit")
@@ -17,7 +17,8 @@ def main():
         if localid != remoteid:
             os.system("hg pull --update")
             os.system("mvn clean site")
-        time.sleep(60)
+        logging.info("Sleeping for %d seconds" % sleep)
+        time.sleep(sleep)
 
 if __name__ == "__main__":
     logging.BASIC_FORMAT = "%(asctime)s:" + logging.BASIC_FORMAT
