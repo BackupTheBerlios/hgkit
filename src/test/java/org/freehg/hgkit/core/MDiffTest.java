@@ -71,6 +71,8 @@ public class MDiffTest {
             list.add(newPatch(i + 2 + 4, 2, "PP"));
 
         }
-        MDiff.patches(text.getBytes(), list, System.out);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        MDiff.patches(text.getBytes(), list, out);
+        System.err.println("Patch-size:" + out.size());
     }
 }
