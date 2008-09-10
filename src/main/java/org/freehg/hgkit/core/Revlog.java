@@ -195,11 +195,13 @@ public class Revlog {
 	 */
 	private void parseIndex(File index) throws IOException {
 		DataInputStream reader = new DataInputStream(new FileInputStream(index));
-		int version = reader.readInt();
-		reader.close();
-		reader = new DataInputStream(new BufferedInputStream(
-				new FileInputStream(index)));
-
+		final int version;
+		try {
+		    version = reader.readInt();
+		} finally {
+		    reader.close();
+		}
+		
 		isDataInline = (version & REVLOGNGINLINEDATA) != 0;
 		// Its pretty odd, but its the revlogFormat which is the "version"
 		final long revlogFormat = version & 0xFFFF;
@@ -213,8 +215,15 @@ public class Revlog {
 
 		nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
 		this.index = new ArrayList<RevlogEntry>(100);
-
-		byte[] data = Util.readWholeFile(reader);
+		
+        reader = new DataInputStream(new BufferedInputStream(
+                new FileInputStream(index)));
+        final byte[] data;
+        try {
+            data = Util.readWholeFile(reader);
+        } finally {
+            reader.close();
+        }
 		int length = data.length - RevlogEntry.BINARY_LENGTH;
 
 		int indexCount = 0;
