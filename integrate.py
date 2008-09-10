@@ -15,7 +15,8 @@ def main(sleep=60):
         remoteid = getRepoId("http://hg.berlios.de/repos/hgkit")
         logging.info("localid=%s, remoteid=%s" % (localid, remoteid))
         if localid != remoteid:
-            os.system("mvn scm:update clean site site:deploy")
+            os.system("hg pull --update")
+            os.system("mvn clean site site:deploy")
         logging.info("Sleeping for %d seconds" % sleep)
         time.sleep(sleep)
 
