@@ -20,7 +20,7 @@ public class HgChangeLogTest {
 
     @BeforeClass
     public static void createCopy() {
-        repoDir = TestHelper.createRepoCopy();
+        repoDir = Util.createRepoCopy();
     }
 
     @AfterClass

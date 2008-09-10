@@ -40,7 +40,9 @@ public class FileHelper {
                 if (files[i].isDirectory()) {
                     deleteDirectory(files[i]);
                 } else {
-                    files[i].delete();
+                    if (!files[i].delete()) {
+                        System.err.println("Could not delete " + files[i].getAbsolutePath());
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package org.freehg.hgkit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class HgStatusClientTest {
 
     @BeforeClass
     public static void createCopy() {
-        repoDir = TestHelper.createRepoCopy();
+        repoDir = Util.createRepoCopy();
     }
 
     @AfterClass
@@ -31,10 +32,10 @@ public class HgStatusClientTest {
     @Test
     public void testStatusClient() throws InterruptedException, IOException {
         Repository repo = new Repository(repoDir.getAbsolutePath());
-        System.err.println(repo.getRoot().getAbsolutePath());
+        System.err.println("Repo to inspect: " +repo.getRoot().getAbsolutePath());
         // hg must be found in your PATH!
         final String cmd = "hg update --clean";
-        Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor();
+        assertEquals("'" + cmd + "' did not exit properly.", 0, Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor());
         long start = System.currentTimeMillis();
         HgStatusClient subject = new HgStatusClient(repo);
 
@@ -42,7 +43,6 @@ public class HgStatusClientTest {
         long end = System.currentTimeMillis();
         for (FileStatus hgStatus : status) {
             System.out.println(hgStatus);
-
         }
 
         System.out.println("Status walk took " + (end - start) + " ms");

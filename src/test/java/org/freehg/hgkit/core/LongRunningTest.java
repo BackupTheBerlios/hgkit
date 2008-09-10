@@ -1,5 +1,7 @@
 package org.freehg.hgkit.core;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,21 +11,37 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.freehg.hgkit.Util;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
+import org.freehg.hgkit.util.FileHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class LongRunningTest {
+    
+    private static File repoDir;
+
+    @BeforeClass
+    public static void createCopy() {        
+        repoDir = Util.createRepoCopy();
+    }
+
+    @AfterClass
+    public static void deleteCopy() {
+        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    }
 
 	private int numRevisions;
 
 	@Test
 	public void testAll() throws Exception {
 		Repository subject = getSubject();
-		int count = walk(subject,new File("hg-stable"));
+		int count = walk(subject,repoDir);
 		System.out.println(count + " num files tested and " + numRevisions + " revivions");
 	}
 	private Repository getSubject() {
-		return new Repository("hg-stable");
+		return new Repository(repoDir.getAbsolutePath());
 	}
 	private int walk(Repository repo, File dir) throws IOException {
 		String abs = dir.getAbsolutePath();
