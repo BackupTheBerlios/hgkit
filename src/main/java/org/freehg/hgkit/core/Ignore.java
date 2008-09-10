@@ -53,7 +53,7 @@ public final class Ignore {
             relativeFile = repo.makeRelative(file);
         }
         for (IgnoreEntry ignore : this.ignores) {
-            if (ignore.ignores(file.getPath())) {
+            if (ignore.ignores(relativeFile.getPath())) {
                 return true;
             }
         }
