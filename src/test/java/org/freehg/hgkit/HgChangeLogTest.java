@@ -41,7 +41,7 @@ public class HgChangeLogTest {
         end = System.currentTimeMillis();
         final ChangeSet initialChangeSet = revisions.get(0);
         assertEquals("HemPc@PC212826566277", initialChangeSet.getAuthor());
-        assertEquals("c9629f6b37d8", initialChangeSet.getChangeId().toString());        
+        assertEquals("c9629f6b37d8", initialChangeSet.getChangeId().toString());
         assertEquals(1206558630000L, initialChangeSet.getWhen().getTime());
         // for (ChangeSet changeLog : revisions) {
         // print(changeLog);

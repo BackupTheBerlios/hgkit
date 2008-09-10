@@ -5,24 +5,26 @@ import java.io.IOException;
 
 public class Repository {
     public static final String HG = ".hg/";
+
     private static final String STORE = HG + "store/";
+
     private static final String DATA = STORE + "/data/";
 
     private static final String INDEX_SUFFIX = ".i";
+
     private static final String DIRSTATE = "dirstate";
 
     private final File root;
 
-
     public Repository(File root) {
-        if(!root.exists()) {
+        if (!root.exists()) {
             throw new IllegalArgumentException(root + " must exist");
         }
         try {
-			this.root = root.getCanonicalFile();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+            this.root = root.getCanonicalFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Repository(String string) {
@@ -34,29 +36,29 @@ public class Repository {
             throw new IllegalArgumentException(file + " must be a file");
         }
         String filePath;
-		try {
-			filePath = file.getCanonicalPath();
-			String rootPath = Util.forwardSlashes(root.getCanonicalPath());
-			String relativeRoot = Util.forwardSlashes(filePath.substring(rootPath.length()));
-			String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
-			return new File(rootPath + "/" + indexName);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+        try {
+            filePath = file.getCanonicalPath();
+            String rootPath = Util.forwardSlashes(root.getCanonicalPath());
+            String relativeRoot = Util.forwardSlashes(filePath.substring(rootPath.length()));
+            String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
+            return new File(rootPath + "/" + indexName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     public Ignore getIgnore() {
-    	StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(root.getAbsolutePath());
-		stringBuilder.append("/.hgignore");
-		File ignoreFile = new File(stringBuilder.toString());
-    	return new Ignore(this,ignoreFile);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(root.getAbsolutePath());
+        stringBuilder.append("/.hgignore");
+        File ignoreFile = new File(stringBuilder.toString());
+        return new Ignore(this, ignoreFile);
     }
 
     public ChangeLog getChangeLog() {
-    	String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
-    	File index = new File(logIndex);
-    	return new ChangeLog(this, index);
+        String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
+        File index = new File(logIndex);
+        return new ChangeLog(this, index);
     }
 
     public Manifest getManifest() {
@@ -67,10 +69,10 @@ public class Repository {
     }
 
     public DirState getDirState() {
-    	
+
         String path = new StringBuilder(root.getAbsolutePath()).append('/').append(HG).append(DIRSTATE).toString();
         File dirStateFile = new File(path);
-        if(! dirStateFile.exists()) {
+        if (!dirStateFile.exists()) {
             throw new IllegalStateException("Unable to find dirstate file at location: " + path);
         }
         return new DirState(dirStateFile);
@@ -82,18 +84,18 @@ public class Repository {
     }
 
     public File makeRelative(File file) {
-    	try {
-			file = file.getCanonicalFile();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+        try {
+            file = file.getCanonicalFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         String abs = file.getAbsolutePath();
         String rootPath = root.getAbsolutePath();
-		if(!abs.startsWith(rootPath)) {
+        if (!abs.startsWith(rootPath)) {
             throw new IllegalArgumentException(file + " is not a child of " + root);
         }
-        if(abs.length() == rootPath.length()) {
-        	return root;
+        if (abs.length() == rootPath.length()) {
+            return root;
         }
         String relativePath = abs.substring(rootPath.length() + 1);
         return new File(relativePath);
@@ -101,7 +103,7 @@ public class Repository {
 
     public File makeAbsolute(String path) {
         StringBuilder abs = new StringBuilder(root.getAbsolutePath());
-        if(! (path.startsWith("/") || path.startsWith("\\"))) {
+        if (!(path.startsWith("/") || path.startsWith("\\"))) {
             abs.append("/");
         }
         abs.append(path);
@@ -113,11 +115,11 @@ public class Repository {
         }
     }
 
-	public File getRoot() {
-		return root;
-	}
+    public File getRoot() {
+        return root;
+    }
 
-	public static boolean isRepoPrivate(File file) {
-		return file.getName().equalsIgnoreCase(".hg");
-	}
+    public static boolean isRepoPrivate(File file) {
+        return file.getName().equalsIgnoreCase(".hg");
+    }
 }

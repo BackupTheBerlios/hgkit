@@ -77,7 +77,8 @@ public class UtilTest {
     /**
      * Reads resource into byte array and closes it immediately.
      * 
-     * @param name resource name.
+     * @param name
+     *            resource name.
      * @return
      * @throws IOException
      */
@@ -120,7 +121,7 @@ public class UtilTest {
     /**
      * Test method for
      * {@link org.freehg.hgkit.core.Util#readWholeFile(java.io.InputStream)}.
-     *    
+     * 
      */
     @Test
     public final void testReadWholeFile() {

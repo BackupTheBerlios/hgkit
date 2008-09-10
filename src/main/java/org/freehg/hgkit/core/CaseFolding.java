@@ -4,18 +4,20 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Map.Entry;
 
-
 /**
  * Implements folding and unfolding of filenames by replacing:
  * <ul>
  * <li>uppercase letters with underscore and uppercase letters</li>
- * <li>reserved windows filesystem letters and non-ascii letters with their tilde-prefixed hex-code</li>
- * <li>leaving the rest as is.<li>
+ * <li>reserved windows filesystem letters and non-ascii letters with their
+ * tilde-prefixed hex-code</li>
+ * <li>leaving the rest as is.
+ * <li>
  * </ul>
+ * 
  * @author mirko
  */
 public final class CaseFolding {
-    
+
     /**
      * Reserved letters in the Windows filesystem.
      */
@@ -30,7 +32,7 @@ public final class CaseFolding {
      * Unfolding map.
      */
     final static HashMap<String, String> UNFOLD_MAP;
-    
+
     static {
         FOLD_MAP = new HashMap<String, String>();
         UNFOLD_MAP = new HashMap<String, String>();

@@ -32,10 +32,11 @@ public class HgStatusClientTest {
     @Test
     public void testStatusClient() throws InterruptedException, IOException {
         Repository repo = new Repository(repoDir.getAbsolutePath());
-        System.err.println("Repo to inspect: " +repo.getRoot().getAbsolutePath());
+        System.err.println("Repo to inspect: " + repo.getRoot().getAbsolutePath());
         // hg must be found in your PATH!
         final String cmd = "hg update --clean";
-        assertEquals("'" + cmd + "' did not exit properly.", 0, Runtime.getRuntime().exec(cmd, null, repo.getRoot()).waitFor());
+        assertEquals("'" + cmd + "' did not exit properly.", 0, Runtime.getRuntime().exec(cmd, null, repo.getRoot())
+                .waitFor());
         long start = System.currentTimeMillis();
         HgStatusClient subject = new HgStatusClient(repo);
 

@@ -31,7 +31,7 @@ public class Util {
      * @return a file pointing to a copy of hgkit.
      */
     public static File createRepoCopy() {
-        File sourceDirectory = new File(".hg");        
+        File sourceDirectory = new File(".hg");
         final File targetDir = new File("target", "hgkit-test");
         FileHelper.deleteDirectory(targetDir);
         try {

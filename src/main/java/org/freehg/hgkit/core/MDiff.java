@@ -9,24 +9,29 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-
 final class Fragment {
-	/** Where in the "file" this fragment starts **/
+    /** Where in the "file" this fragment starts **/
     int start;
+
     /** Where in the file this fragments ends */
     int end;
+
     /** The data to be inserted into the file at this.start up to this.end */
     byte[] data;
+
     /** where in this.data to begin read */
     int offset = 0;
 
-    /** The length of the data to read, this can differ from data.length. Combine offset, data and mlength to get patch data. */
+    /**
+     * The length of the data to read, this can differ from data.length. Combine
+     * offset, data and mlength to get patch data.
+     */
     int mlength = -1;
 
     /** The length of the fragment, may differ from end - start and data.length */
     int len() {
         if (mlength == -1) {
-        	throw new IllegalStateException("Length not set yet");
+            throw new IllegalStateException("Length not set yet");
         }
         return mlength;
     }
@@ -40,8 +45,8 @@ final class Fragment {
         String txt = new String(this.data);
         txt = txt.substring(this.offset);
         int max = Math.min(80, len());
-        txt = txt.substring(0,max);
-        if(len() > 80) {
+        txt = txt.substring(0, max);
+        if (len() > 80) {
             txt += "...";
         }
         return start + " " + end + " " + len() + " " + txt;
@@ -51,31 +56,28 @@ final class Fragment {
 
 public class MDiff {
 
-    public static void patches(byte[] in,
-            List<byte[]> bins,
-            OutputStream out) {
+    public static void patches(byte[] in, List<byte[]> bins, OutputStream out) {
         // if there are no fragments we don't have to do anything
-    	try {
-	        // convert binary to fragments
-	        List<Fragment> patch = fold(bins, 0, bins.size());
-	        if (patch == null) {
-	            throw new IllegalStateException("Error folding patches");
-	        }
-	        // apply all fragments to in
-	        apply(in, patch, out);
-    	} catch (IOException e) {
-    		throw new RuntimeException(e);
-    	}
+        try {
+            // convert binary to fragments
+            List<Fragment> patch = fold(bins, 0, bins.size());
+            if (patch == null) {
+                throw new IllegalStateException("Error folding patches");
+            }
+            // apply all fragments to in
+            apply(in, patch, out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private static LinkedList<Fragment> fold(List<byte[]> bins,
-            int start,
-            int end) {
-    	if(bins.size() < 1) {
-    		return new LinkedList<Fragment>();
-    	}
-        /* recursively generate a patch of all bins between
-         * start and end */
+    private static LinkedList<Fragment> fold(List<byte[]> bins, int start, int end) {
+        if (bins.size() < 1) {
+            return new LinkedList<Fragment>();
+        }
+        /*
+         * recursively generate a patch of all bins between start and end
+         */
         if (start + 1 == end) {
             return decode(bins.get(start));
         }
@@ -88,11 +90,10 @@ public class MDiff {
     }
 
     /*
-     * combine hunk lists a and b, while adjusting b for offset changes in
-     * a this deletes a and b and returns the resultant list.
+     * combine hunk lists a and b, while adjusting b for offset changes in a
+     * this deletes a and b and returns the resultant list.
      */
-    private static LinkedList<Fragment> combine(LinkedList<Fragment> a,
-    		LinkedList<Fragment> b) {
+    private static LinkedList<Fragment> combine(LinkedList<Fragment> a, LinkedList<Fragment> b) {
 
         if (a == null || b == null) {
             return null;
@@ -101,10 +102,7 @@ public class MDiff {
         int offset = 0;
         for (Fragment bFrag : b) {
             /* save old hunks */
-            offset = gather(combination,
-            		a,
-            		bFrag.start,
-            		offset);
+            offset = gather(combination, a, bFrag.start, offset);
 
             /* discard replaced hunks */
             int post = discard(a, bFrag.end, offset);
@@ -115,7 +113,7 @@ public class MDiff {
             ct.end = bFrag.end - post;
             ct.data = bFrag.data;
             ct.offset = bFrag.offset;
-            ct.len( bFrag.len());
+            ct.len(bFrag.len());
             combination.add(ct);
 
             offset = post;
@@ -129,16 +127,14 @@ public class MDiff {
     }
 
     // static int discard(struct flist *src, int cut, int offset) {
-    private static int discard(LinkedList<Fragment> src,
-    		int cut,
-    		int poffset) {
+    private static int discard(LinkedList<Fragment> src, int cut, int poffset) {
 
-    	int offset = poffset;
+        int offset = poffset;
         int postend, c, l;
-//         i think this discards everything up to "cut"
-//         a fragment may have to be split if it
-//         overlaps "cut"
-        for(Iterator<Fragment> iter = src.iterator(); iter.hasNext(); ) {
+        // i think this discards everything up to "cut"
+        // a fragment may have to be split if it
+        // overlaps "cut"
+        for (Iterator<Fragment> iter = src.iterator(); iter.hasNext();) {
             final Fragment s = iter.next();
             if (cut <= s.start + offset) {
                 break;
@@ -176,21 +172,17 @@ public class MDiff {
         return offset;
     }
 
-    private static int gather(LinkedList<Fragment> dest,
-    		LinkedList<Fragment> src,
-            int cut,
-            int poffset) {
+    private static int gather(LinkedList<Fragment> dest, LinkedList<Fragment> src, int cut, int poffset) {
 
         /*
-         * move hunks in source that are less than cut to dest,
-         * but compensate for changes in offset.
-         * The last hunk may be split if necessary (oberlaps cut).
+         * move hunks in source that are less than cut to dest, but compensate
+         * for changes in offset. The last hunk may be split if necessary
+         * (oberlaps cut).
          */
         int offset = poffset;
         Fragment s = null;
 
-        for(Iterator<Fragment> iter = src.iterator();
-                iter.hasNext(); ) {
+        for (Iterator<Fragment> iter = src.iterator(); iter.hasNext();) {
             s = iter.next();
             if (cut <= s.start + offset)
                 break; /* we've gone far enough */
@@ -231,7 +223,7 @@ public class MDiff {
             }
         }
 
-        if(0 < src.size() && s != src.get(0)) {
+        if (0 < src.size() && s != src.get(0)) {
             throw new IllegalStateException("src head should be s");
         }
         return offset;
@@ -239,17 +231,18 @@ public class MDiff {
 
     /**
      * decode a binary patch into a fragment list
-     *
-     * @param bin the binary patch
+     * 
+     * @param bin
+     *            the binary patch
      * @return a list of fragments
      */
     private static LinkedList<Fragment> decode(byte[] bin) {
         // int start, int end, int len, byte[...] data
         LinkedList<Fragment> result = new LinkedList<Fragment>();
         ByteBuffer reader = ByteBuffer.wrap(bin);
-        //while(reader.position() < length) {
-        while(reader.hasRemaining()) {
-        	Fragment lt = new Fragment();
+        // while(reader.position() < length) {
+        while (reader.hasRemaining()) {
+            Fragment lt = new Fragment();
             result.add(lt);
 
             lt.start = reader.getInt();
@@ -257,56 +250,56 @@ public class MDiff {
             lt.len(reader.getInt());
 
             if (lt.start > lt.end) {
-            	break; /* sanity check */
+                break; /* sanity check */
             }
 
             lt.offset = reader.position();
             lt.data = bin;
 
-            if( lt.len() < 0) {
-            	throw new IllegalStateException("Programmer Unsure of what  'big data + big (bogus) len can wrap around' means");
+            if (lt.len() < 0) {
+                throw new IllegalStateException(
+                        "Programmer Unsure of what  'big data + big (bogus) len can wrap around' means");
             }
             reader.position(reader.position() + lt.len());
         }
 
-        if( reader.hasRemaining()) {
+        if (reader.hasRemaining()) {
             throw new IllegalStateException("patch cannot be decoded");
         }
         return result;
     }
 
-    private static void apply(byte[] orig,
-            List<Fragment> patch,
-            OutputStream out) throws IOException {
-    	int len = orig.length;
+    private static void apply(byte[] orig, List<Fragment> patch, OutputStream out) throws IOException {
+        int len = orig.length;
         int last = 0;
         for (Fragment f : patch) {
             // if this fragment is not within the bounds
             if (f.start < last || len < f.end) {
-            	throw new IllegalStateException("invalid patch");
+                throw new IllegalStateException("invalid patch");
             }
             out.write(orig, last, f.start - last);
             out.write(f.data, f.offset, f.len());
             last = f.end;
-
 
         }
         out.write(orig, last, len - last);
     }
 
     /**
-     * Deprecated Use {@link MDiff}{@link #patches(byte[], List, OutputStream)} instead
+     * Deprecated Use {@link MDiff}{@link #patches(byte[], List, OutputStream)}
+     * instead
+     * 
      * @param bytes
      * @param patch
      * @return
      */
     @Deprecated
-	static byte[] patches(byte[] bytes, byte[] patch) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ArrayList<byte[]> list = new ArrayList<byte[]>(1);
-		list.add(patch);
-		patches(bytes,list,out);
-		return out.toByteArray();
+    static byte[] patches(byte[] bytes, byte[] patch) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ArrayList<byte[]> list = new ArrayList<byte[]>(1);
+        list.add(patch);
+        patches(bytes, list, out);
+        return out.toByteArray();
 
-	}
+    }
 }

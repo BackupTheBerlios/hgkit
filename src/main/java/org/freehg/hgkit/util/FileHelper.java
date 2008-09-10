@@ -16,10 +16,10 @@ import java.io.OutputStream;
  * Some static methods for file-handling, directory creation etc.
  * 
  * @author mirko
- *
+ * 
  */
 public class FileHelper {
-    
+
     /**
      * Class with static helpers.
      */
@@ -57,21 +57,21 @@ public class FileHelper {
      * @throws IOException
      */
     public static void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
-    
+
         if (sourceLocation.isDirectory()) {
             if (!targetLocation.exists()) {
                 targetLocation.mkdirs();
             }
-    
+
             String[] children = sourceLocation.list();
             for (int i = 0; i < children.length; i++) {
                 copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
             }
         } else {
-    
+
             InputStream in = new FileInputStream(sourceLocation);
             OutputStream out = new FileOutputStream(targetLocation);
-    
+
             // Copy the bits from instream to outstream
             byte[] buf = new byte[1024];
             int len;

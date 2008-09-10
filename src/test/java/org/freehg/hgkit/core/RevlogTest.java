@@ -12,17 +12,13 @@ public class RevlogTest {
     public void testGetLatestRevision() {
 
         File index = null;
-        
-        index = new File(
-                ".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
-        index = new File(
-                "../com.vectrace.MercurialEclipse/.hg/store/data/plugin.xml.i");
-        index = new File(
-                "../com.vectrace.MercurialEclipse/.hg/store/00changelog.i");
+
+        index = new File(".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
+        index = new File("../com.vectrace.MercurialEclipse/.hg/store/data/plugin.xml.i");
+        index = new File("../com.vectrace.MercurialEclipse/.hg/store/00changelog.i");
         index = new File(".hg/store/00changelog.i");
 
-        index = new File(
-        ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+        index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
         Revlog subject = new Revlog(index);
         int numRev = subject.count();
@@ -32,9 +28,9 @@ public class RevlogTest {
         log(subject);
 
         for (NodeId rev : subject.getRevisions()) {
-           System.out.print(rev.asShort());
-           ByteArrayOutputStream out = new ByteArrayOutputStream();
-           	subject.revision(rev, out);
+            System.out.print(rev.asShort());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            subject.revision(rev, out);
             String revision = out.toString();
             System.out.println(" -- [OK]");
             log(revision);
@@ -45,8 +41,7 @@ public class RevlogTest {
     @Test
     public void testGetAllRevision() throws Exception {
         // if( true ) return;
-        File index = new File(
-                ".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+        File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
         Revlog subject = new Revlog(index);
         int count = 0;
