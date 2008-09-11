@@ -1,10 +1,11 @@
 package org.freehg.hgkit.core;
 
+import static org.junit.Assert.assertFalse;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class RevlogTest {
@@ -12,29 +13,22 @@ public class RevlogTest {
     @Test
     public void testGetLatestRevision() {
 
-        File index = null;
-
-        index = new File(".hg/store/data/src/org/freehg/hgkit/core/_m_diff.java.i");
-        index = new File("../com.vectrace.MercurialEclipse/.hg/store/data/plugin.xml.i");
-        index = new File("../com.vectrace.MercurialEclipse/.hg/store/00changelog.i");
-        index = new File(".hg/store/00changelog.i");
-
-        index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
+        File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
         Revlog subject = new Revlog(index);
         int numRev = subject.count();
         log("Test file has : " + numRev + " revisions");
         RevlogEntry tip = subject.tip();
-
-        log(subject);
-
-        for (NodeId rev : subject.getRevisions()) {
-            System.out.print(rev.asShort());
+        String prevRevision = null;
+        NodeId prevNodeId = null;
+        for (NodeId nodeId : subject.getRevisions()) {            
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            subject.revision(rev, out);
-            String revision = out.toString();
-            System.out.println(" -- [OK]");
-            log(revision);
+            subject.revision(nodeId, out);
+            final String currentRevision = out.toString();
+            assertFalse("Revisions " + nodeId + " and " + prevNodeId + " of " + index + " must not be equal!",
+                    currentRevision.equals(prevRevision));
+            prevRevision = currentRevision;
+            prevNodeId = nodeId;
         }
         subject.close();
     }
@@ -60,8 +54,8 @@ public class RevlogTest {
         subject.close();
         long end = System.currentTimeMillis();
 
-        System.err.println("Took " + (end - start) + " ms to get " + count
-                + " revisions 1000 times totaling to " + totalBytes + " bytes.");
+        System.err.println("Took " + (end - start) + " ms to get " + count + " revisions 1000 times totaling to "
+                + totalBytes + " bytes.");
 
     }
 
