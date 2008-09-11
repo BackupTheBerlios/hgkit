@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.freehg.hgkit.HgInternalError;
+
 /**
  * Some static methods for file-handling, directory creation etc.
  * 
@@ -89,9 +91,12 @@ public class FileHelper {
     }
 
     /**
-     * Close even null safely throwing a {@link RuntimeException}.
+     * Close even null safely.
      * 
      * @param closable
+     * 
+     * @throws HgInternalError
+     *             if there is an {@link IOException}.
      */
     public static void close(Closeable closable) {
         if (closable == null) {
@@ -100,9 +105,8 @@ public class FileHelper {
         try {
             closable.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError(e);
         }
     }
-    
-    
+
 }

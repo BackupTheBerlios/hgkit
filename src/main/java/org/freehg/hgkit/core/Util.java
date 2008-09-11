@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.freehg.hgkit.HgInternalError;
+
 final class Util {
 
     private static final int ASSUMED_COMPRESSION_RATIO = 3;
@@ -57,10 +59,10 @@ final class Util {
             case 0:
                 return data;
             default:
-                throw new RuntimeException("Unknown compression type : " + (char) (dataHeader));
+                throw new HgInternalError("Unknown compression type : " + (char) (dataHeader));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError(e);
         }
     }
 
@@ -90,5 +92,28 @@ final class Util {
             buffer.write(buf, 0, read);
         }
         return buffer.toByteArray();
+    }
+
+    /**
+     * Reads resource into byte array and closes it immediately.
+     * 
+     * @param name
+     *            resource name.
+     * @return
+     * @throws IOException
+     */
+    static byte[] readResource(final String name) {
+        final byte[] resourceBytes;
+        InputStream in = UtilTest.class.getResourceAsStream(name);
+        try {
+            try {
+                resourceBytes = toByteArray(in);
+            } finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return resourceBytes;
     }
 }

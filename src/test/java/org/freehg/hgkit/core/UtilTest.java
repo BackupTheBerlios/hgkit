@@ -12,8 +12,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 
+import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.util.FileHelper;
 import org.junit.Test;
 
@@ -69,39 +69,16 @@ public class UtilTest {
     public final void testDecompressWholeFile() {
         final byte[] uncompressed_passwd;
         final byte[] compressed_passwd;
-        uncompressed_passwd = readResource("/passwd");
-        compressed_passwd = readResource("/compressed_passwd");
+        uncompressed_passwd = Util.readResource("/passwd");
+        compressed_passwd = Util.readResource("/compressed_passwd");
         assertEquals(new String(uncompressed_passwd), new String(Util.decompress(compressed_passwd)));
-    }
-
-    /**
-     * Reads resource into byte array and closes it immediately.
-     * 
-     * @param name
-     *            resource name.
-     * @return
-     * @throws IOException
-     */
-    private byte[] readResource(final String name) {
-        final byte[] resourceBytes;
-        InputStream in = UtilTest.class.getResourceAsStream(name);
-        try {
-            try {
-                resourceBytes = Util.toByteArray(in);
-            } finally {
-                in.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return resourceBytes;
     }
 
     /**
      * Test method for {@link org.freehg.hgkit.core.Util#decompress(byte[])}.
      * Tests invalid data.
      */
-    @Test(expected = RuntimeException.class)
+    @Test(expected = HgInternalError.class)
     public final void testDecompressError() {
         Util.decompress(new byte[] { 1 });
     }
@@ -127,7 +104,7 @@ public class UtilTest {
     public final void testReadWholeFile() {
         final String prefix = "##\n# User Database";
         final String suffix = "_unknown:*:99:99:Unknown User:/var/empty:/usr/bin/false\n";
-        String uncompressed_passwd = new String(readResource("/passwd"));
+        String uncompressed_passwd = new String(Util.readResource("/passwd"));
         assertTrue("Should start with '" + prefix + "'", uncompressed_passwd.startsWith(prefix));
         assertTrue("Should end with '" + suffix + "'", uncompressed_passwd.endsWith(suffix));
         assertEquals(2888, uncompressed_passwd.length());
