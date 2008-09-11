@@ -120,11 +120,12 @@ public class Revlog {
             byte[] baseData = null;
             for (int i = target.revision; i >= target.getBaseRev(); i--) {
                 RevlogEntry entry = index.get(i);
-                byte[] fromCache = cache.get(entry);
-                if (fromCache != null) {
-                    baseData = fromCache;
-                    break;
-                }
+                //TODO reenable caching
+//                byte[] fromCache = cache.get(entry);
+//                if (fromCache != null) {
+//                    baseData = fromCache;
+//                    break;
+//                }
                 if (baseData != null) {
                     patches.add(baseData);
                 }

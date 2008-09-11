@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -24,14 +25,21 @@ public class RevlogTest {
      * 
      */
     public RevlogTest(String indexName) {
-        index = new File("src/test/resources/", indexName);
+        index = new File(indexName);
     }
 
     @Parameters
     public static Collection<String[]> data() {
-        return Arrays.asList(new String[] { "test1.txt.i" }, new String[] { "test2.txt.i" },
-                new String[] { "test3.txt.i" }, new String[] { "test4.txt.i" }, new String[] { "test5.txt.i" },
-                new String[] { "bigger.txt.i" });
+        // return Arrays.asList(
+        // new String[][] {{ "bigger.txt.i" }});
+        ArrayList<String[]> result = new ArrayList<String[]>();
+        String[] testFiles = new String[] { "test1.txt.i", "test2.txt.i", "test3.txt.i", "test4.txt.i", "test5.txt.i",
+                "bigger.txt.i" };
+        for (String testFile : testFiles) {
+            result.add(new String[] { "src/test/resources/" + testFile });
+        }
+        result.add(new String[]{".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i"});
+        return result;
     }
 
     @Test
@@ -45,7 +53,7 @@ public class RevlogTest {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             subject.revision(nodeId, out);
             final String currentRevision = out.toString();
-            System.err.println(nodeId + ":" + currentRevision);
+//            System.err.println(nodeId + ":" + currentRevision.length());
             assertFalse("Revisions " + nodeId + " and " + prevNodeId + " of " + index + " must not be equal!",
                     currentRevision.equals(prevRevision));
             prevRevision = currentRevision;
