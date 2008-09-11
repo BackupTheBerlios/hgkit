@@ -104,7 +104,7 @@ final class Util {
      */
     static byte[] readResource(final String name) {
         final byte[] resourceBytes;
-        InputStream in = UtilTest.class.getResourceAsStream(name);
+        InputStream in = Util.class.getResourceAsStream(name);
         try {
             try {
                 resourceBytes = toByteArray(in);
