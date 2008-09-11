@@ -2,7 +2,6 @@ package org.freehg.hgkit.core;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.Arrays;
 
 public final class NodeId {
