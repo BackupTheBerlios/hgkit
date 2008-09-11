@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.freehg.hgkit.Util;
-
 /**
  * Some static methods for file-handling, directory creation etc.
  * 

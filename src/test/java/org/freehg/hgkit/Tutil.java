@@ -1,5 +1,5 @@
 /**
- * Util.java 04.09.2008
+ * Tutil.java 04.09.2008
  * 
  */
 
@@ -15,11 +15,11 @@ import org.freehg.hgkit.util.FileHelper;
  * 
  * @author mirko
  */
-public class Util {
+public class Tutil {
     /**
      * Functions only.
      */
-    private Util() {
+    private Tutil() {
         // Functions only.
     }
 

@@ -11,7 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.freehg.hgkit.Util;
+import org.freehg.hgkit.Tutil;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
@@ -24,7 +24,7 @@ public class LongRunningTest {
 
     @BeforeClass
     public static void createCopy() {
-        repoDir = Util.createRepoCopy();
+        repoDir = Tutil.createRepoCopy();
     }
 
     @AfterClass

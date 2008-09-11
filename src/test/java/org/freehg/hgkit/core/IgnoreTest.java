@@ -10,7 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
-import org.freehg.hgkit.Util;
+import org.freehg.hgkit.Tutil;
 import org.freehg.hgkit.util.FileHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -24,7 +24,7 @@ public class IgnoreTest {
 
     @BeforeClass
     public static void createCopy() {
-        repoDir = Util.createRepoCopy();
+        repoDir = Tutil.createRepoCopy();
     }
 
     @AfterClass
