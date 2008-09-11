@@ -52,7 +52,6 @@ public class UtilTest {
     @Test
     public final void testDecompress() {
         final byte[] uncompressed = new byte[ABC.length + 1];
-        assertArrayEquals(null, Util.decompress(null));
         assertArrayEquals(new byte[0], Util.decompress(new byte[0]));
         assertArrayEquals(ABC, Util.decompress(COMPRESSED_ABC));
         uncompressed[0] = 'u';
@@ -88,7 +87,7 @@ public class UtilTest {
         InputStream in = UtilTest.class.getResourceAsStream(name);
         try {
             try {
-                resourceBytes = Util.readWholeFile(in);
+                resourceBytes = Util.toByteArray(in);
             } finally {
                 in.close();
             }
@@ -121,7 +120,7 @@ public class UtilTest {
 
     /**
      * Test method for
-     * {@link org.freehg.hgkit.core.Util#readWholeFile(java.io.InputStream)}.
+     * {@link org.freehg.hgkit.core.Util#toByteArray(java.io.InputStream)}.
      * 
      */
     @Test

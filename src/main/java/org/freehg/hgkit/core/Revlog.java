@@ -221,7 +221,7 @@ public class Revlog {
         reader = new DataInputStream(new BufferedInputStream(new FileInputStream(index)));
         final byte[] data;
         try {
-            data = Util.readWholeFile(reader);
+            data = Util.toByteArray(reader);
         } finally {
             reader.close();
         }

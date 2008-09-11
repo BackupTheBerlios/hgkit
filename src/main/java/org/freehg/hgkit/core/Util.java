@@ -8,34 +8,44 @@ import java.util.zip.InflaterInputStream;
 
 final class Util {
 
+    private static final int ASSUMED_COMPRESSION_RATIO = 3;
+
     private static final char ZLIB_COMPRESSION = 'x';
 
     private static final char UNCOMPRESSED = 'u';
 
     static final int EOF = -1;
 
+    /**
+     * Decompresses zlib-compressed data.
+     * 
+     * @param data
+     * @return decompressed data
+     * @throws IOException
+     */
     static byte[] doDecompress(byte[] data) throws IOException {
-        ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(1024);
+        ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(data.length * ASSUMED_COMPRESSION_RATIO);
         // decompress the bytearray using what should be python zlib
         final byte[] buffer = new byte[1024];
         final InflaterInputStream inflaterInputStream = new InflaterInputStream(new ByteArrayInputStream(data));
-        int len = inflaterInputStream.read(buffer);
-        while (len != -1) {
+        int len = 0;
+        while ((len = inflaterInputStream.read(buffer)) != EOF) {
             uncompressedOut.write(buffer, 0, len);
-            len = inflaterInputStream.read(buffer);
         }
         return uncompressedOut.toByteArray();
     }
 
+    /**
+     * Eventually decompresses the given data.
+     * 
+     * @param data
+     * @return byte-array with decompressed data.
+     */
     final static byte[] decompress(byte[] data) {
         try {
-            if (data == null) {
-                return null;
-            }
             if (data.length < 1) {
                 return new byte[0];
             }
-
             byte dataHeader = data[0];
             switch (dataHeader) {
             case UNCOMPRESSED:
@@ -54,15 +64,29 @@ final class Util {
         }
     }
 
+    /**
+     * Replace every backslash with a forward slash
+     * 
+     * @param path
+     * @return corrected path.
+     */
     static String forwardSlashes(String path) {
         return path.replace('\\', '/');
     }
 
-    static byte[] readWholeFile(InputStream reader) throws IOException {
+    /**
+     * Reads an {@link InputStream} until no more data is available and returns
+     * it as byte-array. read-Operations on <code>in</code> are not buffered.
+     * 
+     * @param in
+     * @return the content of <code>in</code> as byte-array.
+     * @throws IOException
+     */
+    static byte[] toByteArray(InputStream in) throws IOException {
         byte[] buf = new byte[512];
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(reader.available());
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(in.available());
         int read = 0;
-        while ((read = reader.read(buf)) != Util.EOF) {
+        while ((read = in.read(buf)) != Util.EOF) {
             buffer.write(buf, 0, read);
         }
         return buffer.toByteArray();

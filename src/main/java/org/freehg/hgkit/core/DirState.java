@@ -26,7 +26,7 @@ public class DirState {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(dirState);
-            byte[] data = Util.readWholeFile(fis);
+            byte[] data = Util.toByteArray(fis);
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
             parse(in);
         } catch (IOException e) {
