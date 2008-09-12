@@ -1,6 +1,7 @@
 package org.freehg.hgkit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
+import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
