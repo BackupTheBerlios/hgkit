@@ -1,7 +1,6 @@
 package org.freehg.hgkit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.util.List;
 
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
-import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -29,10 +27,15 @@ public class HgStatusClientTest {
         assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testEmptyRepos() {
+        new HgStatusClient(null);
+    }
+    
     @Test
     public void testStatusClient() throws InterruptedException, IOException {
         Repository repo = new Repository(repoDir.getAbsolutePath());
-        System.err.println("Repo to inspect: " + repo.getRoot().getAbsolutePath());
+        System.err.println("Repo to inspect: " + repo.getRoot());//.getAbsolutePath());
         // hg must be found in your PATH!
         final String cmd = "hg update --clean";
         assertEquals("'" + cmd + "' did not exit properly.", 0, Runtime.getRuntime().exec(cmd, null, repo.getRoot())
@@ -43,10 +46,12 @@ public class HgStatusClientTest {
         List<FileStatus> status = subject.doStatus(repo.getRoot());
         long end = System.currentTimeMillis();
         for (FileStatus hgStatus : status) {
-            System.out.println(hgStatus);
+            System.err.println(hgStatus.getFile().getAbsolutePath());
+            //assertThat(hgStatus.getStatus(), anyOf(is(FileStatus.Status.MANAGED), is(FileStatus.Status.MODIFIED)));
+            assertEquals(hgStatus.getFile().getAbsolutePath(), FileStatus.Status.MANAGED, hgStatus.getStatus());
         }
 
-        System.out.println("Status walk took " + (end - start) + " ms");
+        System.err.println("Status walk took " + (end - start) + " ms");
     }
 
     @Ignore
