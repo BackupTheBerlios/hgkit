@@ -6,6 +6,16 @@ import java.util.Arrays;
 
 public final class NodeId {
 
+    /**
+     * 
+     */
+    private static final int HASHCODE_PRIME = 31;
+
+    /**
+     * 
+     */
+    private static final int NODE_ID_LENGTH = 20;
+
     public static final int SHA_SIZE = 20;
 
     public static final int SHORT_SIZE = 6;
@@ -31,9 +41,10 @@ public final class NodeId {
         if (this.hash != -1) {
             return this.hash;
         }
-        final int prime = 31;
+        // will replace the constant in the calculation,
+                              // but keep this declaration.
         int result = 1;
-        result = prime * result + Arrays.hashCode(nodeid);
+        result = HASHCODE_PRIME * result + Arrays.hashCode(nodeid);
         this.hash = result;
         return result;
     }
@@ -97,15 +108,15 @@ public final class NodeId {
         byte bArray[] = new byte[hexStr.length() / 2];
         for (int i = 0; i < (hexStr.length() / 2); i++) {
             byte firstNibble = Byte.parseByte(hexStr.substring(2 * i, 2 * i + 1), 16); // [
-                                                                                       // x
-                                                                                       // ,
-                                                                                       // y
-                                                                                       // )
+            // x
+            // ,
+            // y
+            // )
             byte secondNibble = Byte.parseByte(hexStr.substring(2 * i + 1, 2 * i + 2), 16);
             int finalByte = (secondNibble) | (firstNibble << 4); //bit-operations
-                                                                 // only with
-                                                                 // numbers, not
-                                                                 // bytes.
+            // only with
+            // numbers, not
+            // bytes.
             bArray[i] = (byte) finalByte;
         }
         return bArray;
@@ -125,8 +136,9 @@ public final class NodeId {
     }
 
     public static NodeId read(InputStream in) throws IOException {
-        byte[] data = new byte[20];
-        in.read(data);
+        byte[] data = new byte[NODE_ID_LENGTH];
+        int read = in.read(data);
+        assert read == NODE_ID_LENGTH;
         return NodeId.valueOf(data);
     }
 }
