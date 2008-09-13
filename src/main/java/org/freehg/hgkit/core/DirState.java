@@ -80,7 +80,8 @@ public class DirState {
 
     private void parseHeader(DataInputStream in) throws IOException {
         this.currentId = NodeId.read(in);
-        in.skip(20);
+        long skip = in.skip(20);
+        assert skip == 20;
     }
 
     public static class DirStateEntry {
