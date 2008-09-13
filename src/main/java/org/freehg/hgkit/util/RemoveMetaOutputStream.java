@@ -16,10 +16,6 @@ public final class RemoveMetaOutputStream extends OutputStream {
 
     private OutputStream out;
 
-    private int mode = 0;
-
-    private final ByteArrayOutputStream buff = new ByteArrayOutputStream();
-
     private OutputStream current;
 
     private OutputStream state1;
