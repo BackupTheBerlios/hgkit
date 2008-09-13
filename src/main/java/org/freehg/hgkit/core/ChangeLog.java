@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.freehg.hgkit.FileStatus;
+import org.freehg.hgkit.HgInternalError;
 
 public final class ChangeLog extends Revlog {
 
@@ -145,17 +146,17 @@ public final class ChangeLog extends Revlog {
             try {
                 while (null != (line = reader.readLine())) {
                     manifestId = NodeId.parse(line);
-                    author = reader.readLine();
+                    author = readLine(reader);
 
-                    String dateLine = reader.readLine();
+                    String dateLine = readLine(reader);
                     when = dateParse(dateLine);
 
-                    String fileLine = reader.readLine();
+                    String fileLine = readLine(reader);
                     // read while line aint empty, its a file, the it is the
                     // comment
                     while (0 < fileLine.trim().length()) {
                         files.add(fileLine);
-                        fileLine = reader.readLine();
+                        fileLine = readLine(reader);
                     }
                     StringBuilder therest = new StringBuilder();
                     char[] buff = new char[512];
@@ -168,8 +169,23 @@ public final class ChangeLog extends Revlog {
 
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new HgInternalError(e);
             }
+        }
+
+        /**
+         * Returns a line of reader. 
+         * @param reader
+         * @return
+         * @throws IOException
+         * @throws HgInternalError if we could not read a line.
+         */
+        private String readLine(BufferedReader reader) throws IOException {
+            final String line = reader.readLine();
+            if (line == null) {
+                throw new HgInternalError(reader.toString());
+            }
+            return line;
         }
 
         private Date dateParse(String dateLine) {
