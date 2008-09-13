@@ -74,7 +74,7 @@ final class RevlogEntry {
     public byte[] loadBlock(RandomAccessFile file) throws IOException {
         long off = this.offset;
         if (parent.isDataInline) {
-            off += (revision + 1) * RevlogEntry.BINARY_LENGTH;
+            off += (revision + 1L) * RevlogEntry.BINARY_LENGTH;
         }
         file.seek(off);
         return read(file);
@@ -82,7 +82,8 @@ final class RevlogEntry {
 
     private byte[] read(RandomAccessFile file) throws IOException {
         byte[] data = new byte[(int) this.compressedLength];
-        file.read(data);
+        int read = file.read(data);
+        assert read == (int) this.compressedLength;
         return data;
     }
 
@@ -142,7 +143,8 @@ final class RevlogEntry {
 
         int nodeidSize = 32;
         byte[] nodeid = new byte[nodeidSize];
-        reader.read(nodeid);
+        int read = reader.read(nodeid);
+        assert read == nodeidSize;
         nodeId = NodeId.valueOf(nodeid);
     }
 
