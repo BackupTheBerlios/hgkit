@@ -26,7 +26,7 @@ public class FileHelper {
     /**
      * Class with static helpers.
      */
-    private FileHelper() {
+    FileHelper() {
         // class with static helpers.
     }
 
@@ -39,17 +39,17 @@ public class FileHelper {
     public static boolean deleteDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteDirectory(files[i]);
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
                 } else {
-                    if (!files[i].delete()) {
-                        System.err.println("Could not delete " + files[i].getAbsolutePath());
+                    if (!file.delete()) {
+                        System.err.println("Could not delete " + file.getAbsolutePath());
                     }
                 }
             }
         }
-        return (path.delete());
+        return path.delete();
     }
 
     /**
@@ -66,9 +66,9 @@ public class FileHelper {
                 targetLocation.mkdirs();
             }
 
-            String[] children = sourceLocation.list();
-            for (int i = 0; i < children.length; i++) {
-                copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+            File[] children = sourceLocation.listFiles();
+            for (File child : children) {
+                copyDirectory(child.getAbsoluteFile(), new File(targetLocation.getAbsolutePath(), child.getName()));
             }
         } else {
 

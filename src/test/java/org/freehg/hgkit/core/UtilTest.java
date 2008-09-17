@@ -109,32 +109,4 @@ public class UtilTest {
         assertTrue("Should end with '" + suffix + "'", uncompressed_passwd.endsWith(suffix));
         assertEquals(2888, uncompressed_passwd.length());
     }
-
-    /**
-     * Test method for
-     * {@link org.freehg.hgkit.util.FileHelper#close(java.io.Closeable)}.
-     */
-    @Test
-    public final void testClose() {
-        FileHelper.close(null);
-        FileHelper.close(UtilTest.class.getResourceAsStream("/passwd"));
-    }
-
-    /**
-     * Test method for
-     * {@link org.freehg.hgkit.util.FileHelper#close(java.io.Closeable)}. Tests wether
-     * our close really converts {@link IOException} to {@link RuntimeException}
-     * .
-     */
-    @Test(expected = RuntimeException.class)
-    public final void testCloseException() {
-        FileHelper.close(new Closeable() {
-
-            public void close() throws IOException {
-                throw new IOException("Oops");
-            }
-
-        });
-    }
-
 }
