@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 
 public class Repository {
+    
     public static final String HG = ".hg/";
 
     private static final String STORE = HG + "store/";
 
-    private static final String DATA = STORE + "/data/";
+    private static final String DATA = STORE + "data/";
 
     private static final String INDEX_SUFFIX = ".i";
 
@@ -31,6 +32,12 @@ public class Repository {
         this(new File(string));
     }
 
+    /**
+     * Returns the Mercurial index file containing the revisions.
+     * 
+     * @param file
+     * @return
+     */
     public File getIndex(File file) {
         if (!file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
@@ -47,11 +54,13 @@ public class Repository {
         }
     }
 
+    /**
+     * Returns the parsed content of the '.hgignore'-file.
+     * 
+     * @return
+     */
     public Ignore getIgnore() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(root.getAbsolutePath());
-        stringBuilder.append("/.hgignore");
-        File ignoreFile = new File(stringBuilder.toString());
+        File ignoreFile = new File(root.getAbsoluteFile(), ".hgignore");
         return new Ignore(this, ignoreFile);
     }
 
@@ -83,14 +92,21 @@ public class Repository {
         return new Revlog(revIndex);
     }
 
-    public File makeRelative(File file) {
+    /**
+     * Returns a file relative to the repository-root.
+     * 
+     * @param file
+     * @return
+     */
+    public File makeRelative(final File file) {
+        final File absoluteFile;
         try {
-            file = file.getCanonicalFile();
+            absoluteFile = file.getCanonicalFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String abs = file.getAbsolutePath();
-        String rootPath = root.getAbsolutePath();
+        final String abs = absoluteFile.getAbsolutePath();
+        final String rootPath = root.getAbsolutePath();
         if (!abs.startsWith(rootPath)) {
             throw new IllegalArgumentException(file + " is not a child of " + root);
         }
@@ -101,25 +117,40 @@ public class Repository {
         return new File(relativePath);
     }
 
-    public File makeAbsolute(String path) {
-        StringBuilder abs = new StringBuilder(root.getAbsolutePath());
-        if (!(path.startsWith("/") || path.startsWith("\\"))) {
-            abs.append("/");
-        }
-        abs.append(path);
+    /**
+     * Returns the canonical file related to the repo-root.
+     * 
+     * @param path
+     * @return a canonical file.
+     */
+    public File makeAbsolute(final String path) {
+        final File absoluteRoot = root.getAbsoluteFile();
         try {
-            return new File(abs.toString()).getCanonicalFile();
+            return new File(absoluteRoot, path).getCanonicalFile();
         } catch (IOException e) {
             // Don't know when this will happen
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Returns the repository root directory.
+     * 
+     * @return root-directory.
+     */
     public File getRoot() {
         return root;
     }
 
+    /**
+     * Checks wether this file is the .hg-directory holding Mercurial
+     * information.
+     * 
+     * @param file
+     *            the file to check.
+     * @return true if this is the .hg-directory.
+     */
     public static boolean isRepoPrivate(File file) {
-        return file.getName().equalsIgnoreCase(".hg");
+        return file.isDirectory() && file.getName().equalsIgnoreCase(".hg");
     }
 }
