@@ -4,17 +4,19 @@
  */
 package org.freehg.hgkit.core;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 
+import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.Tutil;
 import org.freehg.hgkit.util.FileHelper;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,14 +32,6 @@ public class IgnoreTest {
     @AfterClass
     public static void deleteCopy() {
         assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     @Test
@@ -61,9 +55,27 @@ public class IgnoreTest {
     }
     
     @Test
-    @org.junit.Ignore
-    public final void testParse() {
-        fail("Not yet implemented"); // TODO
+    public final void testParse() throws IOException {        
+        Ignore ignore = new Ignore(null);
+        StringReader reader = new StringReader("syntax: glob\ntarget\nsyntax:regex\n.*.class\nsyntax:glob\n.settings");
+        ignore.parse(new BufferedReader(reader));
+        assertEquals(3, ignore.ignores.size());
+        assertTrue("'foobar.class' should be ignored.", ignore.isIgnored(new File("foobar.class")));
+        assertTrue("'.settings' should be ignored.", ignore.isIgnored(new File(".settings")));
     }
+    
+    @Test(expected=HgInternalError.class)
+    public final void testParseInvalidSyntax() throws IOException {        
+        Ignore ignore = new Ignore(null);
+        StringReader reader = new StringReader("syntax: blub\ntarget");
+        ignore.parse(new BufferedReader(reader));
+    }   
+    
+    @Test(expected=HgInternalError.class)
+    public final void testParseInvalidRegex() throws IOException {        
+        Ignore ignore = new Ignore(null);
+        StringReader reader = new StringReader("syntax: regex\n[a-z]*[}");
+        ignore.parse(new BufferedReader(reader));
+    }   
 
 }

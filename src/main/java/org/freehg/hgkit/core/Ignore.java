@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.util.GlobExpressions;
 
 public final class Ignore {
 
-    private List<IgnoreEntry> ignores = new ArrayList<IgnoreEntry>();
+    List<IgnoreEntry> ignores = new ArrayList<IgnoreEntry>();
 
     private enum Syntax {
         GLOB, REGEX
@@ -39,13 +40,13 @@ public final class Ignore {
             try {
                 parse(file);
             } catch (IOException e) {
-                // TODO: Write this to repository.errorHandler()
+                throw new HgInternalError("Could not parse " + file, e);
             }
         }
     }
 
     public boolean isIgnored(File file) {
-        File relativeFile = file; 
+        File relativeFile = file;
         if (this.ignores.isEmpty()) {
             return false;
         }
@@ -71,6 +72,7 @@ public final class Ignore {
 
     /**
      * Take a reader, this for easier tests.
+     * 
      * @param reader
      * @throws IOException
      */
@@ -81,16 +83,16 @@ public final class Ignore {
             if (0 < line.length()) {
                 try {
                     parseLine(line);
-                } catch (PatternSyntaxException ex) {
-                    // TODO: Write this to repository.errorHandler()
+                } catch (PatternSyntaxException e) {
+                    throw new HgInternalError("Could not parse line " + line, e);
                 }
             }
         }
     }
 
-    private void parseLine(String line) {
+    void parseLine(String line) {
         if (line.startsWith("syntax:")) {
-            changeSyntax(line.replace("syntax:", ""));
+            changeSyntax(line.replace("syntax:", "").trim());
         } else {
             switch (currentSyntax) {
             case GLOB:
@@ -103,12 +105,13 @@ public final class Ignore {
         }
     }
 
-    private void changeSyntax(String text) {
-        text = text.trim();
+    void changeSyntax(String text) {
         if (text.equalsIgnoreCase("glob")) {
             this.currentSyntax = Syntax.GLOB;
         } else if (text.equalsIgnoreCase("regex")) {
             this.currentSyntax = Syntax.REGEX;
+        } else {
+            throw new HgInternalError("Unknown Ignore-Syntax:" + text);
         }
     }
 
@@ -122,7 +125,7 @@ public final class Ignore {
         boolean ignores(String path);
     }
 
-    private static class RegexIgnoreEntry implements IgnoreEntry {
+    static class RegexIgnoreEntry implements IgnoreEntry {
         private final Pattern pattern;
 
         public RegexIgnoreEntry(Pattern compile) {

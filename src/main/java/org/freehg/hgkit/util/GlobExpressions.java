@@ -13,7 +13,7 @@ public final class GlobExpressions {
         }
     }
 
-    private static Pattern unixGlob(String globPattern) {
+    static Pattern unixGlob(String globPattern) {
         StringBuilder regex = new StringBuilder();
         char[] globPatt = globPattern.toCharArray();
         boolean inBrackets = false;
@@ -77,7 +77,7 @@ public final class GlobExpressions {
         return Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE);
     }
 
-    private static Pattern windowsGlob(String globPattern) {
+    static Pattern windowsGlob(String globPattern) {
         char[] globPatt = globPattern.toCharArray();
         /** In the worst case we have to escape all characters **/
         // char[] regex = new char[globPatt.length * 2];
