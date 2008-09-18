@@ -10,11 +10,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 import org.freehg.hgkit.HgInternalError;
-import org.freehg.hgkit.util.FileHelper;
 import org.junit.Test;
 
 /**

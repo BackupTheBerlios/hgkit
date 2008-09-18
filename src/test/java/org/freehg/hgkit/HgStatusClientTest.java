@@ -36,8 +36,7 @@ public class HgStatusClientTest {
     
     @Test
     public void testStatusClient() throws InterruptedException, IOException {
-        Repository repo = new Repository(repoDir.getAbsolutePath());
-        System.err.println("Repo to inspect: " + repo.getRoot());//.getAbsolutePath());
+        Repository repo = new Repository(repoDir.getAbsolutePath());        
         // hg must be found in your PATH!
         final String cmd = "hg update --clean";
         assertEquals("'" + cmd + "' did not exit properly.", 0, Runtime.getRuntime().exec(cmd, null, repo.getRoot())
@@ -48,12 +47,10 @@ public class HgStatusClientTest {
         List<FileStatus> status = subject.doStatus(repo.getRoot());
         long end = System.currentTimeMillis();
         for (FileStatus hgStatus : status) {
-            System.err.println(hgStatus.getFile().getAbsolutePath());
-            //assertThat(hgStatus.getStatus(), anyOf(is(FileStatus.Status.MANAGED), is(FileStatus.Status.MODIFIED)));
             assertEquals(hgStatus.getFile().getAbsolutePath(), FileStatus.Status.MANAGED, hgStatus.getStatus());
         }
 
-        System.err.println("Status walk took " + (end - start) + " ms");
+        System.err.println("Status walk took " + (end - start) + " ms for " + status.size() + " files.");
     }
 
     @Ignore
