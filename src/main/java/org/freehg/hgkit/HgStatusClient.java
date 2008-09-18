@@ -60,7 +60,7 @@ public final class HgStatusClient {
 
     private List<FileStatus> getStatus(final File file, final boolean recurse, boolean parentIgnored) {
         if (Repository.isRepoPrivate(file)) {
-            return Collections.EMPTY_LIST;
+            return Collections.<FileStatus>emptyList();
         }
         List<FileStatus> result = new ArrayList<FileStatus>();
 
@@ -164,12 +164,9 @@ public final class HgStatusClient {
      */
     private Map<String, NodeId> getNodeStateByName() {
         if (this.nodeStateByName == null) {
-            long start = System.currentTimeMillis();
             ChangeLog log = repo.getChangeLog();
             ChangeSet entry = log.get(dirState.getId());
             this.nodeStateByName = repo.getManifest().get(entry);
-            long end = System.currentTimeMillis();
-            System.out.println(">>> took " + (end - start) + " ms");
         }
         return nodeStateByName;
     }
