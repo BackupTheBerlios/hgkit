@@ -8,7 +8,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-final class RevlogEntry {
+import org.freehg.hgkit.HgInternalError;
+
+public final class RevlogEntry {
 
     /** The corresponding length of indexformatng (python) >Qiiiiii20s12x */
     static final int BINARY_LENGTH = 64;
@@ -58,7 +60,7 @@ final class RevlogEntry {
             entry.read(reader);
         } catch (IOException e) {
             // This should just never happen
-            throw new RuntimeException(e);
+            throw new HgInternalError(e);
         }
         return entry;
     }
@@ -103,6 +105,7 @@ final class RevlogEntry {
         return compressedLength;
     }
 
+    @Override
     public String toString() {
 
         RevlogEntry p1 = getNullEntry();

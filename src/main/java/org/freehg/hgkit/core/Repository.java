@@ -40,7 +40,7 @@ public class Repository {
      */
     public File getIndex(File file) {
         if (!file.isFile()) {
-            throw new IllegalArgumentException(file + " must be a file");
+//            throw new IllegalArgumentException(file + " must be a file");
         }
         String filePath;
         try {
