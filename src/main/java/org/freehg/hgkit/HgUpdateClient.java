@@ -39,12 +39,11 @@ class UpdateFile {
     }
 
     /**
-     * Checks out the tip-revision of {@link UpdateFile#absoluteFile}. 
+     * Checks out the tip-revision of {@link UpdateFile#absoluteFile}.
      */
     public void tip() {
         final RevlogEntry tip = revlog.tip();
         final NodeId nodeId = tip.getId();
-        System.err.println(absoluteFile);
         File parentFile = absoluteFile.getParentFile();
         parentFile.mkdirs();
         final BufferedOutputStream out;
@@ -62,8 +61,7 @@ class UpdateFile {
 }
 
 /**
- * @author mirko
- * 
+ * Update the working copy.
  */
 public class HgUpdateClient {
 
@@ -77,12 +75,11 @@ public class HgUpdateClient {
     }
 
     public void update() {
-        Collection<DirStateEntry> states = repo.getDirState().getDirState();
+        final Collection<DirStateEntry> states = repo.getDirState().getDirState();
         for (DirStateEntry state : states) {
             final String path = state.getPath();
-            if (true) {
-                new UpdateFile(repo, path).tip();
-            }
+            new UpdateFile(repo, path).tip();
         }
+        System.out.println(states.size() + " files updated.");
     }
 }
