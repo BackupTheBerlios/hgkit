@@ -38,11 +38,11 @@ public class HgUpdateClientTest {
 
 
     /**
-     * Test method for {@link org.freehg.hgkit.HgUpdateClient#HgUpdateClient(org.freehg.hgkit.core.Repository, java.lang.String)}.
+     * Test method for {@link org.freehg.hgkit.HgUpdateClient#HgUpdateClient(org.freehg.hgkit.core.Repository)}.
      */
     @Test
     public final void testHgUpdateClient() {
-        new HgUpdateClient(new Repository(repoDir), null);
+        new HgUpdateClient(new Repository(repoDir));
     }
 
     /**
@@ -50,7 +50,7 @@ public class HgUpdateClientTest {
      */
     @Test
     public final void testUpdate() {
-        HgUpdateClient hgUpdateClient = new HgUpdateClient(new Repository(repoDir), null);
+        HgUpdateClient hgUpdateClient = new HgUpdateClient(new Repository(repoDir));
         hgUpdateClient.update();
     }
 

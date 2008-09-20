@@ -17,8 +17,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
+/**
+ * The Java-Implementation of RevlogNG.
+ * 
+ * @see http://www.selenic.com/mercurial/wiki/index.cgi/Revlog
+ * @see http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG
+ *
+ */
 public class Revlog {
 
     private static final String READ_ONLY = "r";
@@ -50,12 +58,17 @@ public class Revlog {
 
     private RandomAccessFile reader = null;
 
+    /**
+     * Creates a Revlog from the given Mercurial-index-file.
+     * 
+     * @param index
+     */
     public Revlog(File index) {
         indexFile = index;
         try {
             parseIndex(index);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError(e);
         }
     }
 
@@ -67,10 +80,10 @@ public class Revlog {
         return nodemap.get(nodeId).revision;
     }
 
-    public NodeId node(int index) {
+    public NodeId node(int revisionIndex) {
         List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId, RevlogEntry>>(this.nodemap.entrySet());
         for (Entry<NodeId, RevlogEntry> entry : entries) {
-            if (entry.getValue().revision == index) {
+            if (entry.getValue().revision == revisionIndex) {
                 return entry.getKey();
             }
         }

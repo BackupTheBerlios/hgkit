@@ -26,29 +26,26 @@ import org.freehg.hgkit.core.DirState.DirStateEntry;
  */
 public class HgUpdateClient {
 
-    private final String revision;
     private final Repository repo;
 
     /**
      * 
      */
-    public HgUpdateClient(Repository repo, String revision) {
+    public HgUpdateClient(Repository repo) {
         this.repo = repo;
-        this.revision = revision;
     }
     
     public void update() {        
-        DirState dirState = repo.getDirState();
-        Collection<DirStateEntry> states = dirState.getDirState();
+        Collection<DirStateEntry> states = repo.getDirState().getDirState();
         for (DirStateEntry state : states) {
-            String path = state.getPath();
-            System.err.println("path:" + path);
+            final String path = state.getPath();
             final File absoluteFile = repo.makeAbsolute(path);
-            System.err.println("absoluteFile:" + absoluteFile);
-            File index = repo.getIndex(absoluteFile);
-            System.err.println("index:" + index);
-            Revlog revlog = repo.getRevlog(index);
-            System.err.println(revlog.tip());            
+            final Revlog revlog = repo.getRevlog(absoluteFile);
+            final RevlogEntry tip = revlog.tip();
+            if (".hgignore".equals(path)) {
+                final NodeId nodeId = tip.getId();
+                revlog.revision(nodeId, System.out);
+            }
         }
     }
 }
