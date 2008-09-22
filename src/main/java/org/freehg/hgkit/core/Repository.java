@@ -3,6 +3,8 @@ package org.freehg.hgkit.core;
 import java.io.File;
 import java.io.IOException;
 
+import org.freehg.hgkit.HgInternalError;
+
 public class Repository {
     
     public static final String HG = ".hg/";
@@ -24,7 +26,7 @@ public class Repository {
         try {
             this.root = root.getCanonicalFile();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError("root=" + root, e);
         }
     }
 

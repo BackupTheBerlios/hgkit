@@ -50,7 +50,7 @@ class UpdateFile {
         try {
             out = new BufferedOutputStream(new FileOutputStream(absoluteFile));
         } catch (FileNotFoundException e) {
-            throw new HgInternalError(e);
+            throw new HgInternalError("absoluteFile=" + absoluteFile, e);
         }
         try {
             revlog.revision(nodeId, out);

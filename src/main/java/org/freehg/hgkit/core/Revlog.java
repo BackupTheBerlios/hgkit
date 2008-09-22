@@ -25,7 +25,7 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
  * 
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/Revlog
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG
- *
+ * 
  */
 public class Revlog {
 
@@ -133,12 +133,12 @@ public class Revlog {
             byte[] baseData = null;
             for (int i = target.revision; i >= target.getBaseRev(); i--) {
                 RevlogEntry entry = index.get(i);
-                //TODO reenable caching
-//                byte[] fromCache = cache.get(entry);
-//                if (fromCache != null) {
-//                    baseData = fromCache;
-//                    break;
-//                }
+                // TODO reenable caching
+                // byte[] fromCache = cache.get(entry);
+                // if (fromCache != null) {
+                // baseData = fromCache;
+                // break;
+                // }
                 if (baseData != null) {
                     patches.add(baseData);
                 }
@@ -308,7 +308,7 @@ public class Revlog {
     }
 
     private static class RevlogCache extends LinkedHashMap<RevlogEntry, byte[]> {
-        
+
         private static final long serialVersionUID = 6934630760462643470L;
 
         static final int CACHE_SMALL_REVISIONS = 4024;
