@@ -1,34 +1,38 @@
 package org.freehg.hgkit.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Removes the metadata from a patch-set. Metadata-borders are marked by special
+ * bytes.
+ * 
+ */
 public final class RemoveMetaOutputStream extends OutputStream {
 
     private static final int FIRST_STOP_BYTE = 3;
 
-    private static final int WRITE_OUT = 10;
+    private static final int WRITE_OUT = '\n';
 
     private static final int SECOND_BYTE = 1;
 
     private static final int FIRST_BYTE = 0;
 
-    private OutputStream out;
-
     private OutputStream current;
 
-    private OutputStream state1;
+    private final OutputStream state1;
 
-    private OutputStream state2;
+    private final OutputStream state2;
 
-    private OutputStream state3;
+    private final OutputStream state3;
 
-    private OutputStream state4;
+    private final OutputStream state4;
 
-    public RemoveMetaOutputStream(OutputStream out) {
-        this.out = out;
-
+    /**
+     * @param out
+     *            an OutputStream containing Metadata.
+     */
+    public RemoveMetaOutputStream(final OutputStream out) {
         /**
          * This may look weird but uses the state pattern
          * 
@@ -43,10 +47,10 @@ public final class RemoveMetaOutputStream extends OutputStream {
         state1 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == 1) {
+                if (b == SECOND_BYTE) {
                     current = state2;
                 } else {
-                    current = RemoveMetaOutputStream.this.out;
+                    current = out;
                     current.write(b);
                 }
 
@@ -56,16 +60,16 @@ public final class RemoveMetaOutputStream extends OutputStream {
         state2 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == '\n') {
+                if (b == WRITE_OUT) {
                     current = state3;
                 } else {
-                    current = RemoveMetaOutputStream.this.out;
+                    current = out;
                     current.write(1);
                     current.write(b);
                 }
             }
         };
-
+        
         state3 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
@@ -78,8 +82,8 @@ public final class RemoveMetaOutputStream extends OutputStream {
         state4 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == '\n') {
-                    current = RemoveMetaOutputStream.this.out;
+                if (b == WRITE_OUT) {
+                    current = out;
                 } else {
                     current = state3;
                 }

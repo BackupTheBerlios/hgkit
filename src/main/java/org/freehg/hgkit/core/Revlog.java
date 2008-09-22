@@ -201,7 +201,7 @@ public class Revlog {
         try {
             reader.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError("reader" + reader, e);
         }
         reader = null;
     }
