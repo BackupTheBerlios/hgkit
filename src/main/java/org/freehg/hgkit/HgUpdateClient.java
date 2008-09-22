@@ -13,10 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Collection;
-import java.util.Set;
 
-import org.freehg.hgkit.core.DirState;
-import org.freehg.hgkit.core.Manifest;
 import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
@@ -58,6 +55,13 @@ class UpdateFile {
             FileHelper.close(out);
         }
     }
+
+    /** 
+     * Closes the revlog-file. 
+     */
+    public void close() {
+        revlog.close();
+    }
 }
 
 /**
@@ -78,7 +82,12 @@ public class HgUpdateClient {
         final Collection<DirStateEntry> states = repo.getDirState().getDirState();
         for (DirStateEntry state : states) {
             final String path = state.getPath();
-            new UpdateFile(repo, path).tip();
+            final UpdateFile updateFile = new UpdateFile(repo, path);
+            try {
+                updateFile.tip();
+            } finally {
+                updateFile.close();
+            }
         }
         System.out.println(states.size() + " files updated.");
     }
