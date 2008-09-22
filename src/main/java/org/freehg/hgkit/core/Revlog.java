@@ -25,6 +25,7 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
  * 
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/Revlog
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG
+ * @see http://hgbook.red-bean.com/hgbookch4.html#x8-640004
  * 
  */
 public class Revlog {

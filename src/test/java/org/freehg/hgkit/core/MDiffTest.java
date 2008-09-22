@@ -35,9 +35,11 @@ public class MDiffTest {
     public void testSimple() {
         String text = "12345xxxx";
         byte[] patch = newPatch(5, 4, "6789");
-        byte[] result = MDiff.patches(text.getBytes(), patch);
-        String resultString = new String(result);
-
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        List<byte[]> list = new ArrayList<byte[]>();
+        list.add(patch);
+        MDiff.patches(text.getBytes(), list, out);
+        String resultString = new String(out.toByteArray());
         assertEquals("123456789", resultString);
     }
 

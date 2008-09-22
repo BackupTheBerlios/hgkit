@@ -1,10 +1,8 @@
 package org.freehg.hgkit.core;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -283,23 +281,5 @@ public class MDiff {
 
         }
         out.write(orig, last, len - last);
-    }
-
-    /**
-     * Deprecated Use {@link MDiff}{@link #patches(byte[], List, OutputStream)}
-     * instead
-     * 
-     * @param bytes
-     * @param patch
-     * @return
-     */
-    @Deprecated
-    static byte[] patches(byte[] bytes, byte[] patch) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ArrayList<byte[]> list = new ArrayList<byte[]>(1);
-        list.add(patch);
-        patches(bytes, list, out);
-        return out.toByteArray();
-
     }
 }
