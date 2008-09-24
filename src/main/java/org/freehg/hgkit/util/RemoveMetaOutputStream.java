@@ -5,18 +5,18 @@ import java.io.OutputStream;
 
 /**
  * Removes the metadata from a patch-set. Metadata-borders are marked by special
- * bytes.
- * 
+ * bytes. Metadata starts with
+ * {@link RemoveMetaOutputStream#FIRST_METADATA_BYTE} followed by
+ * {@link RemoveMetaOutputStream#SECOND_METADATA_BYTE} followed by the actual
+ * metadata followed by {@link RemoveMetaOutputStream#FIRST_METADATA_BYTE}
+ * followed by {@link RemoveMetaOutputStream#SECOND_METADATA_BYTE} followed by
+ * the actual content.
  */
 public final class RemoveMetaOutputStream extends OutputStream {
 
-    private static final int FIRST_STOP_BYTE = 3;
+    private static final int SECOND_METADATA_BYTE = '\n';
 
-    private static final int WRITE_OUT = '\n';
-
-    private static final int SECOND_BYTE = 1;
-
-    private static final int FIRST_BYTE = 0;
+    private static final int FIRST_METADATA_BYTE = 1;
 
     private OutputStream current;
 
@@ -39,32 +39,33 @@ public final class RemoveMetaOutputStream extends OutputStream {
      *       \- &gt;S5 &lt; -/
      * </pre>
      * 
-     * @param out
-     *            an OutputStream containing Metadata.
+     * @param decoratedOut
+     *            an OutputStream potentially containing Metadata.
      */
-    public RemoveMetaOutputStream(final OutputStream out) {
+    public RemoveMetaOutputStream(final OutputStream decoratedOut) {
         state1 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == SECOND_BYTE) {
+                if (b == FIRST_METADATA_BYTE) {
+                    // Only metadata if followed by SECOND_METADATA_BYTE
                     current = state2;
                 } else {
-                    current = out;
-                    current.write(b);
+                    current = decoratedOut;
+                    decoratedOut.write(b);
                 }
-
             }
         };
 
         state2 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == WRITE_OUT) {
+                if (b == SECOND_METADATA_BYTE) {
+                    // We are really in metadata now.
                     current = state3;
                 } else {
-                    current = out;
-                    current.write(1);
-                    current.write(b);
+                    current = decoratedOut;
+                    decoratedOut.write(1);
+                    decoratedOut.write(b);
                 }
             }
         };
@@ -72,7 +73,8 @@ public final class RemoveMetaOutputStream extends OutputStream {
         state3 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == '1') {
+                if (b == FIRST_METADATA_BYTE) {
+                    // Metadata maybe ends.
                     current = state4;
                 }
             }
@@ -81,9 +83,11 @@ public final class RemoveMetaOutputStream extends OutputStream {
         state4 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                if (b == WRITE_OUT) {
-                    current = out;
+                if (b == SECOND_METADATA_BYTE) {
+                    // Metadata maybe ends.
+                    current = decoratedOut;
                 } else {
+                    // Still in metadata
                     current = state3;
                 }
             }
@@ -96,5 +100,4 @@ public final class RemoveMetaOutputStream extends OutputStream {
     public void write(int b) throws IOException {
         this.current.write(b);
     }
-
 }

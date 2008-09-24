@@ -9,66 +9,87 @@
 package org.freehg.hgkit.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.IOException;
 
-import org.freehg.hgkit.Tutil;
-import org.freehg.hgkit.core.NodeId;
-import org.freehg.hgkit.core.Repository;
-import org.freehg.hgkit.core.Revlog;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
- * @author mirko
- * 
+ * Tests for {@link RemoveMetaOutputStream}.
  */
-@RunWith(Parameterized.class)
 public class RemoveMetaOutputStreamTest {
 
-    private static File repoDir;
-    private final String content;
-    private final String filename;
+    private final static byte[] CONTENT_WITH_METADATA_BYTES = new byte[] { 1, 10, 99, 111, 112, 121, 114, 101, 118, 58,
+            32, 53, 99, 98, 52, 53, 98, 53, 100, 48, 97, 99, 54, 99, 100, 49, 55, 101, 98, 49, 49, 101, 50, 53, 99,
+            101, 101, 100, 48, 100, 50, 56, 98, 54, 98, 48, 57, 53, 97, 55, 50, 10, 99, 111, 112, 121, 58, 32, 115,
+            114, 99, 47, 116, 101, 115, 116, 47, 114, 101, 115, 111, 117, 114, 99, 101, 115, 47, 117, 110, 109, 111,
+            118, 101, 100, 45, 102, 105, 108, 101, 10, 1, 10, 116, 104, 105, 115, 32, 102, 105, 108, 101, 32, 105, 115,
+            32, 109, 111, 118, 101, 100, 32, 97, 110, 100, 32, 104, 97, 115, 32, 77, 101, 116, 97, 100, 97, 116, 97, 10 };
 
-    @BeforeClass
-    public static void createCopy() {
-        repoDir = Tutil.createRepoCopy();
-    }
+    private final static String CONTENT = "this file is moved and has Metadata\n";
 
-    @AfterClass
-    public static void deleteCopy() {
-        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
-    }
+    private final static byte[] CONTENT_WITH_METADATA_BYTES_BUT_WITHOUT_METADATA = new byte[] { 1, 116, 104, 105, 115,
+            32, 102, 105, 108, 101, 32, 105, 115, 32, 109, 111, 118, 101, 100, 32, 97, 110, 100, 32, 104, 97, 115, 32,
+            77, 101, 116, 97, 100, 97, 116, 97, 10 };
 
-    @Parameters
-    public static Collection<String[]> data() {
-        ArrayList<String[]> list = new ArrayList<String[]>();
-        list.add(new String[] { "src/test/resources/moved-file", "this file is moved and has Metadata" });
-        list.add(new String[] { "src/test/resources/anunmoved-file", "this file is not moved and has no Metadata\n" });
-        return list;
-    }
-
-    public RemoveMetaOutputStreamTest(final String filename, final String content) {
-        this.filename = filename;
-        this.content = content;        
-    }
-    
+    /**
+     * Tests wether
+     * {@link RemoveMetaOutputStreamTest#CONTENT_WITH_METADATA_BYTES} really
+     * ends with {@link RemoveMetaOutputStreamTest#CONTENT}.
+     */
     @Test
-    public void testMetaData() {
-        Repository repository = new Repository(repoDir);
-        File absolute = repository.makeAbsolute(filename);
-        Revlog revlog = repository.getRevlog(absolute);
-        NodeId nodeId = revlog.tip().getId();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        revlog.revision(nodeId, out);
-        assertEquals(content, out.toString());
+    public void testTestdata() {
+        final int contentLength = CONTENT.getBytes().length;
+        final byte[] contentBytes = new byte[contentLength];
+        System.arraycopy(CONTENT_WITH_METADATA_BYTES, CONTENT_WITH_METADATA_BYTES.length - contentLength, contentBytes,
+                0, contentLength);
+        assertEquals(CONTENT, new String(contentBytes));
+    }
+
+    /**
+     * Tests removal of metadata from
+     * {@link RemoveMetaOutputStreamTest#CONTENT_WITH_METADATA_BYTES}.
+     * 
+     * @throws IOException
+     *             should not happen.
+     */
+    @Test
+    public void testWithMeta() throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RemoveMetaOutputStream removeMetaOutputStream = new RemoveMetaOutputStream(out);
+        removeMetaOutputStream.write(CONTENT_WITH_METADATA_BYTES);
+        assertEquals(CONTENT, out.toString());
+    }
+
+    /**
+     * Tests wether {@link RemoveMetaOutputStreamTest#CONTENT} is unaltered by
+     * metadata-removal.
+     * 
+     * @throws IOException
+     *             should not happen.
+     */
+    @Test
+    public void testWithoutMeta() throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RemoveMetaOutputStream removeMetaOutputStream = new RemoveMetaOutputStream(out);
+        removeMetaOutputStream.write(CONTENT.getBytes());
+        assertEquals(CONTENT, out.toString());
+    }
+
+    /**
+     * Tests wether
+     * {@link RemoveMetaOutputStreamTest#CONTENT_WITH_METADATA_BYTES_BUT_WITHOUT_METADATA}
+     * is unaltered by metadata-removal.
+     * 
+     * @throws IOException
+     *             should not happen.
+     */
+    @Test
+    public void testContentWithMetaBytes() throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RemoveMetaOutputStream removeMetaOutputStream = new RemoveMetaOutputStream(out);
+        removeMetaOutputStream.write(CONTENT_WITH_METADATA_BYTES_BUT_WITHOUT_METADATA);
+        assertEquals(new String(CONTENT_WITH_METADATA_BYTES_BUT_WITHOUT_METADATA), out.toString());
     }
 }
