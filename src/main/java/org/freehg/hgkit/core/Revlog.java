@@ -298,7 +298,7 @@ public class Revlog {
 
         private CacheOutputStream(OutputStream redirect, int size) {
             this.redirect = redirect;
-            this.cache = new ByteArrayOutputStream((int) size);
+            this.cache = new ByteArrayOutputStream(size);
         }
 
         @Override
