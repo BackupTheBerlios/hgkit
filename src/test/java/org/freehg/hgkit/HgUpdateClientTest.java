@@ -33,7 +33,7 @@ public class HgUpdateClientTest {
 
     @AfterClass
     public static void deleteCopy() {
-        //assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
     }
 
 
