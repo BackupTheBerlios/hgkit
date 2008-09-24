@@ -29,21 +29,20 @@ public final class RemoveMetaOutputStream extends OutputStream {
     private final OutputStream state4;
 
     /**
+     * This may look weird but uses the state pattern
+     * 
+     * <pre>
+     *   S1 -&gt;  S2 -&gt; S3 &lt;-&gt; S4
+     *    \     |          /
+     *     \    |         /
+     *      \  \/        /
+     *       \- &gt;S5 &lt; -/
+     * </pre>
+     * 
      * @param out
      *            an OutputStream containing Metadata.
      */
     public RemoveMetaOutputStream(final OutputStream out) {
-        /**
-         * This may look weird but uses the state pattern
-         * 
-         * <pre>
-         *   S1 -&gt;  S2 -&gt; S3 &lt;-&gt; S4
-         *    \     |          /
-         *     \    |         /
-         *      \  \/        /
-         *       \- &gt;S5 &lt; -/
-         * </pre>
-         */
         state1 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
@@ -69,7 +68,7 @@ public final class RemoveMetaOutputStream extends OutputStream {
                 }
             }
         };
-        
+
         state3 = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
