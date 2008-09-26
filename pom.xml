@@ -7,10 +7,15 @@
     <version>SNAPSHOT</version>
     <name>hgkit</name>
     <url>http://hgkit.berlios.de/</url>
+    <inceptionYear>2007</inceptionYear>
+    <organization>
+        <name>hgkit</name>
+        <url>http://hgkit.berlios.de/</url>
+    </organization>
     <description>HgKit aims to be a java library for managing
         mercurial (hg) repositories.</description>
     <ciManagement>
-        <system>Hudson</system>
+        <system>hudson</system>
         <url>http://zeibig.net:20080/job/HgKit/</url>
     </ciManagement>
     <issueManagement>
@@ -81,6 +86,20 @@
     </dependencies>
     <reporting>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <show>private</show>
+                    <quiet>true</quiet>
+                    <links>
+                        <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+                    </links>
+                    <bottom>
+                        <![CDATA[<a href="http://hgkit.berlios.de/">Copyright © {inceptionYear}-{currentYear} {organizationName}</a>]]>
+                    </bottom>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>taglist-maven-plugin</artifactId>
