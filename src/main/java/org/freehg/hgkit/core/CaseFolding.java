@@ -1,8 +1,12 @@
 package org.freehg.hgkit.core;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import org.freehg.hgkit.HgInternalError;
 
 /**
  * Implements folding and unfolding of filenames by replacing:
@@ -24,6 +28,11 @@ public final class CaseFolding {
     final static char[] WIN_RESERVED = "\\:*?\"<>|".toCharArray();
 
     /**
+     * Reserved filenames in Windows.
+     */
+    final static Set<String> WIN_RESERVED_FILESNAMES = new HashSet<String>();
+
+    /**
      * Folding map.
      */
     final static HashMap<String, String> FOLD_MAP;
@@ -36,8 +45,11 @@ public final class CaseFolding {
     static {
         FOLD_MAP = new HashMap<String, String>();
         UNFOLD_MAP = new HashMap<String, String>();
+        Collections.addAll(WIN_RESERVED_FILESNAMES,
+                "con prn aux nul com1 com2 com3 com4 com5 com6 com7 com8 com9 lpt1 lpt2 lpt3 lpt4 lpt5 lpt6 lpt7 lpt8 lpt9"
+                        .split(" "));
         createLookupMap();
-        createInverseMap();
+        createUnfoldMap();
     }
 
     /**
@@ -49,13 +61,13 @@ public final class CaseFolding {
             FOLD_MAP.put(Character.toString(c), Character.toString(c));
         }
         for (int i = 126; i < 256; i++) {
-            replaceSpecialLetters((char) i);
+            escapeCharacter((char) i);
         }
         for (char c : WIN_RESERVED) {
-            replaceSpecialLetters(c);
+            FOLD_MAP.put(Character.toString(c), escapeCharacter(c));
         }
-        replaceSpecialLetters((char) 32);
-        replaceUpperCaseLetters();
+        FOLD_MAP.put(Character.toString((char) 32), escapeCharacter((char) 32));
+        replaceUpperCaseLetters();        
     }
 
     /**
@@ -72,29 +84,33 @@ public final class CaseFolding {
     /**
      * Creates the reverse map {@link CaseFolding#UNFOLD_MAP} for unfolding.
      */
-    private static void createInverseMap() {
-        Set<Entry<String, String>> entrySet = FOLD_MAP.entrySet();
+    private static void createUnfoldMap() {
+        Set<Entry<String, String>> entrySet = FOLD_MAP.entrySet();        
         for (Entry<String, String> entry : entrySet) {
             UNFOLD_MAP.put(entry.getValue(), entry.getKey());
+        }
+        for (String reservedFilename : WIN_RESERVED_FILESNAMES) {
+            String lastCharacter = reservedFilename.substring(reservedFilename.length() -1);
+            UNFOLD_MAP.put(escapeCharacter(lastCharacter.charAt(0)), lastCharacter);
         }
     }
 
     /**
-     * Replaces or sets special character with it's tilde prefixed hex-code in
+     * Escapes character with it's tilde prefixed hex-code in
      * {@link CaseFolding#FOLD_MAP}.
      * 
      * @param c
      *            character to replace.
      */
-    private static void replaceSpecialLetters(final Character c) {
-        final String replacement = String.format("~%02x", (int) c);
-        FOLD_MAP.put(Character.toString(c), replacement);
+    private static String escapeCharacter(final Character c) {
+        return String.format("~%02x", (int) c);
     }
 
     /**
      * Folds a pathname as Mercurial does in util.encodefilename.
      * 
      * @param name
+     *            the unfolded name.
      * @return the folded name.
      */
     public static String fold(String name) {
@@ -110,6 +126,7 @@ public final class CaseFolding {
      * Unfolds a pathname as Mercurial does in util.decodefilename.
      * 
      * @param foldedName
+     *            a folded name.
      * @return the unfolded name.
      */
     public static String unfold(String foldedName) {
@@ -125,10 +142,35 @@ public final class CaseFolding {
             }
             final String key = new String(keyCharacters);
             if (!UNFOLD_MAP.containsKey(key)) {
-                throw new AssertionError("UNFOLD_MAP does not contain " + key);
+                throw new HgInternalError("UNFOLD_MAP does not contain " + key);
             }
             unfolded.append(UNFOLD_MAP.get(key));
         }
         return unfolded.toString();
+    }
+
+    /**
+     * Returns normalized form for reserved Windows filenames.
+     * 
+     * @see http://marc.info/?l=mercurial-devel&m=122079447309319&w=2
+     * 
+     * @param path
+     *            to inspect
+     * @return escaped path
+     */
+    public static String auxencode(final String path) {
+        StringBuilder result = new StringBuilder();
+        for (String pathElement : path.split("/")) {
+            if (pathElement.length() > 0) {
+                final String[] split = pathElement.split("\\.");
+                String base = split[0];
+                if (WIN_RESERVED_FILESNAMES.contains(base)) {
+                    final String replacement = String.format("~%02x", (int) base.charAt(2));
+                    pathElement = pathElement.substring(0, 2) + replacement + pathElement.substring(3);
+                }
+            }
+            result.append(pathElement).append("/");
+        }
+        return result.toString().substring(0, result.length() - 1);
     }
 }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.freehg.hgkit.HgInternalError;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,8 +49,20 @@ public class CaseFoldingTest {
         assertEquals(unfolded, result);
     }
 
-    @Test(expected = AssertionError.class)
+    /**
+     * Tests an invalid folded name.
+     */
+    @Test(expected = HgInternalError.class)
     public void testErrorInUnfold() {
         CaseFolding.unfold(folded + "A");
+    }
+    
+    /**
+     * Tests new auxencode function.
+     */
+    @Test
+    public void testAuxEncode() {
+        String actual = CaseFolding.auxencode("/abc/aux.foo");
+        assertEquals("/abc/au~78.foo", actual);        
     }
 }
