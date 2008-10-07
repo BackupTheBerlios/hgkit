@@ -24,7 +24,7 @@
     </issueManagement>
     <scm>
         <connection>scm:hg:http://hg.berlios.de/repos/hgkit</connection>
-        <developerConnection>scm:hg:http://hg.berlios.de/repos/hgkit</developerConnection>
+        <developerConnection>scm:hg:https://hg.berlios.de/repos/hgkit</developerConnection>
         <url>http://hg.berlios.de/repos/hgkit</url>
     </scm>
     <properties>
