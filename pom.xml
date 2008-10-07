@@ -64,6 +64,11 @@
             <name>HgKit Website on berlios</name>
             <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/</url>
         </site>
+        <repository>
+            <id>shell.berlios.de</id>
+            <name>Maven2-Repo on berlios</name>
+            <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/maven2repo/</url>
+        </repository>
     </distributionManagement>
     <build>
         <plugins>
