@@ -21,7 +21,8 @@ import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
 /**
- * The Java-Implementation of RevlogNG.
+ * The Java-Implementation of RevlogNG. This baseclass is extended by
+ * {@link Manifest} and {@link ChangeLog}.
  * 
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/Revlog
  * @see http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG
@@ -73,14 +74,33 @@ public class Revlog {
         }
     }
 
+    /**
+     * Returns the revisions in the Revlog-file.
+     * 
+     * @return revisions.
+     */
     public Set<NodeId> getRevisions() {
         return Collections.unmodifiableSet(this.nodemap.keySet());
     }
 
+    /**
+     * Returns the numeric index for a given nodeId.
+     * 
+     * @param nodeId
+     *            the nodeId
+     * @return index
+     */
     public int index(NodeId nodeId) {
         return nodemap.get(nodeId).revision;
     }
 
+    /**
+     * Returns the nodeId for a given numeric index.
+     * 
+     * @param revisionIndex
+     *            the numeric index
+     * @return nodeId
+     */
     public NodeId node(int revisionIndex) {
         List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId, RevlogEntry>>(this.nodemap.entrySet());
         for (Entry<NodeId, RevlogEntry> entry : entries) {
@@ -101,31 +121,80 @@ public class Revlog {
         throw new IllegalArgumentException(this + " has no such revision");
     }
 
-    public Revlog revision(NodeId node, OutputStream out) {
-        return revision(node, out, true);
+    /**
+     * Writes the revision specified by nodeId to the given outputstream.
+     * Metadata is not considered.
+     * 
+     * @param nodeId
+     *            the nodeId
+     * @param out
+     *            outputstream
+     * @return revlog
+     */
+    public Revlog revision(NodeId nodeId, OutputStream out) {
+        return revision(nodeId, out, true);
     }
 
-    public Revlog revision(NodeId node, OutputStream out, boolean noMetaData) {
-        if (node.equals(NULLID)) {
+    /**
+     * Writes the revision specified by nodeId to the given outputstream.
+     * Metadata may be considered.
+     * 
+     * @param nodeId
+     *            the nodeId
+     * @param out
+     *            outputstream
+     * @param noMetaData
+     *            should we ignore metadata.
+     * @return revlog
+     */
+    public Revlog revision(NodeId nodeId, OutputStream out, boolean noMetaData) {
+        if (nodeId.equals(NULLID)) {
             return this;
         }
-        final RevlogEntry target = nodemap.get(node);
+        final RevlogEntry target = nodemap.get(nodeId);
         return revision(target, out, noMetaData);
     }
 
-    protected Revlog revision(int index, OutputStream out, boolean noMetaData) {
-        return revision(this.index.get(index), out, noMetaData);
+    /**
+     * Writes the revision specified by the numeric index to the given
+     * outputstream. Metadata may be considered.
+     * 
+     * @param revisionIndex
+     *            numeric index.
+     * @param out
+     *            outputstream
+     * @param noMetaData
+     *            should we ignore metadata.
+     * @return revlog
+     */
+    protected Revlog revision(int revisionIndex, OutputStream out, boolean noMetaData) {
+        return revision(this.index.get(revisionIndex), out, noMetaData);
     }
 
+    /**
+     * Writes the specific revlogentry to the given outputstream. Metadata may
+     * be considered.
+     * 
+     * @param target
+     *            revlogentry
+     * @param out
+     *            outputstream
+     * @param noMetaData
+     *            should we ignore metadata.
+     * @return revlog
+     */
     protected Revlog revision(final RevlogEntry target, OutputStream out, boolean noMetaData) {
+        final OutputStream finalOut;
         if (noMetaData) {
-            out = new RemoveMetaOutputStream(out);
+            finalOut = new RemoveMetaOutputStream(out);
+        } else {
+            finalOut = out;
         }
         if ((target.getFlags() & 0xFFFF) != 0) {
             throw new IllegalStateException("Incompatible revision flag: " + target.getFlags());
         }
         if (cache.containsKey(target)) {
-            writeFromCache(target, out);
+            writeFromCache(target, finalOut);
             return this;
         }
 
@@ -149,17 +218,17 @@ public class Revlog {
             // FIXME worst case size value is calculated wrong (but kinda works)
             long worstCaseSize = baseData.length;
 
+            // cache data if it is small enough.
             if (worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
-                CacheOutputStream cacheOut = new CacheOutputStream(out, (int) worstCaseSize);
+                CacheOutputStream cacheOut = new CacheOutputStream(finalOut, (int) worstCaseSize);
                 MDiff.patches(baseData, patches, cacheOut);
                 this.cache.put(target, cacheOut.cache.toByteArray());
-
             } else {
-                MDiff.patches(baseData, patches, out);
+                MDiff.patches(baseData, patches, finalOut);
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError(e);
         }
         return this;
     }
@@ -172,6 +241,14 @@ public class Revlog {
         }
     }
 
+    /**
+     * Returns a RandomAccessFile to the data stored in revlog. Switch to
+     * accessing the datafile instead of the indexfile, if data is not inlined.
+     * 
+     * @return randomAccessFile
+     * @throws FileNotFoundException
+     *             if the index or data file is not available.
+     */
     private RandomAccessFile getDataFile() throws FileNotFoundException {
         if (this.reader != null && this.reader.getChannel().isOpen()) {
             return this.reader;
@@ -179,21 +256,34 @@ public class Revlog {
         if (this.isDataInline) {
             this.reader = new RandomAccessFile(this.indexFile, READ_ONLY);
         } else {
-            String path = this.indexFile.getAbsolutePath();
-            String dataFilePath = path.substring(0, path.length() - ".i".length()) + ".d";
+            final String path = this.indexFile.getAbsolutePath();
+            final String dataFilePath = path.substring(0, path.length() - ".i".length()) + ".d";
             this.reader = new RandomAccessFile(new File(dataFilePath), READ_ONLY);
         }
         return this.reader;
     }
 
+    /**
+     * Returns the revlogentry for the tip revision.
+     * 
+     * @return revlogentry
+     */
     public RevlogEntry tip() {
         return index.get(count() - 1);
     }
 
+    /**
+     * Returns the number of revisions.
+     * 
+     * @return revisions-count
+     */
     public int count() {
         return index.size();
     }
 
+    /**
+     * Closes the underlying reader of the revlog-file.
+     */
     public void close() {
         if (reader == null) {
             return;
@@ -210,36 +300,17 @@ public class Revlog {
      * versionformat = ">I", big endian, uint 4 bytes which includes version
      * format
      */
-    private void parseIndex(File index) throws IOException {
-        DataInputStream reader = new DataInputStream(new FileInputStream(index));
-        final int version;
-        try {
-            version = reader.readInt();
-        } finally {
-            reader.close();
-        }
+    private void parseIndex(File fileOfIndex) throws IOException {
+        final int version = readVersion(fileOfIndex);
 
         isDataInline = (version & REVLOGNGINLINEDATA) != 0;
-        // Its pretty odd, but its the revlogFormat which is the "version"
-        final long revlogFormat = version & 0xFFFF;
-        if (revlogFormat != REVLOGNG) {
-            throw new IllegalStateException("Revlog format MUST be NG");
-        }
-        /*
-         * long flags = version & ~0xFFFF; TODO check index for unknown flags
-         * (see revlog.py)
-         */
+        checkRevlogFormat(version);
 
         nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
         this.index = new ArrayList<RevlogEntry>(100);
 
-        reader = new DataInputStream(new BufferedInputStream(new FileInputStream(index)));
-        final byte[] data;
-        try {
-            data = Util.toByteArray(reader);
-        } finally {
-            reader.close();
-        }
+        final byte[] data = toByteArray(fileOfIndex);
+
         int length = data.length - RevlogEntry.BINARY_LENGTH;
 
         int indexCount = 0;
@@ -267,47 +338,93 @@ public class Revlog {
         }
     }
 
-    void printIndex() {
-        log("-------------------------------------");
-        log("rev off  len         base    linkRev    nodeid      p1      p2");
-        for (int i = 0; i < this.index.size(); i++) {
-            RevlogEntry entry = this.index.get(i);
-            log(entry);
-        }
-        log("number of revlogs: " + this.index.size());
-    }
-
-    static void log(Object msg) {
-        if (true) {
-            // logging is off
-            return;
-        }
-
-        if (msg != null) {
-            System.out.println(msg.toString());
-        } else {
-            System.out.println("null");
+    /**
+     * Reads all data from the file. Reading is buffered and data is read as
+     * {@link DataInputStream}.
+     * 
+     * @param fileOfIndex
+     *            file
+     * @return byte-array.
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private byte[] toByteArray(File fileOfIndex) throws FileNotFoundException, IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(fileOfIndex)));
+        try {
+            return Util.toByteArray(in);
+        } finally {
+            in.close();
         }
     }
 
+    /**
+     * Checks the Revlog-format.
+     * 
+     * @param version
+     *            of the revlog-file.
+     */
+    private void checkRevlogFormat(final int version) {
+        // Its pretty odd, but its the revlogFormat which is the "version"
+        final long revlogFormat = version & 0xFFFF;
+        if (revlogFormat != REVLOGNG) {
+            throw new IllegalStateException("Revlog format MUST be NG");
+        }
+        /*
+         * long flags = version & ~0xFFFF; TODO check index for unknown flags
+         * (see revlog.py)
+         */
+    }
+
+    /**
+     * Reads the version from the first bytes of fileOfIndex.
+     * 
+     * @param fileOfIndex
+     *            file
+     * @return version
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private int readVersion(File fileOfIndex) throws FileNotFoundException, IOException {
+        DataInputStream in = new DataInputStream(new FileInputStream(fileOfIndex));
+        try {
+            return in.readInt();
+        } finally {
+            in.close();
+        }
+    }
+
+    /**
+     * Caching decorator. This class caches all writes in a
+     * {@link ByteArrayOutputStream}.
+     */
     private static class CacheOutputStream extends OutputStream {
 
         private ByteArrayOutputStream cache;
 
-        private final OutputStream redirect;
+        private final OutputStream cached;
 
+        /**
+         * @param cached
+         *            the cached outputstream.
+         * @param size
+         *            initial size of the caching {@link ByteArrayOutputStream}
+         */
         private CacheOutputStream(OutputStream redirect, int size) {
-            this.redirect = redirect;
+            this.cached = redirect;
             this.cache = new ByteArrayOutputStream(size);
         }
 
+        /** {@inheritDoc} */
         @Override
         public void write(int b) throws IOException {
             this.cache.write(b);
-            this.redirect.write(b);
+            this.cached.write(b);
         }
     }
 
+    /**
+     * Caches all {@link RevlogEntry} in a {@link LinkedHashMap}.
+     */
     private static class RevlogCache extends LinkedHashMap<RevlogEntry, byte[]> {
 
         private static final long serialVersionUID = 6934630760462643470L;
@@ -318,6 +435,7 @@ public class Revlog {
 
         private long cachedDataSize = 0;
 
+        /** {@inheritDoc} */
         @Override
         protected boolean removeEldestEntry(Entry<RevlogEntry, byte[]> eldest) {
             boolean removeEldest = this.cachedDataSize > MAX_CACHE_SIZE;
@@ -327,6 +445,7 @@ public class Revlog {
             return removeEldest;
         }
 
+        /** {@inheritDoc} */
         @Override
         public byte[] put(RevlogEntry key, byte[] value) {
             byte[] result = super.put(key, value);
