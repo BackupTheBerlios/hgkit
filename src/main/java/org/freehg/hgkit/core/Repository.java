@@ -34,11 +34,7 @@ public class Repository {
         if (!root.exists()) {
             throw new IllegalArgumentException(root + " must exist");
         }
-        try {
-            this.root = root.getCanonicalFile();
-        } catch (IOException e) {
-            throw new HgInternalError("root=" + root, e);
-        }
+        this.root = Util.getCanonicalFile(root);
         final File dataDir = new File(this.root, DATA);
         if (!dataDir.isDirectory()) {
             throw new IllegalArgumentException(dataDir + " must exist");
@@ -64,15 +60,11 @@ public class Repository {
      */
     public File getIndex(File file) {
         String filePath;
-        try {
-            filePath = file.getCanonicalPath();
-            String rootPath = Util.forwardSlashes(root.getCanonicalPath());
-            String relativeRoot = Util.forwardSlashes(filePath.substring(rootPath.length()));
-            String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
-            return new File(rootPath + "/" + indexName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        filePath = Util.getCanonicalPath(file);
+        String rootPath = Util.forwardSlashes(Util.getCanonicalPath(root));
+        String relativeRoot = Util.forwardSlashes(filePath.substring(rootPath.length()));
+        String indexName = DATA + CaseFolding.fold(relativeRoot) + INDEX_SUFFIX;
+        return new File(rootPath + "/" + indexName);
     }
 
     /**
@@ -136,13 +128,7 @@ public class Repository {
      * @return relative file
      */
     public File makeRelative(final File file) {
-        final File absoluteFile;
-        try {
-            absoluteFile = file.getCanonicalFile();
-        } catch (IOException e) {
-            throw new RuntimeException(file.toString(), e);
-        }
-        final String abs = absoluteFile.getAbsolutePath();
+        final String abs = Util.getCanonicalFile(file).getAbsolutePath();
         if (!abs.startsWith(absoluteRootPath)) {
             throw new IllegalArgumentException(file + " is not a child of " + absoluteRootPath);
         }
@@ -162,12 +148,7 @@ public class Repository {
      */
     public File makeAbsolute(final String path) {
         final File absoluteRoot = root.getAbsoluteFile();
-        try {
-            return new File(absoluteRoot, path).getCanonicalFile();
-        } catch (IOException e) {
-            // Don't know when this will happen
-            throw new HgInternalError(absoluteRoot.toString(), e);
-        }
+        return Util.getCanonicalFile(new File(absoluteRoot, path));
     }
 
     /**

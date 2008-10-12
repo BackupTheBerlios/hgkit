@@ -10,6 +10,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.freehg.hgkit.HgInternalError;
@@ -107,4 +108,48 @@ public class UtilTest {
         assertTrue("Should end with '" + suffix + "'", uncompressed_passwd.endsWith(suffix));
         assertEquals(2888, uncompressed_passwd.length());
     }
+    
+    /**
+     * Test method for {@link Util#getCanonicalFile(File)}.
+     */
+    @Test
+    public final void testGetCanonicalFile() {
+        Util.getCanonicalFile(new File("."));
+    }
+    
+    /**
+     * Test method for {@link Util#getCanonicalFile(File)}.
+     */
+    @Test(expected=HgInternalError.class)
+    public final void testGetCanonicalFileNonExisting() {
+        Util.getCanonicalFile(new File(".") {
+            /** {@inheritDoc} */
+            @Override
+            public File getCanonicalFile() throws IOException {
+                throw new IOException("Oops");                
+            }
+        });
+    }
+    /**
+     * Test method for {@link Util#getCanonicalPath(File)}.
+     */
+    @Test
+    public final void testGetCanonicalPath() {
+        Util.getCanonicalFile(new File("."));
+    }
+    
+    /**
+     * Test method for {@link Util#getCanonicalPath(File)}.
+     */
+    @Test(expected=HgInternalError.class)
+    public final void testGetCanonicalPathNonExisting() {
+        Util.getCanonicalFile(new File(".") {
+            /** {@inheritDoc} */
+            @Override
+            public String getCanonicalPath() throws IOException {
+                throw new IOException("Oops");                
+            }
+        });
+    }
+
 }

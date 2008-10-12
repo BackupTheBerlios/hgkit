@@ -2,6 +2,7 @@ package org.freehg.hgkit.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.InflaterInputStream;
@@ -99,8 +100,7 @@ final class Util {
      * 
      * @param name
      *            resource name.
-     * @return
-     * @throws IOException
+     * @return byte array
      */
     static byte[] readResource(final String name) {
         final byte[] resourceBytes;
@@ -115,5 +115,30 @@ final class Util {
             throw new RuntimeException(e);
         }
         return resourceBytes;
+    }
+    
+    /**
+     * Returns the canonical file, rethrow {@link IOException} as {@link HgInternalError}.
+     * @param file file
+     * @return canonical file
+     */
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {            
+            throw new HgInternalError(file.toString(), e);
+        }
+    }
+    /**
+     * Returns the canonical path, rethrow {@link IOException} as {@link HgInternalError}.
+     * @param file file
+     * @return canonical path
+     */
+    static String getCanonicalPath(File file) {
+        try {
+            return file.getCanonicalPath();
+        } catch (IOException e) {            
+            throw new HgInternalError(file.toString(), e);
+        }
     }
 }
