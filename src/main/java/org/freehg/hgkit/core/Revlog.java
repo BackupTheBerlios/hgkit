@@ -24,9 +24,9 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
  * The Java-Implementation of RevlogNG. This baseclass is extended by
  * {@link Manifest} and {@link ChangeLog}.
  * 
- * @see http://www.selenic.com/mercurial/wiki/index.cgi/Revlog
- * @see http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG
- * @see http://hgbook.red-bean.com/hgbookch4.html#x8-640004
+ * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/Revlog">Revlog page at selenic</a>
+ * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG">RevlogNG page at selenic</a>
+ * @see <a href="http://hgbook.red-bean.com/hgbookch4.html#x8-640004">Documention in HgBook</a>
  * 
  */
 public class Revlog {
@@ -111,6 +111,11 @@ public class Revlog {
         throw new IllegalArgumentException(this + " has no such revision");
     }
 
+    /**
+     * Returns the NodeId of the linkrev
+     * @param linkrev numeric revision
+     * @return nodeId
+     */
     public NodeId linkrev(int linkrev) {
         List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId, RevlogEntry>>(this.nodemap.entrySet());
         for (Entry<NodeId, RevlogEntry> entry : entries) {

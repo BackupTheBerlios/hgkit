@@ -152,7 +152,7 @@ public final class CaseFolding {
     /**
      * Returns normalized form for reserved Windows filenames.
      * 
-     * @see http://marc.info/?l=mercurial-devel&m=122079447309319&w=2
+     * @see <a href="http://marc.info/?l=mercurial-devel&m=122079447309319&w=2">Posting of Marc on the devel-list</a>
      * 
      * @param path
      *            to inspect
