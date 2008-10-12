@@ -5,8 +5,11 @@ import java.io.IOException;
 
 import org.freehg.hgkit.HgInternalError;
 
+/**
+ * The Repository.
+ */
 public class Repository {
-    
+
     public static final String HG = ".hg/";
 
     private static final String STORE = HG + "store/";
@@ -15,10 +18,18 @@ public class Repository {
 
     private static final String INDEX_SUFFIX = ".i";
 
-    private static final String DIRSTATE = "dirstate";
+    private static final String DIRSTATE = HG + "dirstate";
 
     private final File root;
 
+    private final String absoluteRootPath;
+
+    /**
+     * Creates a Repository-instance for the given file.
+     * 
+     * @param root
+     *            of the repository.
+     */
     public Repository(File root) {
         if (!root.exists()) {
             throw new IllegalArgumentException(root + " must exist");
@@ -28,10 +39,21 @@ public class Repository {
         } catch (IOException e) {
             throw new HgInternalError("root=" + root, e);
         }
+        final File dataDir = new File(this.root, DATA);
+        if (!dataDir.isDirectory()) {
+            throw new IllegalArgumentException(dataDir + " must exist");
+        }
+        absoluteRootPath = this.root.getAbsolutePath();
     }
 
-    public Repository(String string) {
-        this(new File(string));
+    /**
+     * Creates a Repository-instance for the given path.
+     * 
+     * @param rootPath
+     *            of the repository.
+     */
+    public Repository(String rootPath) {
+        this(new File(rootPath));
     }
 
     /**
@@ -41,9 +63,6 @@ public class Repository {
      * @return
      */
     public File getIndex(File file) {
-        if (!file.isFile()) {
-//            throw new IllegalArgumentException(file + " must be a file");
-        }
         String filePath;
         try {
             filePath = file.getCanonicalPath();
@@ -59,36 +78,51 @@ public class Repository {
     /**
      * Returns the parsed content of the '.hgignore'-file.
      * 
-     * @return
+     * @return ignore
      */
     public Ignore getIgnore() {
         File ignoreFile = new File(root.getAbsoluteFile(), ".hgignore");
         return new Ignore(this, ignoreFile);
     }
 
+    /**
+     * Returns the changelog instance of the repository.
+     * 
+     * @return changelog
+     */
     public ChangeLog getChangeLog() {
-        String logIndex = root.getAbsolutePath() + "/" + STORE + "00changelog.i";
-        File index = new File(logIndex);
-        return new ChangeLog(this, index);
+        String logIndex = absoluteRootPath + "/" + STORE + "00changelog.i";
+        return new ChangeLog(this, new File(logIndex));
     }
 
+    /**
+     * Returns the manifest instance of the repository.
+     * 
+     * @return manifest.
+     */
     public Manifest getManifest() {
-        String logIndex = root.getAbsolutePath() + "/" + STORE + "00manifest.i";
-        File index = new File(logIndex);
-        return new Manifest(index);
+        String manifestIndex = absoluteRootPath + "/" + STORE + "00manifest.i";
+        return new Manifest(new File(manifestIndex));
 
     }
 
+    /**
+     * Returns the dirstate instance of the repository.
+     * 
+     * @return dirstate
+     */
     public DirState getDirState() {
-
-        String path = new StringBuilder(root.getAbsolutePath()).append('/').append(HG).append(DIRSTATE).toString();
-        File dirStateFile = new File(path);
-        if (!dirStateFile.exists()) {
-            throw new IllegalStateException("Unable to find dirstate file at location: " + path);
-        }
-        return new DirState(dirStateFile);
+        String dirStatePath = absoluteRootPath + "/" + DIRSTATE;
+        return new DirState(new File(dirStatePath));
     }
 
+    /**
+     * Returns the {@link Revlog} for the given file.
+     * 
+     * @param file
+     *            file for which we want the Revlog.
+     * @return revlog.
+     */
     public Revlog getRevlog(File file) {
         File revIndex = getIndex(file);
         return new Revlog(revIndex);
@@ -98,24 +132,24 @@ public class Repository {
      * Returns a file relative to the repository-root.
      * 
      * @param file
-     * @return
+     *            file for which we want the relative file.
+     * @return relative file
      */
     public File makeRelative(final File file) {
         final File absoluteFile;
         try {
             absoluteFile = file.getCanonicalFile();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(file.toString(), e);
         }
         final String abs = absoluteFile.getAbsolutePath();
-        final String rootPath = root.getAbsolutePath();
-        if (!abs.startsWith(rootPath)) {
-            throw new IllegalArgumentException(file + " is not a child of " + root);
+        if (!abs.startsWith(absoluteRootPath)) {
+            throw new IllegalArgumentException(file + " is not a child of " + absoluteRootPath);
         }
-        if (abs.length() == rootPath.length()) {
+        if (abs.length() == absoluteRootPath.length()) {
             return root;
         }
-        String relativePath = abs.substring(rootPath.length() + 1);
+        final String relativePath = abs.substring(absoluteRootPath.length() + 1);
         return new File(relativePath);
     }
 
@@ -123,6 +157,7 @@ public class Repository {
      * Returns the canonical file related to the repo-root.
      * 
      * @param path
+     *            of the file
      * @return a canonical file.
      */
     public File makeAbsolute(final String path) {
@@ -131,7 +166,7 @@ public class Repository {
             return new File(absoluteRoot, path).getCanonicalFile();
         } catch (IOException e) {
             // Don't know when this will happen
-            throw new RuntimeException(e);
+            throw new HgInternalError(absoluteRoot.toString(), e);
         }
     }
 

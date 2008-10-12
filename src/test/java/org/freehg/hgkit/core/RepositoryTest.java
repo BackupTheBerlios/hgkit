@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class RepositoryTest {
@@ -85,6 +84,22 @@ public class RepositoryTest {
     }
 
     /**
+     * Test for {@link Repository}.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testNonExistingDataDir() {
+        new Repository("src");
+    }
+
+    /**
+     * Test for {@link Repository}.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testNonExistingRootDir() {
+        new Repository("abc");
+    }
+    
+    /**
      * Tests for {@link Repository#makeRelative(File)}
      * 
      * @throws IOException
@@ -96,11 +111,4 @@ public class RepositoryTest {
     }
 
     private final Repository subject;
-
-    private int numRevisions = 0;
-
-    @Before
-    public void setUp() {
-        numRevisions = 0;
-    }
 }
