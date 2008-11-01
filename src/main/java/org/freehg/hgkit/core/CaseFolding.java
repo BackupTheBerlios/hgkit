@@ -42,20 +42,30 @@ public final class CaseFolding {
      */
     final static HashMap<String, String> UNFOLD_MAP;
 
+    /**
+     * Initializes the lookup-HashMaps.
+     */
     static {
         FOLD_MAP = new HashMap<String, String>();
         UNFOLD_MAP = new HashMap<String, String>();
         Collections.addAll(WIN_RESERVED_FILESNAMES,
                 "con prn aux nul com1 com2 com3 com4 com5 com6 com7 com8 com9 lpt1 lpt2 lpt3 lpt4 lpt5 lpt6 lpt7 lpt8 lpt9"
                         .split(" "));
-        createLookupMap();
+        createFoldMap();
         createUnfoldMap();
+    }
+
+    /**
+     * Static helper class.
+     */
+    private CaseFolding() {
+        // static helpers
     }
 
     /**
      * Creates the map for folding.
      */
-    private static void createLookupMap() {
+    private static void createFoldMap() {
         for (int i = 0; i < 127; i++) {
             final Character c = (char) i;
             FOLD_MAP.put(Character.toString(c), Character.toString(c));
@@ -67,7 +77,7 @@ public final class CaseFolding {
             FOLD_MAP.put(Character.toString(c), escapeCharacter(c));
         }
         FOLD_MAP.put(Character.toString((char) 32), escapeCharacter((char) 32));
-        replaceUpperCaseLetters();        
+        replaceUpperCaseLetters();
     }
 
     /**
@@ -85,12 +95,12 @@ public final class CaseFolding {
      * Creates the reverse map {@link CaseFolding#UNFOLD_MAP} for unfolding.
      */
     private static void createUnfoldMap() {
-        Set<Entry<String, String>> entrySet = FOLD_MAP.entrySet();        
+        Set<Entry<String, String>> entrySet = FOLD_MAP.entrySet();
         for (Entry<String, String> entry : entrySet) {
             UNFOLD_MAP.put(entry.getValue(), entry.getKey());
         }
         for (String reservedFilename : WIN_RESERVED_FILESNAMES) {
-            String lastCharacter = reservedFilename.substring(reservedFilename.length() -1);
+            String lastCharacter = reservedFilename.substring(reservedFilename.length() - 1);
             UNFOLD_MAP.put(escapeCharacter(lastCharacter.charAt(0)), lastCharacter);
         }
     }
@@ -115,8 +125,7 @@ public final class CaseFolding {
      */
     public static String fold(String name) {
         StringBuilder folded = new StringBuilder();
-        char[] charArray = name.toCharArray();
-        for (char c : charArray) {
+        for (char c : name.toCharArray()) {
             folded.append(FOLD_MAP.get(Character.toString(c)));
         }
         return folded.toString();
@@ -152,7 +161,9 @@ public final class CaseFolding {
     /**
      * Returns normalized form for reserved Windows filenames.
      * 
-     * @see <a href="http://marc.info/?l=mercurial-devel&m=122079447309319&w=2">Posting of Marc on the devel-list</a>
+     * @see <a
+     *      href="http://marc.info/?l=mercurial-devel&m=122079447309319&w=2">Posting
+     *      of Marc on the devel-list</a>
      * 
      * @param path
      *            to inspect
