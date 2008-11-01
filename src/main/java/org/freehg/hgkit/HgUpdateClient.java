@@ -21,6 +21,9 @@ import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 import org.freehg.hgkit.util.FileHelper;
 
+/**
+ * Class to update a single file.
+ */
 class UpdateFile {
 
     private final File absoluteFile;
@@ -28,7 +31,12 @@ class UpdateFile {
     private final Revlog revlog;
 
     /**
+     * Updates the given path.
      * 
+     * @param repo
+     *            the repo
+     * @param path
+     *            of the file
      */
     public UpdateFile(Repository repo, String path) {
         absoluteFile = repo.makeAbsolute(path);
@@ -39,16 +47,24 @@ class UpdateFile {
      * Checks out the tip-revision of {@link UpdateFile#absoluteFile}.
      */
     public void tip() {
-        final RevlogEntry tip = revlog.tip();
-        final NodeId nodeId = tip.getId();
-        File parentFile = absoluteFile.getParentFile();
-        parentFile.mkdirs();
+        updateTo(revlog.tip());
+    }
+
+    /**
+     * Checks out the given revlogEntry of {@link UpdateFile#absoluteFile}.
+     * 
+     * @param revlogEntry
+     *            revlogEntry
+     */
+    public void updateTo(final RevlogEntry revlogEntry) {
+        createParentDirs();
         final BufferedOutputStream out;
         try {
             out = new BufferedOutputStream(new FileOutputStream(absoluteFile));
         } catch (FileNotFoundException e) {
             throw new HgInternalError("absoluteFile=" + absoluteFile, e);
         }
+        final NodeId nodeId = revlogEntry.getId();
         try {
             revlog.revision(nodeId, out);
         } finally {
@@ -56,8 +72,16 @@ class UpdateFile {
         }
     }
 
-    /** 
-     * Closes the revlog-file. 
+    /**
+     * Creates all the parentDirs of {@link UpdateFile#absoluteFile}.
+     */
+    void createParentDirs() {
+        File parentDir = absoluteFile.getParentFile();
+        parentDir.mkdirs();
+    }
+
+    /**
+     * Closes the revlog-file.
      */
     public void close() {
         revlog.close();
@@ -72,13 +96,19 @@ public class HgUpdateClient {
     private final Repository repo;
 
     /**
-     * 
+     * Creates a new UpdateClient.
+     * @param repo repo
      */
     public HgUpdateClient(Repository repo) {
         this.repo = repo;
     }
 
-    public void update() {
+    /**
+     * Updates the working copy to the tip.
+     * 
+     * @return number of updated files.
+     */
+    public int update() {
         final Collection<DirStateEntry> states = repo.getDirState().getDirState();
         for (DirStateEntry state : states) {
             final String path = state.getPath();
@@ -90,5 +120,6 @@ public class HgUpdateClient {
             }
         }
         System.out.println(states.size() + " files updated.");
+        return states.size();
     }
 }
