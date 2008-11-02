@@ -138,12 +138,13 @@ public final class ChangeLog extends Revlog {
             return changeId.asShort() + " " + when + " " + author + "\n" + comment + "\n" + files;
         }
 
-        private void parse(final InputStream in) throws ParseException {
+        private void parse(final InputStream in) {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
             String line = null;
             try {
+                // First line may be null, so do not use private readline-method.
                 while (null != (line = reader.readLine())) {
                     manifestId = NodeId.parse(line);
                     author = readLine(reader);
@@ -168,8 +169,8 @@ public final class ChangeLog extends Revlog {
                     comment = therest.toString();
 
                 }
-            } catch (IOException e) {
-                throw new HgInternalError(e);
+            } catch (IOException e) {                
+                throw new HgInternalError("Error parsing " + in, e);
             }
         }
 
@@ -197,12 +198,7 @@ public final class ChangeLog extends Revlog {
         }
 
         ChangeSet(NodeId changeId, int revision, byte[] data) {
-
-            try {
-                parse(new ByteArrayInputStream(data));
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            parse(new ByteArrayInputStream(data));
             this.changeId = changeId;
             this.revision = revision;
 

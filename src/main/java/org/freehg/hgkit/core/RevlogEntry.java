@@ -60,7 +60,7 @@ public final class RevlogEntry {
             entry.read(reader);
         } catch (IOException e) {
             // This should just never happen
-            throw new HgInternalError(e);
+            throw new HgInternalError(parent.toString(), e);
         }
         return entry;
     }

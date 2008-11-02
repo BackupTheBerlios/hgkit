@@ -105,7 +105,7 @@ public class FileHelper {
         try {
             closable.close();
         } catch (IOException e) {
-            throw new HgInternalError(e);
+            throw new HgInternalError("Error closing" + closable, e);
         }
     }
 

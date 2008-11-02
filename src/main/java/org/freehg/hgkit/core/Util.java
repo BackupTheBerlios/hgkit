@@ -63,7 +63,7 @@ final class Util {
                 throw new HgInternalError("Unknown compression type : " + (char) (dataHeader));
             }
         } catch (IOException e) {
-            throw new HgInternalError(e);
+            throw new HgInternalError("Could not decompress" + new String(data),e);
         }
     }
 

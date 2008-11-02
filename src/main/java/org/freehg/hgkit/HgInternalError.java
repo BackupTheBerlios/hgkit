@@ -12,26 +12,11 @@ package org.freehg.hgkit;
 public class HgInternalError extends RuntimeException {
 
     /**
-     * Constructor.
-     */
-    public HgInternalError() {
-        super();
-    }
-
-    /**
      * Constructor with a String message.
      * @param message message
      */
     public HgInternalError(String message) {
         super(message);
-    }
-
-    /**
-     * Constructor with a root cause.
-     * @param cause Throwable
-     */
-    public HgInternalError(Throwable cause) {
-        super(cause);
     }
 
     /**
