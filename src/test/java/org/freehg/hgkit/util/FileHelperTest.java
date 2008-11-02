@@ -7,7 +7,7 @@
 
 package org.freehg.hgkit.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
