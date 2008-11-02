@@ -23,6 +23,21 @@ import org.freehg.hgkit.HgInternalError;
 public final class CaseFolding {
 
     /**
+     * ASCII upper max.
+     */
+    private static final int ASCII_MAX = 256;
+
+    /**
+     * ASCII lower max.
+     */
+    private static final int ASCII_LOWER_MAX = 126;
+
+    /**
+     * Space character.
+     */
+    private static final int ASCII_SPACE = 32;
+
+    /**
      * Reserved letters in the Windows filesystem.
      */
     final static char[] WIN_RESERVED = "\\:*?\"<>|".toCharArray();
@@ -66,17 +81,17 @@ public final class CaseFolding {
      * Creates the map for folding.
      */
     private static void createFoldMap() {
-        for (int i = 0; i < 127; i++) {
+        for (int i = 0; i < ASCII_LOWER_MAX + 1; i++) {
             final Character c = (char) i;
             FOLD_MAP.put(Character.toString(c), Character.toString(c));
         }
-        for (int i = 126; i < 256; i++) {
+        for (int i = ASCII_LOWER_MAX; i < ASCII_MAX; i++) {
             escapeCharacter((char) i);
         }
         for (char c : WIN_RESERVED) {
             FOLD_MAP.put(Character.toString(c), escapeCharacter(c));
         }
-        FOLD_MAP.put(Character.toString((char) 32), escapeCharacter((char) 32));
+        FOLD_MAP.put(Character.toString((char) ASCII_SPACE), escapeCharacter((char) ASCII_SPACE));
         replaceUpperCaseLetters();
     }
 
@@ -151,7 +166,7 @@ public final class CaseFolding {
             }
             final String key = new String(keyCharacters);
             if (!UNFOLD_MAP.containsKey(key)) {
-                throw new HgInternalError("UNFOLD_MAP does not contain " + key);
+                throw new HgInternalError("UNFOLD_MAP does not contain '" + key + "' foldedname = " + foldedName);
             }
             unfolded.append(UNFOLD_MAP.get(key));
         }
