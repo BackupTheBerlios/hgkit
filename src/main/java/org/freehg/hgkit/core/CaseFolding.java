@@ -40,22 +40,22 @@ public final class CaseFolding {
     /**
      * Reserved letters in the Windows filesystem.
      */
-    final static char[] WIN_RESERVED = "\\:*?\"<>|".toCharArray();
+    static final char[] WIN_RESERVED = "\\:*?\"<>|".toCharArray();
 
     /**
      * Reserved filenames in Windows.
      */
-    final static Set<String> WIN_RESERVED_FILESNAMES = new HashSet<String>();
+    static final Set<String> WIN_RESERVED_FILESNAMES = new HashSet<String>();
 
     /**
      * Folding map.
      */
-    final static HashMap<String, String> FOLD_MAP;
+    static final HashMap<String, String> FOLD_MAP;
 
     /**
      * Unfolding map.
      */
-    final static HashMap<String, String> UNFOLD_MAP;
+    static final HashMap<String, String> UNFOLD_MAP;
 
     /**
      * Initializes the lookup-HashMaps.
