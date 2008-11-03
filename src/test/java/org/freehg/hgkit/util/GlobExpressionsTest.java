@@ -29,6 +29,8 @@ public class GlobExpressionsTest {
         data.add(new String[] { ".*\\..*", "*.*" });
         data.add(new String[] { ".*.*\\/.*.*", "**/**" });
         data.add(new String[] { "He.lig", "He?lig" });
+        data.add(new String[] { "[*]", "[*]" });
+        data.add(new String[] { "[?]", "[?]" });
         return data;
     }
 
