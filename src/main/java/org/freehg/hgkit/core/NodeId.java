@@ -180,6 +180,16 @@ public final class NodeId {
 
     }
 
+    /**
+     * Creates a new NodeId by reading the first {@link NodeId#NODE_ID_LENGTH}
+     * bytes from the given {@link InputStream}.
+     * 
+     * @param in
+     *            inputStream
+     * @return nodeId
+     * @throws IOException
+     *             when reading from <code>in</code> does not succeed.
+     */
     public static NodeId read(InputStream in) throws IOException {
         byte[] data = new byte[NODE_ID_LENGTH];
         int read = in.read(data);
