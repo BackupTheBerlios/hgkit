@@ -163,7 +163,7 @@ public final class NodeId {
     }
 
     /**
-     * Creates a new NodeId from the given Hex-String
+     * Creates a new NodeId from the given Hex-String.
      * 
      * @param nodeId
      *            as Hex-String
