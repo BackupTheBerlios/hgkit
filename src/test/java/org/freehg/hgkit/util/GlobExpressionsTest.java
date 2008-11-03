@@ -1,14 +1,14 @@
-package org.freehg.hgkit.core;
+package org.freehg.hgkit.util;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-import org.freehg.hgkit.util.GlobExpressions;
+public class GlobExpressionsTest {
 
-public class GlobExpressionsTest extends TestCase {
-
+    @Test
     public void testGlobCompiler() {
         System.out.println(GlobExpressions.toRegex("*.*").pattern());
         System.out.println(GlobExpressions.toRegex("**/**").pattern());
         System.out.println(GlobExpressions.toRegex("He?lig").pattern());
     }
+    
 }
