@@ -21,7 +21,7 @@ public final class NodeId {
 
     private final byte[] nodeid;
 
-    private int hash = -1;
+    private final int hash;
 
     /**
      * Constructs a NodeId from data.
@@ -37,17 +37,12 @@ public final class NodeId {
         } else {
             nodeid = data;
         }
+        hash = HASHCODE_PRIME + Arrays.hashCode(nodeid);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        if (hash != -1) {
-            return hash;
-        }
-        // will replace the constant in the calculation,
-        // but keep this declaration.
-        hash = HASHCODE_PRIME + Arrays.hashCode(nodeid);
         return hash;
     }
 
