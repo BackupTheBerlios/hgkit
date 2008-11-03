@@ -62,7 +62,6 @@ public final class NodeId {
     public static NodeId valueOf(byte[] data) {
         switch (data.length) {
         case SIZE:
-            return new NodeId(data);
         case SHA_SIZE:
             return new NodeId(data);
         default:
