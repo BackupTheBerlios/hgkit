@@ -45,8 +45,6 @@ public class LongRunningTest {
     }
 
     private int walk(Repository repo, File dir) throws IOException {
-        String abs = dir.getAbsolutePath();
-
         if (dir.getName().contains(".hg")) {
             return 0;
         }
@@ -81,10 +79,10 @@ public class LongRunningTest {
         revlog.revision(fileNode, new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                int fromFile = stream.read() & 0xFF;
-                b = b & 0xFF;
-                if ((fromFile != b)) {
-                    throw new IllegalStateException("Tip of file: " + file + " did not match HgKit revision : " + b
+                final int fromFile = stream.read() & 0xFF;
+                final int c = b & 0xFF;
+                if ((fromFile != c)) {
+                    throw new IllegalStateException("Tip of file: " + file + " did not match HgKit revision : " + c
                             + " != " + fromFile);
                 }
             }

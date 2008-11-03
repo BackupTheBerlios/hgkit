@@ -30,7 +30,6 @@ public class HgChangeLogTest {
 
     @Test
     public void testGetLog() {
-
         long start = System.currentTimeMillis();
         Repository repo = new Repository(repoDir.getAbsolutePath());
         ChangeLog subject = repo.getChangeLog();
@@ -43,35 +42,6 @@ public class HgChangeLogTest {
         assertEquals("HemPc@PC212826566277", initialChangeSet.getAuthor());
         assertEquals("c9629f6b37d8", initialChangeSet.getChangeId().toString());
         assertEquals(1206558630000L, initialChangeSet.getWhen().getTime());
-        // for (ChangeSet changeLog : revisions) {
-        // print(changeLog);
-        // }
         System.out.println("Took " + (end - start) + " ms to parse " + revisions.size());
-    }
-
-    @SuppressWarnings("unused")
-    private void print(ChangeSet changeLog) {
-        log(changeLog.getChangeId().asShort());
-        log(changeLog.getWhen());
-        log(changeLog.getAuthor());
-        log(changeLog.getComment());
-
-        List<String> files = changeLog.getFiles();
-        for (String file : files) {
-            log("> " + file);
-        }
-        log("");
-        log("");
-        // List<FileStatus> status = subject.getFileStatus(changeLog);
-        // for (FileStatus st : status) {
-        // // System.out.println(st);
-        //				
-        // }
-    }
-
-    private void log(Object o) {
-        if (true) {
-            System.out.println(o.toString());
-        }
     }
 }

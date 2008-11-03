@@ -17,19 +17,14 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class RevlogTest {
 
-    private File index;
+    private File indexFile;
 
-    /**
-     * 
-     */
     public RevlogTest(String indexName) {
-        index = new File(indexName);
+        indexFile = new File(indexName);
     }
 
     @Parameters
     public static Collection<String[]> data() {
-        // return Arrays.asList(
-        // new String[][] {{ "bigger.txt.i" }});
         ArrayList<String[]> result = new ArrayList<String[]>();
         String[] testFiles = new String[] { "test1.txt.i", "test2.txt.i", "test3.txt.i", "test4.txt.i", "test5.txt.i",
                 "bigger.txt.i" };
@@ -42,9 +37,9 @@ public class RevlogTest {
 
     @Test
     public void testGetLatestRevision() {
-        Revlog subject = new Revlog(index);
+        Revlog subject = new Revlog(indexFile);
         // int numRev = subject.count();
-        // System.err.println("Test file " + index + " has : " + numRev +
+        // System.err.println("Test file " + indexFile + " has : " + numRev +
         // " revisions");
         String prevRevision = null;
         NodeId prevNodeId = null;
@@ -53,7 +48,7 @@ public class RevlogTest {
             subject.revision(nodeId, out);
             final String currentRevision = out.toString();
             // System.err.println(nodeId + ":" + currentRevision.length());
-            assertFalse("Revisions " + nodeId + " and " + prevNodeId + " of " + index + " must not be equal!",
+            assertFalse("Revisions " + nodeId + " and " + prevNodeId + " of " + indexFile + " must not be equal!",
                     currentRevision.equals(prevRevision));
             prevRevision = currentRevision;
             prevNodeId = nodeId;
@@ -64,7 +59,7 @@ public class RevlogTest {
     @Ignore(value="performancetest")
     @Test
     public void testGetAllRevision() {
-        // if( true ) return;
+
         File index = new File(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
 
         Revlog subject = new Revlog(index);
@@ -86,14 +81,6 @@ public class RevlogTest {
         System.err.println("Took " + (end - start) + " ms to get " + count + " revisions 1000 times totaling to "
                 + totalBytes + " bytes.");
 
-    }
-
-    private void log(Object revision) {
-        if (revision != null) {
-            System.out.println(revision.toString());
-        } else {
-            System.out.println("null");
-        }
     }
 
     public static void main(String[] args) {
