@@ -145,7 +145,7 @@ public final class ChangeLog extends Revlog {
             try {
                 // First line may be null, so do not use private readline-method.
                 while (null != (line = reader.readLine())) {
-                    manifestId = NodeId.parse(line);
+                    manifestId = NodeId.valueOf(line);
                     author = readLine(reader);
 
                     String dateLine = readLine(reader);

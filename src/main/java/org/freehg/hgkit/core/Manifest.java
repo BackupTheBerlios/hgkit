@@ -31,7 +31,7 @@ public class Manifest extends Revlog {
                 int cutAt = line.indexOf(0);
                 String name = line.substring(0, cutAt);
                 String nodeStr = line.substring(cutAt + 1, cutAt + 1 + NodeId.SHA_SIZE * 2);
-                NodeId node = NodeId.parse(nodeStr);
+                NodeId node = NodeId.valueOf(nodeStr);
                 nodefilemap.put(name, node);
 
             }

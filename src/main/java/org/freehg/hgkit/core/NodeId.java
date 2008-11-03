@@ -24,7 +24,8 @@ public final class NodeId {
     private final int hash;
 
     /**
-     * Constructs a NodeId from data.
+     * Constructs a NodeId from data. This class defines some static factory
+     * methods for creating NodeIds.
      * 
      * @param data
      *            data
@@ -47,8 +48,8 @@ public final class NodeId {
     }
 
     /**
-     * Factory method for NodeIds. data.length must be either
-     * {@link NodeId#SHA_SIZE} or {@link NodeId#SIZE}.
+     * Returns a NodeId for the given byte array. data.length must be
+     * either {@link NodeId#SHA_SIZE} or {@link NodeId#SIZE}.
      * 
      * @param data
      *            nodeId data
@@ -157,13 +158,13 @@ public final class NodeId {
     }
 
     /**
-     * Creates a new NodeId from the given Hex-String.
+     * Returns a new NodeId for the given Hex-String.
      * 
      * @param nodeId
      *            as Hex-String
      * @return nodeId
      */
-    public static NodeId parse(String nodeId) {
+    public static NodeId valueOf(String nodeId) {
         final NodeId result = valueOf(toBinArray(nodeId));
         final String asFull = result.asFull();
         if (!nodeId.equals(asFull)) {
@@ -171,7 +172,6 @@ public final class NodeId {
             // FIXME Figure out when and why this happens!
         }
         return result;
-
     }
 
     /**
