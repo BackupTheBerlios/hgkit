@@ -9,7 +9,13 @@ import java.util.zip.InflaterInputStream;
 
 import org.freehg.hgkit.HgInternalError;
 
+/**
+ * Helper class with static methods for decompression.
+ * 
+ */
 final class Util {
+
+    private static final int BUFFER_SIZE = 1024;
 
     private static final int ASSUMED_COMPRESSION_RATIO = 3;
 
@@ -20,6 +26,13 @@ final class Util {
     static final int EOF = -1;
 
     /**
+     * Do not instantiate.
+     */
+    private Util() {
+        // static class
+    }
+    
+    /**
      * Decompresses zlib-compressed data.
      * 
      * @param data
@@ -29,7 +42,7 @@ final class Util {
     static byte[] doDecompress(byte[] data) throws IOException {
         ByteArrayOutputStream uncompressedOut = new ByteArrayOutputStream(data.length * ASSUMED_COMPRESSION_RATIO);
         // decompress the bytearray using what should be python zlib
-        final byte[] buffer = new byte[1024];
+        final byte[] buffer = new byte[BUFFER_SIZE];
         final InflaterInputStream inflaterInputStream = new InflaterInputStream(new ByteArrayInputStream(data));
         int len = 0;
         while ((len = inflaterInputStream.read(buffer)) != EOF) {
@@ -44,7 +57,7 @@ final class Util {
      * @param data
      * @return byte-array with decompressed data.
      */
-    final static byte[] decompress(byte[] data) {
+    static byte[] decompress(byte[] data) {
         try {
             if (data.length < 1) {
                 return new byte[0];
@@ -63,7 +76,7 @@ final class Util {
                 throw new HgInternalError("Unknown compression type : " + (char) (dataHeader));
             }
         } catch (IOException e) {
-            throw new HgInternalError("Could not decompress" + new String(data),e);
+            throw new HgInternalError("Could not decompress" + new String(data), e);
         }
     }
 
@@ -82,17 +95,18 @@ final class Util {
      * it as byte-array. read-Operations on <code>in</code> are not buffered.
      * 
      * @param in
+     *            inputStream
      * @return the content of <code>in</code> as byte-array.
      * @throws IOException
      */
     static byte[] toByteArray(InputStream in) throws IOException {
-        byte[] buf = new byte[512];
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(in.available());
+        byte[] buf = new byte[BUFFER_SIZE];
+        ByteArrayOutputStream out = new ByteArrayOutputStream(in.available());
         int read = 0;
         while ((read = in.read(buf)) != Util.EOF) {
-            buffer.write(buf, 0, read);
+            out.write(buf, 0, read);
         }
-        return buffer.toByteArray();
+        return out.toByteArray();
     }
 
     /**
@@ -100,44 +114,49 @@ final class Util {
      * 
      * @param name
      *            resource name.
-     * @return byte array
+     * @return the content of the resource <code>name</code> as byte array
      */
     static byte[] readResource(final String name) {
-        final byte[] resourceBytes;
         InputStream in = Util.class.getResourceAsStream(name);
         try {
             try {
-                resourceBytes = toByteArray(in);
+                return toByteArray(in);
             } finally {
                 in.close();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-        return resourceBytes;
+        }        
     }
-    
+
     /**
-     * Returns the canonical file, rethrow {@link IOException} as {@link HgInternalError}.
-     * @param file file
+     * Returns the canonical file, rethrow {@link IOException} as
+     * {@link HgInternalError}.
+     * 
+     * @param file
+     *            file
      * @return canonical file
      */
     static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
-        } catch (IOException e) {            
+        } catch (IOException e) {
             throw new HgInternalError(file.toString(), e);
         }
     }
+
     /**
-     * Returns the canonical path, rethrow {@link IOException} as {@link HgInternalError}.
-     * @param file file
+     * Returns the canonical path, rethrow {@link IOException} as
+     * {@link HgInternalError}.
+     * 
+     * @param file
+     *            file
      * @return canonical path
      */
     static String getCanonicalPath(File file) {
         try {
             return file.getCanonicalPath();
-        } catch (IOException e) {            
+        } catch (IOException e) {
             throw new HgInternalError(file.toString(), e);
         }
     }
