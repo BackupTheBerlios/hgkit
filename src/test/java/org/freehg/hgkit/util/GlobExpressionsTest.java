@@ -35,6 +35,8 @@ public class GlobExpressionsTest {
         data.add(new String[] { "[^a]", "[^a]" });
         data.add(new String[] { "[^a]", "[!a]" });
         data.add(new String[] { "[]]", "[]]" });
+        data.add(new String[] { "[a\\-z]", "[a-z]" });
+        data.add(new String[] { "\\\\a", "\\a" });
         return data;
     }
     
