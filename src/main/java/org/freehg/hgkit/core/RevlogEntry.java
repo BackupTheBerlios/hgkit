@@ -12,6 +12,11 @@ import org.freehg.hgkit.HgInternalError;
 
 /**
  * Describes a single entry of the {@link Revlog}.
+ * 
+ * @see <a
+ *      href="http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG">RevlogNG</a>
+ * @see <a
+ *      href="http://www.selenic.com/mercurial/wiki/index.cgi/Revlog">Revlog</a>
  */
 public final class RevlogEntry {
 
@@ -92,9 +97,6 @@ public final class RevlogEntry {
      * Returns the link revision of the {@link RevlogEntry}, that is a link to
      * the revision in the Revlog.
      * 
-     * @see <a
-     *      href="http://www.selenic.com/mercurial/wiki/index.cgi/Revlog">Revlog</a>
-     * 
      * @return linkRev
      */
     public int getLinkRev() {
@@ -102,7 +104,8 @@ public final class RevlogEntry {
     }
 
     /**
-     * Loads a block as a byte array from a file.
+     * Loads a block as a byte array from a file. In RevlogNG data may be
+     * inlined.
      * 
      * @param file
      *            to read from
@@ -119,6 +122,14 @@ public final class RevlogEntry {
         return read(file);
     }
 
+    /**
+     * Reads compressed data from the Revlog.
+     * 
+     * @param file
+     *            to read from
+     * @return data array
+     * @throws IOException
+     */
     private byte[] read(RandomAccessFile file) throws IOException {
         byte[] data = new byte[(int) this.compressedLength];
         int read = file.read(data);
@@ -145,10 +156,20 @@ public final class RevlogEntry {
         this.offset = offset;
     }
 
+    /**
+     * Returns uncompressed length of data.
+     * 
+     * @return uncompressed length
+     */
     long getUncompressedLength() {
         return uncompressedLength;
     }
 
+    /**
+     * Returns compressed length of data.
+     * 
+     * @return compressed length
+     */
     long getCompressedLength() {
         return compressedLength;
     }
@@ -185,13 +206,9 @@ public final class RevlogEntry {
      * 
      * @param reader
      *            reader
-     * 
-     * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG">RevlogNG</a>
-     * 
      * @throws IOException
      */
     private void read(DataInputStream reader) throws IOException {
-
         offset = ((long) reader.readShort() << 32) + reader.readInt();
         flags = reader.readShort();
         compressedLength = reader.readInt();
@@ -219,6 +236,11 @@ public final class RevlogEntry {
         return nodeId;
     }
 
+    /**
+     * Returns the flags of the {@link RevlogEntry}.
+     * 
+     * @return flags
+     */
     public int getFlags() {
         return flags;
     }
