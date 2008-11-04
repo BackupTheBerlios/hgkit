@@ -98,7 +98,7 @@ public class FileHelper {
      * @throws HgInternalError
      *             if there is an {@link IOException}.
      */
-    public static void close(Closeable closable) {
+    public static void close(Closeable closable) throws HgInternalError {
         if (closable == null) {
             return;
         }
