@@ -10,12 +10,15 @@ import java.io.RandomAccessFile;
 
 import org.freehg.hgkit.HgInternalError;
 
+/**
+ * Describes a single entry of the {@link Revlog}.
+ */
 public final class RevlogEntry {
 
     /** The corresponding length of indexformatng (python) >Qiiiiii20s12x */
     static final int BINARY_LENGTH = 64;
 
-    private static RevlogEntry nullInstance;
+    private static RevlogEntry nullInstance = valueOf(null, new byte[64], 0);
 
     private final Revlog parent;
 
@@ -44,14 +47,21 @@ public final class RevlogEntry {
     }
 
     /**
+     * Creates a specific RevlogEntry.
      * 
      * @param parent
+     *            revlog
      * @param data
+     *            data
      * @param off
      *            where in data to begin extracting data
-     * @return
+     * @return revlogEntry
+     * 
+     * @throws HgInternalError
+     *             if an {@link IOException} is thrown while reading.
+     * 
      */
-    public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) {
+    public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) throws HgInternalError {
 
         ByteArrayInputStream copy = new ByteArrayInputStream(data, off, BINARY_LENGTH);
         DataInputStream reader = new DataInputStream(copy);
@@ -65,14 +75,41 @@ public final class RevlogEntry {
         return entry;
     }
 
+    /**
+     * Returns the base revision. The first revision going backwards from the
+     * tip that has two parents (the product of a merge).
+     * 
+     * @see <a
+     *      href="http://www.selenic.com/mercurial/wiki/index.cgi/WireProtocol">WireProtocol</a>
+     * 
+     * @return baseRev
+     */
     public int getBaseRev() {
         return baseRev;
     }
 
+    /**
+     * Returns the link revision of the {@link RevlogEntry}, that is a link to
+     * the revision in the Revlog.
+     * 
+     * @see <a
+     *      href="http://www.selenic.com/mercurial/wiki/index.cgi/Revlog">Revlog</a>
+     * 
+     * @return linkRev
+     */
     public int getLinkRev() {
         return linkRev;
     }
 
+    /**
+     * Loads a block as a byte array from a file.
+     * 
+     * @param file
+     *            to read from
+     * @return byte array
+     * @throws IOException
+     *             might occur if we can not read from file
+     */
     public byte[] loadBlock(RandomAccessFile file) throws IOException {
         long off = this.offset;
         if (parent.isDataInline) {
@@ -89,10 +126,21 @@ public final class RevlogEntry {
         return data;
     }
 
+    /**
+     * Returns the offset of the entry in the Revlog.
+     * 
+     * @return offset
+     */
     public long getOffset() {
         return offset;
     }
 
+    /**
+     * Sets the offset of the entry in the Revlog.
+     * 
+     * @param offset
+     *            offset in the Revlog
+     */
     public void setOffset(int offset) {
         this.offset = offset;
     }
@@ -105,9 +153,9 @@ public final class RevlogEntry {
         return compressedLength;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
-
         RevlogEntry p1 = getNullEntry();
         RevlogEntry p2 = getNullEntry();
 
@@ -121,16 +169,27 @@ public final class RevlogEntry {
                 // + uncompressedLength + " "
                 + baseRev + " 	" + linkRev + " 	" + nodeId.asShort() + " 	" + p1.nodeId.asShort() + " 	"
                 + p2.nodeId.asShort();
-
     }
 
+    /**
+     * Returns the null entry.
+     * 
+     * @return null entry
+     */
     static RevlogEntry getNullEntry() {
-        if (nullInstance == null) {
-            nullInstance = valueOf(null, new byte[64], 0);
-        }
         return nullInstance;
     }
 
+    /**
+     * Reads the first 64 bytes for RevlogNG from reader.
+     * 
+     * @param reader
+     *            reader
+     * 
+     * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/RevlogNG">RevlogNG</a>
+     * 
+     * @throws IOException
+     */
     private void read(DataInputStream reader) throws IOException {
 
         offset = ((long) reader.readShort() << 32) + reader.readInt();
@@ -144,13 +203,18 @@ public final class RevlogEntry {
         firstParentRev = reader.readInt();
         secondParentRev = reader.readInt();
 
-        int nodeidSize = 32;
+        final int nodeidSize = 32;
         byte[] nodeid = new byte[nodeidSize];
         int read = reader.read(nodeid);
         assert read == nodeidSize;
         nodeId = NodeId.valueOf(nodeid);
     }
 
+    /**
+     * Returns the nodeId of the {@link RevlogEntry}.
+     * 
+     * @return nodeId
+     */
     public NodeId getId() {
         return nodeId;
     }

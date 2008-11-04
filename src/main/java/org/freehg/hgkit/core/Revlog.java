@@ -421,8 +421,8 @@ public class Revlog {
          * @param size
          *            initial size of the caching {@link ByteArrayOutputStream}
          */
-        private CacheOutputStream(OutputStream redirect, int size) {
-            this.cached = redirect;
+        private CacheOutputStream(OutputStream cached, int size) {
+            this.cached = cached;
             this.cache = new ByteArrayOutputStream(size);
         }
 
