@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.junit.Assume;
 import org.junit.Test;
+import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -33,9 +35,10 @@ public class GlobExpressionsTest {
         data.add(new String[] { "[?]", "[?]" });
         return data;
     }
-
+    
     @Test
-    public void testGlobCompiler() {
+    public void testUnixGlobCompiler() {        
+        Assume.assumeTrue(!System.getProperty("os.name").toLowerCase().startsWith("windows"));                
         assertEquals(expected, GlobExpressions.toRegex(glob).pattern());
     }
 }

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.freehg.hgkit.HgInternalError;
@@ -13,9 +14,9 @@ import org.freehg.hgkit.HgInternalError;
  * Helper class with static methods for decompression.
  * 
  */
-final class Util {
+public final class Util {
 
-    private static final int BUFFER_SIZE = 1024;
+    private static final int BUFFER_SIZE = 16 * 1024;
 
     private static final int ASSUMED_COMPRESSION_RATIO = 3;
 
@@ -31,11 +32,12 @@ final class Util {
     private Util() {
         // static class
     }
-    
+
     /**
      * Decompresses zlib-compressed data.
      * 
      * @param data
+     *            data
      * @return decompressed data
      * @throws IOException
      */
@@ -55,9 +57,10 @@ final class Util {
      * Eventually decompresses the given data.
      * 
      * @param data
+     *            eventually compressed data
      * @return byte-array with decompressed data.
      */
-    static byte[] decompress(byte[] data) {
+    public static byte[] decompress(byte[] data) {
         try {
             if (data.length < 1) {
                 return new byte[0];
@@ -86,27 +89,42 @@ final class Util {
      * @param path
      * @return corrected path.
      */
-    static String forwardSlashes(String path) {
+    public static String forwardSlashes(String path) {
         return path.replace('\\', '/');
     }
 
     /**
      * Reads an {@link InputStream} until no more data is available and returns
-     * it as byte-array. read-Operations on <code>in</code> are not buffered.
+     * it as byte-array. All read-Operations on <code>in</code> operate on an
+     * byte buffer of {@link Util#BUFFER_SIZE}.
      * 
      * @param in
      *            inputStream
      * @return the content of <code>in</code> as byte-array.
      * @throws IOException
      */
-    static byte[] toByteArray(InputStream in) throws IOException {
-        byte[] buf = new byte[BUFFER_SIZE];
+    public static byte[] toByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream(in.available());
+        copyStream(in, out);
+        return out.toByteArray();
+    }
+
+    /**
+     * Copies all data from in to out. read- and write-Operations operate on an
+     * byte buffer of {@link Util#BUFFER_SIZE}
+     * 
+     * @param in
+     *            inputStream
+     * @param out
+     *            outputStream.
+     * @throws IOException
+     */
+    public static void copyStream(InputStream in, OutputStream out) throws IOException {
+        final byte[] buf = new byte[BUFFER_SIZE];
         int read = 0;
         while ((read = in.read(buf)) != Util.EOF) {
             out.write(buf, 0, read);
         }
-        return out.toByteArray();
     }
 
     /**
@@ -126,7 +144,7 @@ final class Util {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
 
     /**

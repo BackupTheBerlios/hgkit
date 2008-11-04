@@ -22,21 +22,13 @@ import org.junit.Test;
 public class FileHelperTest {
 
     /**
-     * Test method for {@link org.freehg.hgkit.util.FileHelper#FileHelper()}.
-     */
-    @Test
-    public final void testFileHelper() {
-        assertNotNull(new FileHelper());
-    }
-
-    /**
      * Test method for
      * {@link org.freehg.hgkit.util.FileHelper#close(java.io.Closeable)}.
      */
     @Test
     public final void testClose() {
         FileHelper.close(null);
-        FileHelper.close(UtilTest.class.getResourceAsStream("/passwd"));
+        FileHelper.close(FileHelper.class.getResourceAsStream("/passwd"));
     }
 
     /**

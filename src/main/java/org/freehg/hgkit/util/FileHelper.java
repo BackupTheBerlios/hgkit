@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.freehg.hgkit.HgInternalError;
+import org.freehg.hgkit.core.Util;
 
 /**
  * Some static methods for file-handling, directory creation etc.
@@ -26,7 +27,7 @@ public class FileHelper {
     /**
      * Class with static helpers.
      */
-    FileHelper() {
+    private FileHelper() {
         // class with static helpers.
     }
 
@@ -34,6 +35,7 @@ public class FileHelper {
      * Delete directory recursively.
      * 
      * @param path
+     *            to delete
      * @return false if directory could not be deleted.
      */
     public static boolean deleteDirectory(File path) {
@@ -56,7 +58,9 @@ public class FileHelper {
      * Copy sourceLocation to targetLocation.
      * 
      * @param sourceLocation
+     *            source
      * @param targetLocation
+     *            target
      * @throws IOException
      */
     public static void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
@@ -71,18 +75,12 @@ public class FileHelper {
                 copyDirectory(child.getAbsoluteFile(), new File(targetLocation.getAbsolutePath(), child.getName()));
             }
         } else {
-
             InputStream in = null;
             OutputStream out = null;
             try {
                 in = new FileInputStream(sourceLocation);
                 out = new FileOutputStream(targetLocation);
-                // Copy the bits from instream to outstream
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
+                Util.copyStream(in, out);
             } finally {
                 close(in);
                 close(out);
@@ -93,7 +91,7 @@ public class FileHelper {
     /**
      * Close even null safely.
      * 
-     * @param closable
+     * @param closable closable
      * 
      * @throws HgInternalError
      *             if there is an {@link IOException}.
