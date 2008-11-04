@@ -20,6 +20,11 @@ import org.freehg.hgkit.HgInternalError;
  */
 public final class RevlogEntry {
 
+    /**
+     * 
+     */
+    private static final int NODE_ID_SIZE = 32;
+
     /** The corresponding length of indexformatng (python) >Qiiiiii20s12x. */
     static final int BINARY_LENGTH = 64;
 
@@ -226,10 +231,9 @@ public final class RevlogEntry {
         firstParentRev = reader.readInt();
         secondParentRev = reader.readInt();
 
-        final int nodeidSize = 32;
-        byte[] nodeid = new byte[nodeidSize];
-        int read = reader.read(nodeid);
-        assert read == nodeidSize;
+        byte[] nodeid = new byte[NODE_ID_SIZE];
+        final int read = reader.read(nodeid);
+        assert read == NODE_ID_SIZE;
         nodeId = NodeId.valueOf(nodeid);
     }
 
