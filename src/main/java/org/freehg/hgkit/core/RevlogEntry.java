@@ -20,10 +20,10 @@ import org.freehg.hgkit.HgInternalError;
  */
 public final class RevlogEntry {
 
-    /** The corresponding length of indexformatng (python) >Qiiiiii20s12x */
+    /** The corresponding length of indexformatng (python) >Qiiiiii20s12x. */
     static final int BINARY_LENGTH = 64;
 
-    private static RevlogEntry nullInstance = valueOf(null, new byte[64], 0);
+    private static RevlogEntry nullInstance = valueOf(null, new byte[BINARY_LENGTH], 0);
 
     private final Revlog parent;
 
@@ -35,7 +35,7 @@ public final class RevlogEntry {
 
     private int baseRev;
 
-    int linkRev;
+    private int linkRev;
 
     private int flags;
 
@@ -47,8 +47,25 @@ public final class RevlogEntry {
 
     NodeId nodeId;
 
-    RevlogEntry(Revlog parent) {
+    /**
+     * Initializes a RevlogEntry from the given {@link DataInputStream}.
+     * 
+     * @param parent
+     *            revlog
+     * @param reader
+     *            dataInputStream
+     * 
+     * @throws HgInternalError
+     *             if an {@link IOException} is thrown while reading.
+     */
+    RevlogEntry(Revlog parent, DataInputStream reader) throws HgInternalError {
         this.parent = parent;
+        try {
+            read(reader);
+        } catch (IOException e) {
+            // This should just never happen
+            throw new HgInternalError(parent.toString(), e);
+        }
     }
 
     /**
@@ -61,22 +78,11 @@ public final class RevlogEntry {
      * @param off
      *            where in data to begin extracting data
      * @return revlogEntry
-     * 
-     * @throws HgInternalError
-     *             if an {@link IOException} is thrown while reading.
-     * 
      */
     public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) throws HgInternalError {
-
         ByteArrayInputStream copy = new ByteArrayInputStream(data, off, BINARY_LENGTH);
         DataInputStream reader = new DataInputStream(copy);
-        RevlogEntry entry = new RevlogEntry(parent);
-        try {
-            entry.read(reader);
-        } catch (IOException e) {
-            // This should just never happen
-            throw new HgInternalError(parent.toString(), e);
-        }
+        RevlogEntry entry = new RevlogEntry(parent, reader);
         return entry;
     }
 

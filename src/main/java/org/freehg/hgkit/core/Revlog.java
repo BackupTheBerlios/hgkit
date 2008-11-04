@@ -117,7 +117,7 @@ public class Revlog {
     }
 
     /**
-     * Returns the NodeId of the linkrev
+     * Returns the NodeId of the linkrev.
      * 
      * @param linkrev
      *            numeric revision
@@ -126,7 +126,8 @@ public class Revlog {
     public NodeId linkrev(int linkrev) {
         List<Entry<NodeId, RevlogEntry>> entries = new ArrayList<Entry<NodeId, RevlogEntry>>(this.nodemap.entrySet());
         for (Entry<NodeId, RevlogEntry> entry : entries) {
-            if (entry.getValue().linkRev == linkrev) {
+            final RevlogEntry value = entry.getValue();
+            if (value.getLinkRev() == linkrev) {
                 return entry.getKey();
             }
         }
