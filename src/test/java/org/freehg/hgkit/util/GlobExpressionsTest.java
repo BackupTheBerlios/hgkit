@@ -7,7 +7,6 @@ import java.util.Collection;
 
 import org.junit.Assume;
 import org.junit.Test;
-import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -33,6 +32,9 @@ public class GlobExpressionsTest {
         data.add(new String[] { "He.lig", "He?lig" });
         data.add(new String[] { "[*]", "[*]" });
         data.add(new String[] { "[?]", "[?]" });
+        data.add(new String[] { "[^a]", "[^a]" });
+        data.add(new String[] { "[^a]", "[!a]" });
+        data.add(new String[] { "[]]", "[]]" });
         return data;
     }
     
