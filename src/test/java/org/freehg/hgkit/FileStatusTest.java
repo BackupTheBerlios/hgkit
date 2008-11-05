@@ -26,5 +26,23 @@ public class FileStatusTest {
     public final void testToString() {
         assertEquals("A /", FileStatus.valueOf(new File("/"), FileStatus.Status.ADDED).toString());
     }
+    
+    /**
+     * Test method for {@link org.freehg.hgkit.FileStatus.Status#valueOf(char)}. 
+     */
+    @Test
+    public final void testValidFileStatus() {
+        assertEquals(FileStatus.Status.ADDED, FileStatus.Status.valueOf('A'));
+        assertEquals(FileStatus.Status.MANAGED, FileStatus.Status.valueOf('C'));
+        assertEquals(FileStatus.Status.ADDED, FileStatus.Status.valueOf('a'));
+        assertEquals(FileStatus.Status.MANAGED, FileStatus.Status.valueOf('c'));
+    }
 
+    /**
+     * Test method for {@link org.freehg.hgkit.FileStatus.Status#valueOf(char)}. 
+     */
+    @Test(expected=IllegalArgumentException.class)
+    public final void testInvalidFileStatus() {
+        FileStatus.Status.valueOf('X');        
+    }
 }

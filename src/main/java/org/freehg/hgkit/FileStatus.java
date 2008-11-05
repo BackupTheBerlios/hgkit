@@ -24,6 +24,22 @@ public class FileStatus {
         public String toString() {
             return Character.toString(this.asHg);
         }
+        
+        /**
+         * Returns the Status representation for a character ignoring case.
+         * 
+         * @param c character
+         * @return status
+         */
+        public static Status valueOf(char c) {
+            char upperCase = Character.toUpperCase(c);
+            for (final Status status : values()) {
+                if (status.asHg == upperCase) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Status " + c + " is unknown");
+        }
     };
 
     private final File file;

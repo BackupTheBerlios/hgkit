@@ -100,21 +100,18 @@ public final class HgStatusClient {
         final DirStateEntry state = this.dirState.getState(relativeFile.getPath());
 
         if (state != null) {
-            switch (state.getState()) {
+            final char stateChar = (char)state.getState();
+            switch (stateChar) {
             case STATE_NORMAL:
                 status = FileStatus.valueOf(file, checkStateNormal(file, state));
                 break;
             case STATE_ADDED:
-                status = FileStatus.valueOf(file, FileStatus.Status.ADDED);                
-                break;
             case STATE_REMOVED:
-                status = FileStatus.valueOf(file, FileStatus.Status.REMOVED);
-                break;
-            case STATE_MERGED:
-                status = FileStatus.valueOf(file, FileStatus.Status.MERGED);
+            case STATE_MERGED:                
+                status = FileStatus.valueOf(file, FileStatus.Status.valueOf(stateChar));                
                 break;
             default:
-                throw new HgInternalError("Unknown state:" + state.getState());
+                throw new HgInternalError("Unknown state:" + stateChar);
             }
         } else {
             if (parentIgnored || isIgnored(relativeFile)) {
