@@ -2,8 +2,14 @@ package org.freehg.hgkit;
 
 import java.io.File;
 
+/**
+ * Simple bean for holding a file and it's Mercurial state.
+ */
 public class FileStatus {
 
+    /**
+     * Mercurial state.
+     */
     public enum Status {
         ADDED('A'), REMOVED('R'), DELETED('D'), MERGED('M'), NOT_TRACKED('?'), MANAGED('C'), MODIFIED('M'), IGNORED('I');
 
@@ -13,6 +19,7 @@ public class FileStatus {
 
         private char asHg;
 
+        /** {@inheritDoc} */
         @Override
         public String toString() {
             return Character.toString(this.asHg);
@@ -21,32 +28,47 @@ public class FileStatus {
 
     private final File file;
 
-    private Status status;
+    private final Status status;
 
-    FileStatus(File file) {
+    /**
+     * Returns the filestatus representation of a file and a status.
+     * 
+     * @param file file
+     * @param status {@link Status}.
+     * 
+     * @return filestatus
+     */
+    public static FileStatus valueOf(final File file, final Status status) {
+        return new FileStatus(file, status);
+    }
+
+    private FileStatus(final File file, final Status status) {
         this.file = file;
-    }
-
-    public FileStatus(File testee, Status status) {
-        file = testee;
         this.status = status;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
+    /**
+     * Returns the status.
+     * 
+     * @return status
+     */
     public Status getStatus() {
         return status;
     }
 
+    /**
+     * Returns the file.
+     * 
+     * @return file
+     */
+    public File getFile() {
+        return this.file;
+    }
+
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return status + " " + file.getPath();
-    }
-
-    public File getFile() {
-        return this.file;
     }
 
 }

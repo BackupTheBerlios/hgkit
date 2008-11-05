@@ -76,12 +76,12 @@ public final class HgStatusClient {
     }
 
     private List<FileStatus> getMissing() {
-        Collection<DirStateEntry> state = dirState.getDirState();
-        List<FileStatus> missing = new ArrayList<FileStatus>();
-        for (DirStateEntry entry : state) {
-            File testee = repo.makeAbsolute(entry.getPath());
+        final Collection<DirStateEntry> state = dirState.getDirState();
+        final List<FileStatus> missing = new ArrayList<FileStatus>();
+        for (final DirStateEntry entry : state) {
+            final File testee = repo.makeAbsolute(entry.getPath());
             if (!testee.exists()) {
-                missing.add(new FileStatus(testee, Status.DELETED));
+                missing.add(FileStatus.valueOf(testee, Status.DELETED));
             }
         }
         return missing;
@@ -95,31 +95,32 @@ public final class HgStatusClient {
         if (!file.isFile()) {
             throw new IllegalArgumentException(file + " must be a file");
         }
-        File relativeFile = repo.makeRelative(file);
-        FileStatus status = new FileStatus(relativeFile);
-        DirStateEntry state = this.dirState.getState(relativeFile.getPath());
+        final File relativeFile = repo.makeRelative(file);
+        final FileStatus status;
+        final DirStateEntry state = this.dirState.getState(relativeFile.getPath());
 
         if (state != null) {
             switch (state.getState()) {
             case STATE_NORMAL:
-                status.setStatus(checkStateNormal(file, state));
+                status = FileStatus.valueOf(file, checkStateNormal(file, state));
                 break;
             case STATE_ADDED:
-                status.setStatus(FileStatus.Status.ADDED);
+                status = FileStatus.valueOf(file, FileStatus.Status.ADDED);                
                 break;
             case STATE_REMOVED:
-                status.setStatus(FileStatus.Status.REMOVED);
+                status = FileStatus.valueOf(file, FileStatus.Status.REMOVED);
                 break;
             case STATE_MERGED:
-                status.setStatus(FileStatus.Status.MERGED);
+                status = FileStatus.valueOf(file, FileStatus.Status.MERGED);
                 break;
             default:
+                throw new HgInternalError("Unknown state:" + state.getState());
             }
         } else {
             if (parentIgnored || isIgnored(relativeFile)) {
-                status.setStatus(FileStatus.Status.IGNORED);
+                status = FileStatus.valueOf(file, FileStatus.Status.IGNORED);
             } else {
-                status.setStatus(FileStatus.Status.NOT_TRACKED);
+                status = FileStatus.valueOf(file, FileStatus.Status.NOT_TRACKED);
             }
         }
         return status;

@@ -59,11 +59,11 @@ public final class ChangeLog extends Revlog {
         for (String string : allKeys) {
             FileStatus status = null;
             if (currMan.containsKey(string) && prevMan.containsKey(string)) {
-                status = new FileStatus(new File(string), FileStatus.Status.MODIFIED);
+                status = FileStatus.valueOf(new File(string), FileStatus.Status.MODIFIED);
             } else if (currMan.containsKey(string)) {
-                status = new FileStatus(new File(string), FileStatus.Status.ADDED);
+                status = FileStatus.valueOf(new File(string), FileStatus.Status.ADDED);
             } else { // prevMan contains
-                status = new FileStatus(new File(string), FileStatus.Status.REMOVED);
+                status = FileStatus.valueOf(new File(string), FileStatus.Status.REMOVED);
             }
             result.add(status);
         }

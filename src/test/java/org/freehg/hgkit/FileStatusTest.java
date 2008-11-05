@@ -24,8 +24,7 @@ public class FileStatusTest {
      */
     @Test
     public final void testToString() {
-        FileStatus fileStatus = new FileStatus(new File("/"), FileStatus.Status.ADDED);
-        assertEquals("A /", fileStatus.toString());
+        assertEquals("A /", FileStatus.valueOf(new File("/"), FileStatus.Status.ADDED).toString());
     }
 
 }
