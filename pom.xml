@@ -5,7 +5,7 @@
     <artifactId>hgkit</artifactId>
     <packaging>jar</packaging>
     <version>SNAPSHOT</version>
-    <name>hgkit</name>
+    <name>HgKit</name>
     <url>http://hgkit.berlios.de/</url>
     <inceptionYear>2007</inceptionYear>
     <organization>
