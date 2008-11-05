@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 xdoc-2.0.xsd">
+    <properties>
+        <title>Introduction</title>
+    </properties>
+    <head>
+        <meta name="keyword" content="java, mercurial" />
+    </head>
+    <body>
+        <section name="Introduction">
+            <subsection name="Aims">                
+                <p>
+                    HgKit aims to be a pure Java implementation of
+                    <a href="http://www.selenic.com/mercurial/wiki/">Mercurial</a>
+                    , an advanced
+                    <a
+                        href="http://en.wikipedia.org/wiki/Revision_control#Distributed_revision_control">distributed revision control
+                        system</a>
+                    .
+                </p>
+                <p>
+                    This project aims to replace most of the native
+                    invocations of Mercurial in e.g. the
+                    <a href="http://trac-hg.assembla.com/mercurialeclipse">Mercurial Eclipse Plugin</a>
+                    .
+                </p>
+            </subsection>
+            <subsection name="Files">
+                <p>
+                    Current snapshots may be downloaded from
+                    <a
+                        href="http://hgkit.berlios.de/maven2snapshotrepo/de/berlios/hgkit/hgkit/">Berlios</a>
+                    .
+                </p>
+            </subsection>
+            <subsection name="Development">
+                <ul>
+                    <li>
+                        Make sure you have the
+                        <code>hg</code>
+                        -Binary in your
+                        <code>PATH</code>
+                        .
+                    </li>
+                    <li>
+                        Before editing code, please import
+                        <a
+                            href="http://hg.berlios.de/repos/hgkit/raw-file/tip/eclipse-codetemplates.xml">codetemplates</a>
+                        and <a href="http://hg.berlios.de/repos/hgkit//raw-file/tip/eclipse-format.xml">format</a> XML files.
+                    </li>
+                </ul>
+            </subsection>
+        </section>
+    </body>
+</document>

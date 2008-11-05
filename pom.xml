@@ -163,10 +163,6 @@
                 <version>1.1.1</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
-                    <!--
-                        <xmlOutputDirectory>directory location of xml
-                        findbugs report</xmlOutputDirectory>
-                    -->
                     <threshold>Low</threshold>
                     <effort>Max</effort>
                     <debug>false</debug>

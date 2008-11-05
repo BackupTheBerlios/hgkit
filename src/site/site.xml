@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
-    <publishDate
-        format="MM-dd-yy HH:mm" />
+<project xmlns="project"
+    xsi:schemaLocation="project http://maven.apache.org/maven-navigation-1.0.xsd">
+    <publishDate format="MM-dd-yy HH:mm" />
     <poweredBy>
-        <logo
-            name="Berlios"
-            href="https://developer.berlios.de/projects/hgkit/"
+        <logo name="Berlios" href="https://developer.berlios.de/projects/hgkit/"
             img="http://developer.berlios.de/bslogo.php?group_id=0" />
-        <logo
-            name="Maven"
-            href="http://maven.apache.org/"
+        <logo name="Maven" href="http://maven.apache.org/"
             img="http://maven.apache.org/images/logos/maven-feather.png" />
     </poweredBy>
     <body>
-        <menu
-            ref="reports" />
+        <links>
+            <item name="HgKit on Berlios" href="https://developer.berlios.de/projects/hgkit/"/>
+            <item name="Mercurial Homepage" href="http://www.selenic.com/mercurial/wiki/"/>
+        </links>
+        <menu name="Overview">
+            <item name="Introduction" href="index.html" />
+        </menu>
+        <menu ref="reports" />
     </body>
 </project>
