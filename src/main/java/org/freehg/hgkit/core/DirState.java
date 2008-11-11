@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,17 +13,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.freehg.hgkit.util.FileHelper;
 
 /**
  * State of the working directory.
  * 
- * @see <a
- *      href="http://www.selenic.com/mercurial/wiki/index.cgi/DirState>DirState<
- *      / a >
- * @see <a
- *      href="http://www.selenic.com/mercurial/wiki/index.cgi/WorkingDirectory">WorkingDirectory</a>
+ * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/DirState>DirState</a>
+ * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/WorkingDirectory">WorkingDirectory</a>
  * 
  */
 public class DirState {
@@ -60,12 +57,10 @@ public class DirState {
      * @param dirStateFile
      *            dirstate file
      * @return DataInputStream
-     * @throws FileNotFoundException
-     *             if dirStateFile could not be found.
      * @throws IOException
-     *             if reading the file does not succeed.
+     *             if dirStateFile could not be found or reading the file does not succeed.
      */
-    private DataInputStream toDataInputStream(File dirStateFile) throws FileNotFoundException, IOException {
+    private DataInputStream toDataInputStream(File dirStateFile) throws IOException {
         final FileInputStream fis = new FileInputStream(dirStateFile);
         final byte[] data;
         try {
@@ -94,11 +89,12 @@ public class DirState {
     }
 
     /**
-     * NOTE: Remember to unFold the path before you use this
+     * Returns a dirstate entry for the given path.
+     * <b>NOTE</b>: Remember to unFold the path before you use this.
      * 
-     * @param path
+     * @param path path to an entry.
      * @return a {@link DirStateEntry} if one is avaialable for this repository.
-     *         Null otherwise
+     *         null otherwise
      */
     public DirStateEntry getState(String path) {
         return this.dirstate.get(path);
@@ -139,6 +135,16 @@ public class DirState {
      * Describes the status of a single file in the working copy.
      */
     public static class DirStateEntry {
+
+        /**
+         * 
+         */
+        private static final int ONLY_RWX = 0777;
+
+        /**
+         * 
+         */
+        private static final int SYMLINK = 020000;
 
         private final long size;
 
@@ -267,6 +273,8 @@ public class DirState {
         /**
          * Returns a String representation of a DirState as returned by
          * <code>hg debugstate</code>.
+         * 
+         * @return representation
          */
         @Override
         public String toString() {
@@ -275,13 +283,13 @@ public class DirState {
                 dateString = String.format(Locale.ENGLISH, "%18s", "unset");
             } else {
                 dateString = String.format(Locale.ENGLISH, "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS", new Date(
-                        getFileModTime() * 1000));
+                        TimeUnit.MILLISECONDS.convert(getFileModTime(), TimeUnit.SECONDS)));
             }
             final String modeString;
-            if ((getMode() & 020000) != 0) {
+            if ((getMode() & SYMLINK) != 0) {
                 modeString = "lnk";
             } else {
-                modeString = String.format(Locale.ENGLISH, "%3o", getMode() & 0777);
+                modeString = String.format(Locale.ENGLISH, "%3o", getMode() & ONLY_RWX);
             }
             return String.format(Locale.ENGLISH, "%s %s %10d %s %s", getState(), modeString, getSize(), dateString,
                     getPath());
