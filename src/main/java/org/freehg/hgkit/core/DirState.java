@@ -270,9 +270,20 @@ public class DirState {
          */
         @Override
         public String toString() {
-            final String dateString = String.format(Locale.ENGLISH, "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS", new Date(
-                    getFileModTime() * 1000));
-            return String.format(Locale.ENGLISH, "%s %o %11d %s %s", getState(), getMode(), getSize(), dateString,
+            final String dateString;
+            if (getFileModTime() == -1) {
+                dateString = String.format(Locale.ENGLISH, "%18s", "unset");
+            } else {
+                dateString = String.format(Locale.ENGLISH, "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS", new Date(
+                        getFileModTime() * 1000));
+            }
+            final String modeString;
+            if ((getMode() & 020000) != 0) {
+                modeString = "lnk";
+            } else {
+                modeString = String.format(Locale.ENGLISH, "%3o", getMode() & 0777);
+            }
+            return String.format(Locale.ENGLISH, "%s %s %10d %s %s", getState(), modeString, getSize(), dateString,
                     getPath());
         }
     }
