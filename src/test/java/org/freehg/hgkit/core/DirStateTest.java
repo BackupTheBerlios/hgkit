@@ -1,5 +1,8 @@
 package org.freehg.hgkit.core;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.Collection;
 
@@ -10,11 +13,12 @@ public class DirStateTest {
 
     @Test
     public void testDirState() throws Exception {
-
         DirState state = new DirState(new File(".hg/dirstate"));
         Collection<DirStateEntry> result = state.getDirState();
         for (DirStateEntry dirStateEntry : result) {
             System.out.println(dirStateEntry);
+            assertEquals('n', dirStateEntry.getState());
+            assertTrue("Size must be > -1, is " + dirStateEntry.getSize(), dirStateEntry.getSize() > -1);
         }
     }
 }
