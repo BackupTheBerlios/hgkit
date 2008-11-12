@@ -136,14 +136,8 @@ public class DirState {
      */
     public static class DirStateEntry {
 
-        /**
-         * 
-         */
         private static final int ONLY_RWX = 0777;
 
-        /**
-         * 
-         */
         private static final int SYMLINK = 020000;
 
         private final long size;
@@ -216,23 +210,23 @@ public class DirState {
         /**
          * Creates a new {@link DirStateEntry}.
          * 
-         * @param state
+         * @param aState
          *            {@link DirStateEntry#getState()}
-         * @param mode
+         * @param aMode
          *            {@link DirStateEntry#getMode()}
-         * @param size
+         * @param aSize
          *            {@link DirStateEntry#getSize()}
-         * @param fileModTime
+         * @param aFileModTime
          *            {@link DirStateEntry#getFileModTime()}
-         * @param path
+         * @param aPath
          *            {@link DirStateEntry#getPath()}
          */
-        DirStateEntry(final byte state, final int mode, final int size, final int fileModTime, final String path) {
-            this.state = state;
-            this.mode = mode;
-            this.size = size;
-            this.fileModTime = fileModTime;
-            this.path = path;
+        DirStateEntry(final byte aState, final int aMode, final int aSize, final int aFileModTime, final String aPath) {
+            this.state = aState;
+            this.mode = aMode;
+            this.size = aSize;
+            this.fileModTime = aFileModTime;
+            this.path = aPath;
         }
 
         /**
