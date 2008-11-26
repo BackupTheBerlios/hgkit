@@ -8,11 +8,13 @@ package org.freehg.hgkit.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.core.Util;
 
@@ -91,7 +93,8 @@ public class FileHelper {
     /**
      * Close even null safely.
      * 
-     * @param closable closable
+     * @param closable
+     *            closable
      * 
      * @throws HgInternalError
      *             if there is an {@link IOException}.
@@ -107,4 +110,21 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Returns the content of filename or the empty string if filename could not
+     * be found.
+     * 
+     * @param filename
+     *            to read
+     * @return content of the file
+     */
+    public static String readFile(String filename) {
+        try {
+            return FileUtils.readFileToString(new File(filename));
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (IOException e) {
+            throw new HgInternalError("Could not read " + filename, e);
+        }
+    }
 }

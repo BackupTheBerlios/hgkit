@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
@@ -60,14 +61,16 @@ public class HgUpdateClientTest {
     public final void testUpdate() throws IOException, InterruptedException {
         HgUpdateClient hgUpdateClient = new HgUpdateClient(new Repository(repoDir));
         final int updatedFiles = hgUpdateClient.update();
-        final String command = "hg status --all";
+        final String hgrc = FileHelper.readFile(System.getProperty("user.home") + File.separator + ".hgrc");        
+        final String command = hgrc.contains("hgext.color") ?  "hg status --all --no-color" : "hg status --all";
         final Process process = Runtime.getRuntime().exec(command, null, repoDir);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         int lineCount = 0;
         String line = reader.readLine();
         while (line != null) {
             lineCount++;
-            assertEquals(line + " does not start with 'C'", 'C', line.charAt(0));
+            final char firstChar = line.charAt(0);
+            assertEquals(line + " does not start with 'C' but " + firstChar, 'C', firstChar);
             line = reader.readLine();
         }
         assertEquals(0, process.waitFor());

@@ -100,7 +100,7 @@ public final class HgStatusClient {
         final DirStateEntry state = this.dirState.getState(relativeFile.getPath());
 
         if (state != null) {
-            final char stateChar = (char)state.getState();
+            final char stateChar = state.getState();
             switch (stateChar) {
             case STATE_NORMAL:
                 status = FileStatus.valueOf(file, checkStateNormal(file, state));
