@@ -137,7 +137,7 @@ public class Revlog {
 
     /**
      * Writes the revision specified by nodeId to the given outputstream.
-     * Metadata is not considered.
+     * Metadata is removed.
      * 
      * @param nodeId
      *            the nodeId
@@ -204,54 +204,37 @@ public class Revlog {
         } else {
             finalOut = out;
         }
+        return revision(target, finalOut);
+    }
+
+    /**
+     * Writes the specific revlogentry to the given outputstream using cached
+     * data.
+     * 
+     * @param target
+     *            revlogentry
+     * @param out
+     *            outputstream
+     * @return revlog
+     */
+    private Revlog revision(final RevlogEntry target, final OutputStream out) {
         if ((target.getFlags() & 0xFFFF) != 0) {
             throw new IllegalStateException("Incompatible revision flag: " + target.getFlags());
         }
         if (cache.containsKey(target)) {
-            writeFromCache(target, finalOut);
+            writeFromCache(target, out);
+            return this;
+        } else {
+            new RevisionWriter(target, this).copyFromDisc(out);
             return this;
         }
-
-        try {
-            List<byte[]> patches = new ArrayList<byte[]>(target.revision - target.getBaseRev() + 1);
-            byte[] baseData = null;
-            for (int i = target.revision; i >= target.getBaseRev(); i--) {
-                RevlogEntry entry = index.get(i);
-                // TODO reenable caching
-                // byte[] fromCache = cache.get(entry);
-                // if (fromCache != null) {
-                // baseData = fromCache;
-                // break;
-                // }
-                if (baseData != null) {
-                    patches.add(baseData);
-                }
-                baseData = Util.decompress(entry.loadBlock(getDataFile()));
-            }
-            Collections.reverse(patches);
-            // FIXME worst case size value is calculated wrong (but kinda works)
-            long worstCaseSize = baseData.length;
-
-            // cache data if it is small enough.
-            if (worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
-                CacheOutputStream cacheOut = new CacheOutputStream(finalOut, (int) worstCaseSize);
-                MDiff.patches(baseData, patches, cacheOut);
-                this.cache.put(target, cacheOut.cache.toByteArray());
-            } else {
-                MDiff.patches(baseData, patches, finalOut);
-            }
-
-        } catch (IOException e) {
-            throw new HgInternalError(target.toString(), e);
-        }
-        return this;
     }
 
     private void writeFromCache(final RevlogEntry target, OutputStream out) {
         try {
             out.write(cache.get(target));
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new HgInternalError(target.toString(), e);
         }
     }
 
@@ -469,6 +452,83 @@ public class Revlog {
             }
             cachedDataSize += value.length - prevSize;
             return result;
+        }
+    }
+
+    /**
+     * Small helper class for reading a revision from disc and write it into the
+     * working directory.
+     */
+    private static class RevisionWriter {
+
+        private final List<byte[]> patches;
+
+        private byte[] baseData;
+
+        private final RevlogEntry target;
+
+        private final Revlog revlog;
+
+        /**
+         * Constructs the {@link RevisionWriter} from target and revlog.
+         * 
+         * @param target
+         *            the revlogentry to look up
+         * @param revlog
+         */
+        public RevisionWriter(RevlogEntry target, Revlog revlog) {
+            this.target = target;
+            this.revlog = revlog;
+            this.patches = new ArrayList<byte[]>(target.revision - target.getBaseRev() + 1);
+            this.baseData = null;
+        }
+
+        /**
+         * Copies {@link RevisionWriter#target} to out.
+         * 
+         * @param out
+         *            stream in the working directory.
+         */
+        public void copyFromDisc(OutputStream out) {
+            lookupBaseDataAndPatches();
+            // FIXME worst case size value is calculated wrong (but kinda works)
+            long worstCaseSize = baseData.length;
+
+            // cache data if it is small enough.
+            if (worstCaseSize < RevlogCache.CACHE_SMALL_REVISIONS) {
+                CacheOutputStream cacheOut = new CacheOutputStream(out, (int) worstCaseSize);
+                MDiff.patches(baseData, patches, cacheOut);
+                revlog.cache.put(target, cacheOut.cache.toByteArray());
+            } else {
+                MDiff.patches(baseData, patches, out);
+            }
+        }
+
+        /**
+         * Looks up baseData and patches for a given {@link RevlogEntry}.
+         * 
+         * Takes the newest revision as baseData, the rest as patches to it.
+         */
+        private void lookupBaseDataAndPatches() {
+
+            for (int i = target.revision; i >= target.getBaseRev(); i--) {
+                RevlogEntry entry = revlog.index.get(i);
+                // TODO reenable caching
+                // byte[] fromCache = cache.get(entry);
+                // if (fromCache != null) {
+                // baseData = fromCache;
+                // break;
+                // }
+                if (baseData != null) {
+                    patches.add(baseData);
+                }
+                try {
+                    baseData = Util.decompress(entry.loadBlock(revlog.getDataFile()));
+                } catch (IOException e) {
+                    throw new HgInternalError(target.toString(), e);
+                }
+            }
+            Collections.reverse(patches);
         }
     }
 }
