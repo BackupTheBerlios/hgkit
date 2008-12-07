@@ -190,11 +190,10 @@ public final class HgStatusClient {
         }
 
         @Override
-        public void write(int b) throws IOException {
-            int fromStream = in.read();
-            b &= 0xFF;
-            fromStream &= 0xFF;
-            if (b != fromStream) {
+        public void write(final int b) throws IOException {
+            final int fromStream = in.read() & 0xFF;
+            final int expected = b & 0xFF;
+            if (expected != fromStream) {
                 this.equals = false;
             }
         }
