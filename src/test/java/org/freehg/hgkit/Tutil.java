@@ -8,7 +8,7 @@ package org.freehg.hgkit;
 import java.io.File;
 import java.io.IOException;
 
-import org.freehg.hgkit.util.FileHelper;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Defines some static helper-methods for tests.
@@ -33,9 +33,9 @@ public class Tutil {
     public static File createRepoCopy() {
         File sourceDirectory = new File(".hg");
         final File targetDir = new File("target", "hgkit-test");
-        FileHelper.deleteDirectory(targetDir);
         try {
-            FileHelper.copyDirectory(sourceDirectory, new File(targetDir.getAbsolutePath(), ".hg"));
+            FileUtils.deleteDirectory(targetDir);
+            FileUtils.copyDirectory(sourceDirectory, new File(targetDir.getAbsolutePath(), ".hg"), true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

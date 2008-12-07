@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.freehg.hgkit.util.FileHelper;
+import org.apache.commons.io.IOUtils;
 
 /**
  * State of the working directory.
@@ -66,7 +66,7 @@ public class DirState {
         try {
             data = Util.toByteArray(fis);
         } finally {
-            FileHelper.close(fis);
+            IOUtils.closeQuietly(fis);
         }
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
         return in;

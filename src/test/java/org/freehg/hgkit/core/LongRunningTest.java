@@ -1,7 +1,5 @@
 package org.freehg.hgkit.core;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,9 +8,9 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.Tutil;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
-import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,8 +25,8 @@ public class LongRunningTest {
     }
 
     @AfterClass
-    public static void deleteCopy() {
-        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    public static void deleteCopy() throws IOException {
+        FileUtils.deleteDirectory(repoDir);
     }
 
     private int numRevisions;

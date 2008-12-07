@@ -9,7 +9,6 @@
 package org.freehg.hgkit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +17,7 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.core.Repository;
-import org.freehg.hgkit.util.FileHelper;
+import org.freehg.hgkit.core.Util;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,8 +36,8 @@ public class HgUpdateClientTest {
     }
 
     @AfterClass
-    public static void deleteCopy() {
-        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    public static void deleteCopy() throws IOException {
+        FileUtils.deleteDirectory(repoDir);
     }
 
     /**
@@ -61,8 +60,8 @@ public class HgUpdateClientTest {
     public final void testUpdate() throws IOException, InterruptedException {
         HgUpdateClient hgUpdateClient = new HgUpdateClient(new Repository(repoDir));
         final int updatedFiles = hgUpdateClient.update();
-        final String hgrc = FileHelper.readFile(System.getProperty("user.home") + File.separator + ".hgrc");        
-        final String command = hgrc.contains("hgext.color") ?  "hg status --all --no-color" : "hg status --all";
+        final String hgrc = Util.readFile(System.getProperty("user.home") + File.separator + ".hgrc");        
+        final String command = hgrc.contains("\nhgext.color") ?  "hg status --all --no-color" : "hg status --all";
         final Process process = Runtime.getRuntime().exec(command, null, repoDir);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         int lineCount = 0;
@@ -70,7 +69,7 @@ public class HgUpdateClientTest {
         while (line != null) {
             lineCount++;
             final char firstChar = line.charAt(0);
-            assertEquals(line + " does not start with 'C' but " + firstChar, 'C', firstChar);
+            assertEquals("'" + line + "' does not start with 'C' but " + firstChar, 'C', firstChar);
             line = reader.readLine();
         }
         assertEquals(0, process.waitFor());

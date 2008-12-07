@@ -14,12 +14,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Collection;
 
+import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.core.NodeId;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.RevlogEntry;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
-import org.freehg.hgkit.util.FileHelper;
 
 /**
  * Class to update a single file.
@@ -68,7 +68,7 @@ class UpdateFile {
         try {
             revlog.revision(nodeId, out);
         } finally {
-            FileHelper.close(out);
+            IOUtils.closeQuietly(out);
         }
     }
 

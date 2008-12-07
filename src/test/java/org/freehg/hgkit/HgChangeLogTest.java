@@ -1,15 +1,15 @@
 package org.freehg.hgkit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.core.ChangeLog;
 import org.freehg.hgkit.core.Repository;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
-import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,8 +24,8 @@ public class HgChangeLogTest {
     }
 
     @AfterClass
-    public static void deleteCopy() {
-        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    public static void deleteCopy() throws IOException {
+        FileUtils.deleteDirectory(repoDir);        
     }
 
     @Test

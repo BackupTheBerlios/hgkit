@@ -5,18 +5,7 @@
 
 package org.freehg.hgkit.util;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.freehg.hgkit.HgInternalError;
-import org.freehg.hgkit.core.Util;
 
 /**
  * Some static methods for file-handling, directory creation etc.
@@ -31,100 +20,5 @@ public class FileHelper {
      */
     private FileHelper() {
         // class with static helpers.
-    }
-
-    /**
-     * Delete directory recursively.
-     * 
-     * @param path
-     *            to delete
-     * @return false if directory could not be deleted.
-     */
-    public static boolean deleteDirectory(File path) {
-        if (path.exists()) {
-            File[] files = path.listFiles();
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    if (!file.delete()) {
-                        System.err.println("Could not delete " + file.getAbsolutePath());
-                    }
-                }
-            }
-        }
-        return path.delete();
-    }
-
-    /**
-     * Copy sourceLocation to targetLocation.
-     * 
-     * @param sourceLocation
-     *            source
-     * @param targetLocation
-     *            target
-     * @throws IOException
-     */
-    public static void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
-
-        if (sourceLocation.isDirectory()) {
-            if (!targetLocation.exists()) {
-                targetLocation.mkdirs();
-            }
-
-            File[] children = sourceLocation.listFiles();
-            for (File child : children) {
-                copyDirectory(child.getAbsoluteFile(), new File(targetLocation.getAbsolutePath(), child.getName()));
-            }
-        } else {
-            InputStream in = null;
-            OutputStream out = null;
-            try {
-                in = new FileInputStream(sourceLocation);
-                out = new FileOutputStream(targetLocation);
-                Util.copyStream(in, out);
-            } finally {
-                close(in);
-                close(out);
-            }
-        }
-    }
-
-    /**
-     * Close even null safely.
-     * 
-     * @param closable
-     *            closable
-     * 
-     * @throws HgInternalError
-     *             if there is an {@link IOException}.
-     */
-    public static void close(Closeable closable) throws HgInternalError {
-        if (closable == null) {
-            return;
-        }
-        try {
-            closable.close();
-        } catch (IOException e) {
-            throw new HgInternalError("Error closing" + closable, e);
-        }
-    }
-
-    /**
-     * Returns the content of filename or the empty string if filename could not
-     * be found.
-     * 
-     * @param filename
-     *            to read
-     * @return content of the file
-     */
-    public static String readFile(String filename) {
-        try {
-            return FileUtils.readFileToString(new File(filename));
-        } catch (FileNotFoundException e) {
-            return "";
-        } catch (IOException e) {
-            throw new HgInternalError("Could not read " + filename, e);
-        }
     }
 }

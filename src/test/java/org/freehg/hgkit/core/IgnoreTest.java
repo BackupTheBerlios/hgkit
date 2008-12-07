@@ -13,9 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.Tutil;
-import org.freehg.hgkit.util.FileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,8 +30,8 @@ public class IgnoreTest {
     }
 
     @AfterClass
-    public static void deleteCopy() {
-        assertTrue("Could not delete copy in " + repoDir, FileHelper.deleteDirectory(repoDir));
+    public static void deleteCopy() throws IOException {
+        FileUtils.deleteDirectory(repoDir);       
     }
 
     @Test

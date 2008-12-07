@@ -3,16 +3,17 @@ package org.freehg.hgkit.core;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.HgInternalError;
 
 /**
- * Helper class with static methods for decompression.
- * 
+ * Helper class with static methods for decompression and some stream manipulations.
  */
 public final class Util {
 
@@ -176,6 +177,27 @@ public final class Util {
             return file.getCanonicalPath();
         } catch (IOException e) {
             throw new HgInternalError(file.toString(), e);
+        }
+    }
+
+    /**
+     * Returns the content of filename or the empty string if filename could not
+     * be found.
+     * 
+     * @param filename
+     *            to read
+     * @return content of the file
+     * 
+     * @throws HgInternalError
+     *             if there is an {@link IOException}.
+     */
+    public static String readFile(String filename) throws HgInternalError {
+        try {
+            return FileUtils.readFileToString(new File(filename));
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (IOException e) {
+            throw new HgInternalError("Could not read " + filename, e);
         }
     }
 }
