@@ -10,10 +10,12 @@ import java.io.OutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.HgInternalError;
 
 /**
- * Helper class with static methods for decompression and some stream manipulations.
+ * Helper class with static methods for decompression and some stream
+ * manipulations.
  */
 public final class Util {
 
@@ -95,40 +97,6 @@ public final class Util {
     }
 
     /**
-     * Reads an {@link InputStream} until no more data is available and returns
-     * it as byte-array. All read-Operations on <code>in</code> operate on an
-     * byte buffer of {@link Util#BUFFER_SIZE}.
-     * 
-     * @param in
-     *            inputStream
-     * @return the content of <code>in</code> as byte-array.
-     * @throws IOException
-     */
-    public static byte[] toByteArray(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream(in.available());
-        copyStream(in, out);
-        return out.toByteArray();
-    }
-
-    /**
-     * Copies all data from in to out. read- and write-Operations operate on an
-     * byte buffer of {@link Util#BUFFER_SIZE}
-     * 
-     * @param in
-     *            inputStream
-     * @param out
-     *            outputStream.
-     * @throws IOException
-     */
-    public static void copyStream(InputStream in, OutputStream out) throws IOException {
-        final byte[] buf = new byte[BUFFER_SIZE];
-        int read = 0;
-        while ((read = in.read(buf)) != Util.EOF) {
-            out.write(buf, 0, read);
-        }
-    }
-
-    /**
      * Reads resource into byte array and closes it immediately.
      * 
      * @param name
@@ -138,13 +106,11 @@ public final class Util {
     static byte[] readResource(final String name) {
         InputStream in = Util.class.getResourceAsStream(name);
         try {
-            try {
-                return toByteArray(in);
-            } finally {
-                in.close();
-            }
+            return IOUtils.toByteArray(in);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError("Error reading " + name, e);
+        } finally {
+            IOUtils.closeQuietly(in);
         }
     }
 

@@ -64,7 +64,7 @@ public class DirState {
         final FileInputStream fis = new FileInputStream(dirStateFile);
         final byte[] data;
         try {
-            data = Util.toByteArray(fis);
+            data = IOUtils.toByteArray(fis);
         } finally {
             IOUtils.closeQuietly(fis);
         }

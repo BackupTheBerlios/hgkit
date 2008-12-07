@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.HgInternalError;
 import org.freehg.hgkit.util.RemoveMetaOutputStream;
 
@@ -364,7 +365,7 @@ public class Revlog {
     private byte[] toByteArray(File fileOfIndex) throws FileNotFoundException, IOException {
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(fileOfIndex)));
         try {
-            return Util.toByteArray(in);
+            return IOUtils.toByteArray(in);
         } finally {
             in.close();
         }
