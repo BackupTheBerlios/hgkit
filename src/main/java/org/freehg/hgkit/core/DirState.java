@@ -1,9 +1,10 @@
 package org.freehg.hgkit.core;
 
-import java.io.ByteArrayInputStream;
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
+import org.freehg.hgkit.HgInternalError;
 
 /**
  * State of the working directory.
@@ -43,36 +45,25 @@ public class DirState {
      *            dirstate file
      */
     DirState(File dirStateFile) {
+        FileInputStream fis = null;
         try {
-            DataInputStream in = toDataInputStream(dirStateFile);
-            parse(in);
+            fis = new FileInputStream(dirStateFile);
+            parse(new DataInputStream(new BufferedInputStream(fis)));
+        } catch (FileNotFoundException e) {
+            throw new HgInternalError("Could not find '" + dirStateFile.toString() + "'", e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HgInternalError("Error reading '" + dirStateFile.toString() + "'", e);
+        } finally {
+            IOUtils.closeQuietly(fis);
         }
     }
 
     /**
-     * Converts all bytes of dirStateFile to a {@link DataInputStream}.
-     * 
-     * @param dirStateFile
-     *            dirstate file
-     * @return DataInputStream
-     * @throws IOException
-     *             if dirStateFile could not be found or reading the file does not succeed.
+     * Parses the dirStateFile into {@link DirStateEntry}.
+     * @param in DataInputStream.
+     * @throws IOException if there are problems with the dirState file.
      */
-    private DataInputStream toDataInputStream(File dirStateFile) throws IOException {
-        final FileInputStream fis = new FileInputStream(dirStateFile);
-        final byte[] data;
-        try {
-            data = IOUtils.toByteArray(fis);
-        } finally {
-            IOUtils.closeQuietly(fis);
-        }
-        DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
-        return in;
-    }
-
-    private void parse(DataInputStream in) throws IOException {
+    void parse(DataInputStream in) throws IOException {
         // ">c l l l l"
         // state, mode, size, fileModTime, nameLength, bytes[namelength] as name
         // (String)
@@ -84,7 +75,6 @@ public class DirState {
             dirstate.put(path.replace('/', '\\'), entry);
             dirstate.put(path.replace('\\', '/'), entry);
             values.add(entry);
-
         }
     }
 
