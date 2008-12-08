@@ -64,7 +64,7 @@ public class Revlog {
 
     private LinkedHashMap<RevlogEntry, byte[]> cache = new RevlogCache();
 
-    private RandomAccessFile reader = null;
+    RandomAccessFile reader = null;
 
     /**
      * Creates a Revlog from the given Mercurial-index-file.
@@ -114,7 +114,7 @@ public class Revlog {
                 return entry.getKey();
             }
         }
-        throw new IllegalArgumentException(this + " has no such revision");
+        throw new IllegalArgumentException(indexFile + " has no such revision");
     }
 
     /**
@@ -132,7 +132,7 @@ public class Revlog {
                 return entry.getKey();
             }
         }
-        throw new IllegalArgumentException(this + " has no such revision");
+        throw new IllegalArgumentException(indexFile + " has no such revision");
     }
 
     /**
@@ -246,7 +246,7 @@ public class Revlog {
      * @throws FileNotFoundException
      *             if the index or data file is not available.
      */
-    private RandomAccessFile getDataFile() throws FileNotFoundException {
+    RandomAccessFile getDataFile() throws FileNotFoundException {
         if (this.reader != null && this.reader.getChannel().isOpen()) {
             return this.reader;
         }
@@ -297,7 +297,7 @@ public class Revlog {
      * versionformat = ">I", big endian, uint 4 bytes which includes version
      * format
      */
-    private void parseIndex(File fileOfIndex) throws IOException {
+    void parseIndex(File fileOfIndex) throws IOException {
         final int version = readVersion(fileOfIndex);
 
         isDataInline = (version & REVLOGNGINLINEDATA) != 0;
@@ -318,7 +318,7 @@ public class Revlog {
             if (indexCount == 0) {
                 entry.setOffset(0);
             }
-            entry.revision = indexCount;
+            entry.revision = indexCount++;
             nodemap.put(entry.nodeId, entry);
             this.index.add(entry);
 
@@ -331,7 +331,6 @@ public class Revlog {
                 indexOffset += entry.getCompressedLength();
             }
             indexOffset += RevlogEntry.BINARY_LENGTH;
-            ++indexCount;
         }
     }
 
@@ -360,7 +359,7 @@ public class Revlog {
      * @param version
      *            of the revlog-file.
      */
-    private void checkRevlogFormat(final int version) {
+    void checkRevlogFormat(final int version) {
         // Its pretty odd, but its the revlogFormat which is the "version"
         final long revlogFormat = version & 0xFFFF;
         if (revlogFormat != REVLOGNG) {

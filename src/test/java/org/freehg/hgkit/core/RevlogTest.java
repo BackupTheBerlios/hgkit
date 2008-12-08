@@ -1,13 +1,18 @@
 package org.freehg.hgkit.core;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
+import org.freehg.hgkit.HgInternalError;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,6 +88,82 @@ public class RevlogTest {
 
     }
 
+    @Test(expected=HgInternalError.class)
+    public void testParseIndexIOException() {
+        new Revlog(new File(".")) {
+            /** {@inheritDoc} */
+            @Override
+            void parseIndex(@SuppressWarnings("unused") File fileOfIndex) throws IOException {
+                throw new IOException("Oops");                
+            }
+        };
+    }
+    
+    @Test
+    public void testNode() {
+        new Revlog(indexFile).node(0);
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testNodeIllegalArgumentException() {
+        new Revlog(indexFile).node(-1);
+    }
+    
+    @Test
+    public void testLinkRev() {
+        final Revlog revlog = new Revlog(indexFile);
+        final int size = revlog.getRevisions().size();        
+        revlog.linkrev(size-1);
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testLinkRevIllegalArgumentException() {
+        final Revlog revlog = new Revlog(indexFile);
+        revlog.linkrev(-1);
+    }
+
+    @Ignore(value="We have to define a real NULLID firstl.")
+    @Test
+    public void testRevisionOfNullId() {
+        final Revlog revlog = new Revlog(indexFile);
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Revlog revlog2 = revlog.revision((NodeId)null, out, true);
+        assertEquals(revlog, revlog2);
+        assertEquals(0, out.size());
+    }
+    
+    @Test
+    public void testRevisionIndexOutRemoveMetaData() {
+        final Revlog revlog = new Revlog(indexFile);
+        final int size = revlog.getRevisions().size();        
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        revlog.revision(size - 1, out, true);
+        assertTrue("Size of " + indexFile + " must be > 0", out.size() > 0);
+    }
+    
+    @Test(expected=HgInternalError.class)
+    public void testCloseIOException() {
+        final Revlog revlog = new Revlog(indexFile) {
+            /** {@inheritDoc} */
+            @Override
+            void parseIndex(File fileOfIndex) throws IOException {               
+                reader = new RandomAccessFile(fileOfIndex, "r") {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void close() throws IOException {
+                        throw new IOException("Oops");
+                    }
+                };
+            }
+        };
+        revlog.close();        
+    }
+    
+    @Test(expected=IllegalStateException.class)
+    public void testCheckRevlogFormat() {
+        new Revlog(indexFile).checkRevlogFormat(-1);
+    }
+    
     public static void main(String[] args) {
         RevlogTest revlogTest = new RevlogTest(".hg/store/data/src/org/freehg/hgkit/_hg_status_client.java.i");
         testUncached(revlogTest);
