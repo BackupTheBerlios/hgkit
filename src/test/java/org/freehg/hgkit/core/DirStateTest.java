@@ -16,9 +16,8 @@ public class DirStateTest {
         DirState state = new DirState(new File(".hg/dirstate"));
         Collection<DirStateEntry> result = state.getDirState();
         for (DirStateEntry dirStateEntry : result) {
-            System.out.println(dirStateEntry);
             assertEquals('n', dirStateEntry.getState());
-            assertTrue("Size must be > -1, is " + dirStateEntry.getSize(), dirStateEntry.getSize() > -1);
+            assertTrue("Size of '" + dirStateEntry + "' must be > -1, is " + dirStateEntry.getSize(), dirStateEntry.getSize() > -1);
         }
     }
 }
