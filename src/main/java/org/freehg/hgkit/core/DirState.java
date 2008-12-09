@@ -20,7 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.HgInternalError;
 
 /**
- * Mercurial tracks various information about the working directory (the dirstate): 
+ * Mercurial tracks various information about the working directory (the dirstate). 
  * <ul>
  * <li>what revision(s) are currently checked out</li> 
  * <li>what files have been copied or renamed</li> 
@@ -216,8 +216,8 @@ public class DirState {
          * @param aPath
          *            {@link DirStateEntry#getPath()}
          */
-        DirStateEntry(final char state, final int aMode, final int aSize, final int aFileModTime, final String aPath) {
-            this.state = state;
+        DirStateEntry(final char aState, final int aMode, final int aSize, final int aFileModTime, final String aPath) {
+            this.state = aState;
             this.mode = aMode;
             this.size = aSize;
             this.fileModTime = aFileModTime;
