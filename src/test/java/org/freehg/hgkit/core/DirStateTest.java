@@ -51,7 +51,7 @@ public class DirStateTest {
     
     @Test
     public void testDirStateEntry() {
-        DirStateEntry entry = new DirState.DirStateEntry((byte)'n', 020000, -1, -1, "a");
+        DirStateEntry entry = new DirState.DirStateEntry('n', 020000, -1, -1, "a");
         assertEquals("n lnk         -1              unset a", entry.toString());
     }
 }

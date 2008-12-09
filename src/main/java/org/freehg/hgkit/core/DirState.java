@@ -20,9 +20,14 @@ import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.HgInternalError;
 
 /**
- * State of the working directory.
+ * Mercurial tracks various information about the working directory (the dirstate): 
+ * <ul>
+ * <li>what revision(s) are currently checked out</li> 
+ * <li>what files have been copied or renamed</li> 
+ * <li>what files are controlled by Mercurial</li> 
+ * <ul>
  * 
- * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/DirState>DirState</a>
+ * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/DirState">DirState</a>
  * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/WorkingDirectory">WorkingDirectory</a>
  * 
  */
@@ -136,7 +141,7 @@ public class DirState {
 
         private final long fileModTime;
 
-        private final int state;
+        private final char state;
 
         private final String path;
 
@@ -185,7 +190,7 @@ public class DirState {
          * @return state
          */
         public char getState() {
-            return (char) state;
+            return state;
         }
 
         /**
@@ -200,7 +205,7 @@ public class DirState {
         /**
          * Creates a new {@link DirStateEntry}.
          * 
-         * @param aState
+         * @param state
          *            {@link DirStateEntry#getState()}
          * @param aMode
          *            {@link DirStateEntry#getMode()}
@@ -211,8 +216,8 @@ public class DirState {
          * @param aPath
          *            {@link DirStateEntry#getPath()}
          */
-        DirStateEntry(final byte aState, final int aMode, final int aSize, final int aFileModTime, final String aPath) {
-            this.state = aState;
+        DirStateEntry(final char state, final int aMode, final int aSize, final int aFileModTime, final String aPath) {
+            this.state = state;
             this.mode = aMode;
             this.size = aSize;
             this.fileModTime = aFileModTime;
@@ -229,7 +234,7 @@ public class DirState {
          *             when reading from <code>in</code> does not succeed.
          */
         public static DirStateEntry readNext(final DataInputStream in) throws IOException {
-            final byte state = in.readByte();
+            final char state = (char) in.readByte();
             final int mode = in.readInt();
             final int size = in.readInt();
             final int fileModTime = in.readInt();
