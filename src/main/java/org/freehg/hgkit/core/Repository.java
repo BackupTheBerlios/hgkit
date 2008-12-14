@@ -32,9 +32,9 @@ public class Repository {
             throw new IllegalArgumentException(root + " must exist");
         }
         this.root = Util.getCanonicalFile(root);
-        final File dataDir = new File(this.root, DATA);
-        if (!dataDir.isDirectory()) {
-            throw new IllegalArgumentException(dataDir + " must exist");
+        final File storeDir = new File(this.root, STORE);
+        if (!storeDir.isDirectory()) {
+            throw new IllegalArgumentException(storeDir + " must exist");
         }
         absoluteRootPath = this.root.getAbsolutePath();
     }
