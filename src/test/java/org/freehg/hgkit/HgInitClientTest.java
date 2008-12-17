@@ -8,15 +8,12 @@
 
 package org.freehg.hgkit;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.freehg.hgkit.core.Repository;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -27,13 +24,6 @@ public class HgInitClientTest {
 
     private final static File TEST_REPO = new File("target/testrepo");
     
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() {
-    }
-
     /**
      * @throws IOException 
      * @throws java.lang.Exception

@@ -9,8 +9,12 @@ public class Repository {
 
     public static final String HG = ".hg/";
 
-    private static final String STORE = HG + "store/";
+    public static final String STORE = HG + "store/";
 
+    public static final String CHANGELOG_INDEX = "00changelog.i";
+
+    public static final String REQUIRES = "requires";
+    
     private static final String DATA = STORE + "data/";
 
     private static final String INDEX_SUFFIX = ".i";
@@ -20,6 +24,7 @@ public class Repository {
     private final File root;
 
     private final String absoluteRootPath;
+
 
     /**
      * Creates a Repository-instance for the given file.
@@ -80,7 +85,7 @@ public class Repository {
      * @return changelog
      */
     public ChangeLog getChangeLog() {
-        String logIndex = absoluteRootPath + "/" + STORE + "00changelog.i";
+        String logIndex = absoluteRootPath + "/" + STORE + CHANGELOG_INDEX;
         return new ChangeLog(this, new File(logIndex));
     }
 
