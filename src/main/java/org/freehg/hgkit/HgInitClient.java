@@ -21,7 +21,7 @@ import org.freehg.hgkit.core.Repository;
  */
 public class HgInitClient {
 
-    private static final String REQUIRES_CONTENT = "revlogv1\nstore\nfncache";
+    private static final String REQUIRES_CONTENT = "revlogv1\nstore";
 
     private static final String DUMMY_CHANGELOG_CONTENT = "\0\0\0\2 dummy changelog to prevent using the old repo layout";
 
