@@ -8,6 +8,8 @@
 
 package org.freehg.hgkit;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -18,14 +20,14 @@ import org.junit.Test;
 
 /**
  * @author mirko
- *
+ * 
  */
 public class HgInitClientTest {
 
     private final static File TEST_REPO = new File("target/testrepo");
-    
+
     /**
-     * @throws IOException 
+     * @throws IOException
      * @throws java.lang.Exception
      */
     @After
@@ -34,50 +36,61 @@ public class HgInitClientTest {
     }
 
     /**
-     * Test method for {@link org.freehg.hgkit.HgInitClient#HgInitClient(java.io.File)}.
+     * Test method for
+     * {@link org.freehg.hgkit.HgInitClient#HgInitClient(java.io.File)}.
      */
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public final void testHgInitClientRootDirAlreadyExists() {
         new File(TEST_REPO, Repository.HG).mkdirs();
         new HgInitClient(TEST_REPO);
     }
 
     /**
-     * Test method for {@link org.freehg.hgkit.HgInitClient#createInitialDirectories()}.
+     * Test method for
+     * {@link org.freehg.hgkit.HgInitClient#createInitialDirectories()}.
      */
-    @Test(expected=HgInternalError.class)
+    @Test(expected = HgInternalError.class)
     public final void testCreateInitialDirectoriesStoreAlreadyExists() {
         HgInitClient client = new HgInitClient(TEST_REPO);
-        new File(TEST_REPO, Repository.HG + "/" + Repository.STORE).mkdirs();
+        new File(TEST_REPO, Repository.STORE).mkdirs();
         client.createInitialDirectories();
     }
 
     /**
-     * Test method for {@link org.freehg.hgkit.HgInitClient#writeInitialFiles()}.
+     * Test method for {@link org.freehg.hgkit.HgInitClient#writeInitialFiles()}
+     * .
      */
-    @Test(expected=HgInternalError.class)
+    @Test(expected = HgInternalError.class)
     public final void testWriteInitialFilesChangelogIOException() {
         HgInitClient client = new HgInitClient(TEST_REPO);
-        new File(TEST_REPO, Repository.HG + "/" + Repository.CHANGELOG_INDEX).mkdirs();        
+        new File(TEST_REPO, Repository.HG + "/" + Repository.CHANGELOG_INDEX).mkdirs();
         client.writeInitialFiles();
     }
 
     /**
-     * Test method for {@link org.freehg.hgkit.HgInitClient#writeInitialFiles()}.
+     * Test method for {@link org.freehg.hgkit.HgInitClient#writeInitialFiles()}
+     * .
      */
-    @Test(expected=HgInternalError.class)
+    @Test(expected = HgInternalError.class)
     public final void testWriteInitialFilesRequiresIOException() {
         HgInitClient client = new HgInitClient(TEST_REPO);
-        new File(TEST_REPO, Repository.HG + "/" + Repository.REQUIRES).mkdirs();        
+        new File(TEST_REPO, Repository.HG + "/" + Repository.REQUIRES).mkdirs();
         client.writeInitialFiles();
     }
-    
+
     /**
-     * Test method for {@link org.freehg.hgkit.HgInitClient#create(java.io.File)}.
+     * Test method for
+     * {@link org.freehg.hgkit.HgInitClient#create(java.io.File)}.
+     * 
+     * @throws IOException
+     * @throws InterruptedException
      */
     @Test
-    public final void testCreate() {
+    public final void testCreate() throws InterruptedException, IOException {
         HgInitClient.create(TEST_REPO);
+        assertEquals(0, Runtime.getRuntime().exec("hg status", null, TEST_REPO).waitFor());
+        assertEquals(0, Runtime.getRuntime().exec("hg log", null, TEST_REPO).waitFor());
+        assertEquals(0, Runtime.getRuntime().exec("hg debugstate", null, TEST_REPO).waitFor());
     }
 
 }

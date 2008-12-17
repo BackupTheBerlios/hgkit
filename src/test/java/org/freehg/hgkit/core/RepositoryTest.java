@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.freehg.hgkit.HgInitClient;
 import org.junit.Test;
 
 public class RepositoryTest {
@@ -112,13 +113,12 @@ public class RepositoryTest {
     }
 
     @Test
-    public void testNewFreshRepository() throws InterruptedException, IOException {
+    public void testNewFreshRepository() throws IOException {
         File testrepoDir = new File("target/testrepo");
         FileUtils.deleteDirectory(testrepoDir);
         testrepoDir.mkdirs();
         try {
-            int rc = Runtime.getRuntime().exec("hg init", null, testrepoDir).waitFor();
-            assertEquals("'hg init' failed", 0, rc);
+            HgInitClient.create(testrepoDir);            
             Repository repository = new Repository(testrepoDir);
             repository.getRoot();
             repository.getIgnore();
@@ -126,7 +126,7 @@ public class RepositoryTest {
 //            repository.getChangeLog();
 //            repository.getManifest();
         } finally {
-            FileUtils.deleteDirectory(testrepoDir);
+//            FileUtils.deleteDirectory(testrepoDir);
         }
     }
     private final Repository subject;

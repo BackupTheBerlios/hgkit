@@ -21,7 +21,7 @@ import org.freehg.hgkit.core.Repository;
  */
 public class HgInitClient {
 
-    private static final String REQUIRES_CONTENT = "revlog1\nstore\nfncache";
+    private static final String REQUIRES_CONTENT = "revlogv1\nstore\nfncache";
 
     private static final String DUMMY_CHANGELOG_CONTENT = "\0\0\0\2 dummy changelog to prevent using the old repo layout";
 
@@ -31,7 +31,7 @@ public class HgInitClient {
 
     HgInitClient(final File rootDir) {
         repoDir = new File(rootDir, Repository.HG);
-        storeDir = new File(this.repoDir, Repository.STORE);
+        storeDir = new File(rootDir, Repository.STORE);
         if (repoDir.exists()) {
             throw new IllegalArgumentException("abort: repository " + rootDir + " already exists");
         }
