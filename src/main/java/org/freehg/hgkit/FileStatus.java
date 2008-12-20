@@ -10,7 +10,7 @@ public class FileStatus {
     /**
      * Mercurial state.
      */
-    public enum Status {
+    public static enum Status {
         ADDED('A'), REMOVED('R'), DELETED('D'), MERGED('M'), NOT_TRACKED('?'), MANAGED('C'), MODIFIED('M'), IGNORED('I');
 
         Status(char c) {

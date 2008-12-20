@@ -22,6 +22,12 @@ import org.freehg.hgkit.core.Revlog;
 import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 import org.freehg.hgkit.core.DirState.DirStateEntry;
 
+/**
+ * HgStatusClient reports the status of the working copy.
+ * 
+ * TODO make this work with branches as well.
+ * 
+ */
 public final class HgStatusClient {
 
     private static final char STATE_MERGED = 'm';
