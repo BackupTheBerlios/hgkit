@@ -106,6 +106,8 @@ public class HgUpdateClient {
     /**
      * Updates the working copy to the tip.
      * 
+     * TODO: what to do if we have several branches?
+     * 
      * @return number of updated files.
      */
     public int update() {
