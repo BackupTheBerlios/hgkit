@@ -33,6 +33,8 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
  * @see <a
  *      href="http://hgbook.red-bean.com/hgbookch4.html#x8-640004">Documention
  *      in HgBook</a>
+ * @see <a
+ *      href="http://selenic.com/pipermail/mercurial/2008-February/017139.html">How renames are stored</a>
  * 
  */
 public class Revlog {
@@ -315,9 +317,6 @@ public class Revlog {
 
         while (indexOffset <= length) {
             RevlogEntry entry = RevlogEntry.valueOf(this, data, indexOffset);
-            if (indexCount == 0) {
-                entry.setOffset(0);
-            }
             entry.revision = indexCount++;
             nodemap.put(entry.nodeId, entry);
             this.index.add(entry);
