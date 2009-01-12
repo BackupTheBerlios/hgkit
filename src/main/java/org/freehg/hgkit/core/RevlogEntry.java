@@ -48,9 +48,9 @@ public final class RevlogEntry {
 
     private final int secondParentRev;
 
-    int revision;
+    final NodeId nodeId;
 
-    NodeId nodeId;
+    int revision;
 
     /**
      * Initializes a RevlogEntry from the given {@link DataInputStream}.
@@ -59,7 +59,7 @@ public final class RevlogEntry {
      *            revlog
      * @param reader
      *            dataInputStream
-     * @param off 
+     * @param off
      * 
      * @throws HgInternalError
      *             if an {@link IOException} is thrown while reading.
@@ -68,19 +68,21 @@ public final class RevlogEntry {
         this.parent = parent;
         try {
             final long offsetFromReader = ((long) reader.readShort() << 32) + reader.readInt();
-            // the first revlog entry (starting with offset 0) contains information about
-            // the revlog and not the actual offset (see bottom of RevlogNG-page).
+            // the first revlog entry (starting with offset 0) contains
+            // information about
+            // the revlog and not the actual offset (see bottom of
+            // RevlogNG-page).
             offset = off == 0 ? 0 : offsetFromReader;
             flags = reader.readShort();
             compressedLength = reader.readInt();
             uncompressedLength = reader.readInt();
-            
+
             baseRev = reader.readInt();
             linkRev = reader.readInt();
-            
+
             firstParentRev = reader.readInt();
             secondParentRev = reader.readInt();
-            
+
             byte[] nodeid = new byte[NODE_ID_SIZE];
             final int read = reader.read(nodeid);
             assert read == NODE_ID_SIZE;
@@ -99,6 +101,7 @@ public final class RevlogEntry {
      *            data
      * @param off
      *            where in data to begin extracting data
+     *
      * @return revlogEntry
      */
     public static RevlogEntry valueOf(Revlog parent, byte[] data, int off) throws HgInternalError {

@@ -317,7 +317,7 @@ public class Revlog {
 
         while (indexOffset <= length) {
             RevlogEntry entry = RevlogEntry.valueOf(this, data, indexOffset);
-            entry.revision = indexCount++;
+            entry.revision = indexCount++;            
             nodemap.put(entry.nodeId, entry);
             this.index.add(entry);
 
