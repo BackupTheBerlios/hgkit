@@ -25,7 +25,7 @@ import org.freehg.hgkit.HgInternalError;
  * <li>what revision(s) are currently checked out</li> 
  * <li>what files have been copied or renamed</li> 
  * <li>what files are controlled by Mercurial</li> 
- * <ul>
+ * </ul>
  * 
  * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/DirState">DirState</a>
  * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/WorkingDirectory">WorkingDirectory</a>
@@ -131,9 +131,9 @@ public class DirState {
      */
     public static class DirStateEntry {
 
-        private static final int ONLY_RWX = 0777;
+        private static final int ONLY_RWX = Integer.valueOf("0777", 8);
 
-        private static final int SYMLINK = 020000;
+        private static final int SYMLINK = Integer.valueOf("020000", 8);
 
         private final long size;
 
