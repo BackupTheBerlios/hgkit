@@ -7,26 +7,33 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Simple dataholder class for mdiff.
+ */
 final class Fragment {
-    /** Where in the "file" this fragment starts **/
+    
+    /** Maximal line length of {@link Fragment#toString()}. */
+    private static final int LINE_LENGTH = 80;
+
+    /** Where in the "file" this fragment starts. **/
     int start;
 
-    /** Where in the file this fragments ends */
+    /** Where in the "file" this fragments ends. */
     int end;
 
-    /** The data to be inserted into the file at this.start up to this.end */
+    /** The data to be inserted into the file at {@code this.start} up to {@code this.end}. */
     byte[] data;
 
-    /** where in this.data to begin read */
+    /** Where in {@code this.data} to begin read. */
     int offset = 0;
 
     /**
-     * The length of the data to read, this can differ from data.length. Combine
-     * offset, data and mlength to get patch data.
+     * The length of the data to read, this can differ from {@code data.length}. Combine
+     * {@code offset}, {@code data} and {@code mlength} to get patch data.
      */
     int mlength = -1;
 
-    /** The length of the fragment, may differ from end - start and data.length */
+    /** The length of the fragment, may differ from {@code end - start} and {@code data.length}. */
     int len() {
         if (mlength == -1) {
             throw new IllegalStateException("Length not set yet");
@@ -34,6 +41,10 @@ final class Fragment {
         return mlength;
     }
 
+    /**
+     * Sets the length of the patch data.
+     * @param len new length.
+     */
     public void len(int len) {
         mlength = len;
     }
@@ -42,9 +53,9 @@ final class Fragment {
     public String toString() {
         String txt = new String(this.data);
         txt = txt.substring(this.offset);
-        int max = Math.min(80, len());
+        int max = Math.min(LINE_LENGTH, len());
         txt = txt.substring(0, max);
-        if (len() > 80) {
+        if (len() > LINE_LENGTH) {
             txt += "...";
         }
         return start + " " + end + " " + len() + " " + txt;
@@ -52,6 +63,10 @@ final class Fragment {
 
 }
 
+/**
+ * Creates diffs
+ *
+ */
 public class MDiff {
 
     public static void patches(byte[] in, List<byte[]> bins, OutputStream out) {
@@ -81,7 +96,7 @@ public class MDiff {
         }
 
         /* divide and conquer, memory management is elsewhere */
-        int len = (end - start) / 2;
+        final int len = (end - start) / 2;
         LinkedList<Fragment> left = fold(bins, start, start + len);
         LinkedList<Fragment> right = fold(bins, start + len, end);
         return combine(left, right);
