@@ -66,13 +66,20 @@ final class Fragment {
 /**
  * Creates diffs.
  */
-public class MDiff {
+public final class MDiff {
     
     /** Static helper class. */
     private MDiff() {
         // nope
     }
     
+    /**
+     * Creates patches.
+     * 
+     * @param in
+     * @param bins
+     * @param out receives patches
+     */
     public static void patches(byte[] in, List<byte[]> bins, OutputStream out) {
         // if there are no fragments we don't have to do anything
         try {
@@ -288,18 +295,17 @@ public class MDiff {
         return result;
     }
 
-    private static void apply(byte[] orig, List<Fragment> patch, OutputStream out) throws IOException {
-        int len = orig.length;
+    private static void apply(byte[] orig, List<Fragment> fragments, OutputStream out) throws IOException {
+        final int len = orig.length;
         int last = 0;
-        for (Fragment f : patch) {
+        for (final Fragment fragment : fragments) {
             // if this fragment is not within the bounds
-            if (f.start < last || len < f.end) {
+            if (fragment.start < last || len < fragment.end) {
                 throw new IllegalStateException("invalid patch");
             }
-            out.write(orig, last, f.start - last);
-            out.write(f.data, f.offset, f.len());
-            last = f.end;
-
+            out.write(orig, last, fragment.start - last);
+            out.write(fragment.data, fragment.offset, fragment.len());
+            last = fragment.end;
         }
         out.write(orig, last, len - last);
     }
