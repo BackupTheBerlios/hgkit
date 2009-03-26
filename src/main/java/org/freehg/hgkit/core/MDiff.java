@@ -64,11 +64,15 @@ final class Fragment {
 }
 
 /**
- * Creates diffs
- *
+ * Creates diffs.
  */
 public class MDiff {
-
+    
+    /** Static helper class. */
+    private MDiff() {
+        // nope
+    }
+    
     public static void patches(byte[] in, List<byte[]> bins, OutputStream out) {
         // if there are no fragments we don't have to do anything
         try {
@@ -103,8 +107,8 @@ public class MDiff {
     }
 
     /*
-     * combine hunk lists a and b, while adjusting b for offset changes in a
-     * this deletes a and b and returns the resultant list.
+     * Combines hunk lists a and b, while adjusting b for offset changes in a.
+     * This deletes a and b and returns the resultant list.
      */
     private static LinkedList<Fragment> combine(LinkedList<Fragment> a, LinkedList<Fragment> b) {
 
@@ -166,8 +170,9 @@ public class MDiff {
                     c = s.end;
                 }
                 l = cut - offset - s.start;
-                if (s.len() < l)
+                if (s.len() < l) {
                     l = s.len();
+                }
 
                 offset += s.start + l - c;
                 s.start = c;
@@ -197,8 +202,9 @@ public class MDiff {
 
         for (Iterator<Fragment> iter = src.iterator(); iter.hasNext();) {
             s = iter.next();
-            if (cut <= s.start + offset)
+            if (cut <= s.start + offset) {
                 break; /* we've gone far enough */
+            }
 
             int postend = offset + s.start + s.len();
             if (postend <= cut) {
@@ -243,7 +249,7 @@ public class MDiff {
     }
 
     /**
-     * decode a binary patch into a fragment list
+     * Decodes a binary patch into a fragment list.
      * 
      * @param bin
      *            the binary patch
