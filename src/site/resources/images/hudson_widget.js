@@ -17,4 +17,4 @@ HudsonTable.prototype.create = function(data) {
 	innerHTML += "</tbody></table>";
 	document.write(innerHTML);
 }
-var hudsonTable = new HudsonTable("http://zeibig.net:20080/");
+var hudsonTable = new HudsonTable("http://zeibig.net:20080/", "HgKit");
