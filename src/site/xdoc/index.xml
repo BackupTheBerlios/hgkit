@@ -22,7 +22,7 @@
                 <p>
                     This project aims to replace most of the native
                     invocations of Mercurial in e.g. the
-                    <a href="http://trac-hg.assembla.com/mercurialeclipse">Mercurial Eclipse Plugin</a>
+                    <a href="http://bitbucket.org/mercurialeclipse/main/wiki/Home">Mercurial Eclipse Plugin</a>
                     .
                 </p>
             </subsection>
