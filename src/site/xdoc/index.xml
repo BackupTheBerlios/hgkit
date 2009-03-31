@@ -4,9 +4,6 @@
     <properties>
         <title>Introduction</title>
     </properties>
-    <head>
-        <meta name="keyword" content="java, mercurial" />
-    </head>
     <body>
         <section name="Introduction">
             <subsection name="Aims">                
