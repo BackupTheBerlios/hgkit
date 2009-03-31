@@ -8,7 +8,7 @@ HudsonTable.prototype.create = function(data) {
 	var iconBaseUrl = this.baseUrl + "static/10142b80/images/16x16/";
 	var healthReports = data.healthReport;
 	var lastBuild = data.lastBuild;
-	var innerHTML = "<p><a href=\"" + data.url + "\">" + data.displayName + "</a> <a href=\"" + lastBuild.url + "\">Last build (#" + lastBuild.number + ")</a></p>";
+	var innerHTML = "<p><a href=\"" + data.url + "\" class=\"externalLink\">" + data.displayName + "</a> <a href=\"" + lastBuild.url + "\" class=\"externalLink\">Last build (#" + lastBuild.number + ")</a></p>";
 	innerHTML += "<table border=\"0\"><thead><tr><th align=\"left\">W</th><th align=\"left\">Description</th><th align=\"right\">%</th></tr></thead><tbody>";
 	for (var i in healthReports) {
 		var healthReport = healthReports[i];
