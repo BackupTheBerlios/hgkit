@@ -156,10 +156,10 @@ public final class CaseFolding {
     public static String unfold(String foldedName) {
         final StringBuilder unfolded = new StringBuilder();
         for (int i = 0; i < foldedName.length();) {
-            final char[] keyCharacters;
-            if (foldedName.charAt(i) == '~') {
+            final char[] keyCharacters;            
+            if (foldedName.charAt(i) == '~') { // escaped special character given as hex sequence
                 keyCharacters = new char[] { foldedName.charAt(i++), foldedName.charAt(i++), foldedName.charAt(i++) };
-            } else if (foldedName.charAt(i) == '_') {
+            } else if (foldedName.charAt(i) == '_') { // uppercase character
                 keyCharacters = new char[] { foldedName.charAt(i++), foldedName.charAt(i++) };
             } else {
                 keyCharacters = new char[] { foldedName.charAt(i++) };
@@ -186,16 +186,22 @@ public final class CaseFolding {
      */
     public static String auxencode(final String path) {
         StringBuilder result = new StringBuilder();
-        for (String pathElement : path.split("/")) {
+        for (final String pathElement : path.split("/")) {
             if (pathElement.length() > 0) {
                 final String[] split = pathElement.split("\\.");
-                String base = split[0];
+                final String base = split[0];
                 if (WIN_RESERVED_FILESNAMES.contains(base)) {
-                    final String replacement = String.format("~%02x", (int) base.charAt(2));
-                    pathElement = pathElement.substring(0, 2) + replacement + pathElement.substring(3);
+                    final String replacement = escapeCharacter(base.charAt(2));
+                    final String firstTwoChars = pathElement.substring(0, 2);
+                    final String fourthCharacterAndOn = pathElement.substring(3);
+                    result.append(firstTwoChars + replacement + fourthCharacterAndOn);
+                } else {
+                    result.append(pathElement);
                 }
+            } else {
+                result.append(pathElement);
             }
-            result.append(pathElement).append("/");
+            result.append("/");
         }
         return result.toString().substring(0, result.length() - 1);
     }
