@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.FileStatus;
 import org.freehg.hgkit.HgInternalError;
 
@@ -80,7 +81,6 @@ public final class ChangeLog extends Revlog {
                 super.revision(revlogEntry, out, false);
                 ChangeSet entry = new ChangeSet(revlogEntry.nodeId, revision, out.toByteArray());
                 log.add(entry);
-
             }
             return log;
         } finally {
@@ -147,25 +147,16 @@ public final class ChangeLog extends Revlog {
                 while (null != (line = reader.readLine())) {
                     manifestId = NodeId.valueOf(line);
                     author = readLine(reader);
-
-                    String dateLine = readLine(reader);
-                    when = dateParse(dateLine);
+                    when = dateParse(readLine(reader));
 
                     String fileLine = readLine(reader);
-                    // read while line aint empty, its a file, the it is the
+                    // read while line is not empty, its a file, the rest is the
                     // comment
                     while (0 < fileLine.trim().length()) {
                         files.add(fileLine);
                         fileLine = readLine(reader);
                     }
-                    StringBuilder therest = new StringBuilder();
-                    char[] buff = new char[512];
-                    int len = 0;
-                    while (-1 != (len = reader.read(buff))) {
-                        therest.append(buff, 0, len);
-                    }
-
-                    comment = therest.toString();
+                    comment = IOUtils.toString(reader);
 
                 }
             } catch (IOException e) {                
