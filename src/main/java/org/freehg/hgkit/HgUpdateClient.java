@@ -97,10 +97,10 @@ public class HgUpdateClient {
 
     /**
      * Creates a new UpdateClient.
-     * @param repo repo
+     * @param arepo arepo
      */
-    public HgUpdateClient(Repository repo) {
-        this.repo = repo;
+    public HgUpdateClient(Repository arepo) {
+        this.repo = arepo;
     }
 
     /**

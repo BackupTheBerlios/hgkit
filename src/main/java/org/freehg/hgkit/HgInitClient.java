@@ -81,7 +81,7 @@ public class HgInitClient {
     /**
      * Creates a new Mercurial repository.
      * 
-     * @param rootDir
+     * @param rootDir the directory to create the repository in.
      */
     public static void create(final File rootDir) {
         HgInitClient client = new HgInitClient(rootDir);

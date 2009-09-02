@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.freehg.hgkit.FileStatus.Status;
 import org.freehg.hgkit.core.ChangeLog;
@@ -46,18 +47,36 @@ public final class HgStatusClient {
 
     private Map<String, NodeId> nodeStateByName;
 
-    public HgStatusClient(Repository repo) {
-        if (repo == null) {
+    /**
+     * Constructor.
+     * 
+     * @param repo the repo the client is working on.
+     */
+    public HgStatusClient(Repository arepo) {
+        if (arepo == null) {
             throw new IllegalArgumentException("Repository may not be null");
         }
-        this.repo = repo;
-        this.dirState = repo.getDirState();
+        this.repo = arepo;
+        this.dirState = this.repo.getDirState();
     }
 
+    /**
+     * Returns a list of the states for file.
+     * 
+     * @param file the file to inspect.
+     * @return list of file states.
+     */
     public List<FileStatus> doStatus(final File file) {
         return doStatus(file, true);
     }
 
+    /**
+     * Returns a list of the states for file.
+     * 
+     * @param file the file to inspect.
+     * @param recurse through all files and subdirectories.
+     * @return list of file states.
+     */
     public List<FileStatus> doStatus(final File file, final boolean recurse) {
         List<FileStatus> result = getStatus(file, recurse, isIgnored(file));
         result.addAll(getMissing());
@@ -139,7 +158,7 @@ public final class HgStatusClient {
         }
 
         // Hg uses seconds, java milliseconds
-        long lastModified = file.lastModified() / 1000;
+        long lastModified = TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS);
         if (state.getFileModTime() == lastModified) {
             return FileStatus.Status.MANAGED;
         }

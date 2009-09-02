@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Simple bean for holding a file and it's Mercurial state.
  */
-public class FileStatus {
+public final class FileStatus {
 
     /**
      * Mercurial state.
@@ -58,9 +58,9 @@ public class FileStatus {
         return new FileStatus(file, status);
     }
 
-    private FileStatus(final File file, final Status status) {
-        this.file = file;
-        this.status = status;
+    private FileStatus(final File afile, final Status astatus) {
+        this.file = afile;
+        this.status = astatus;
     }
 
     /**
