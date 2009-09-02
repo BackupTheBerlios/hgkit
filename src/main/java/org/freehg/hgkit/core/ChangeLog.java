@@ -14,11 +14,42 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.FileStatus;
 import org.freehg.hgkit.HgInternalError;
 
+/**
+ * ChangeLog is just another {@link Revlog} with a specific format.
+ * 
+ * @see <a href="http://mercurial.selenic.com/wiki/Changelog">ChangeLog page at selenic</a>
+ * 
+ * <p><tt>hg debugindex .hg/store/00changelog.i</tt>
+ * shows the revisions contained in the changelog.</p>
+ * 
+ * <p>The data in a specific revision might then be obtained with e.g.
+ * <tt>hg debugdata .hg/store/00changelog.i 256</tt>.</p>
+ * 
+ * <pre>
+ * 4b6add21b702e18a679686779efaba97a9beff2e
+ * Mirko Friedenhagen <mfriedenhagen@users.berlios.de>
+ * 1251923138 -7200
+ * src/main/java/org/freehg/hgkit/core/ChangeLog.java
+ * 
+ * Use IOUtils.
+ * </pre>
+ * 
+ * <p>The entry consists of:</p>
+ * <ol>
+ *  <li>the SHA1-Key of the corresponding manifest entry for this revision</li>
+ *  <li>the committer of this revision</li>
+ *  <li>a timestamp given in seconds and the offset from UTC of this revision</li>
+ *  <li>a list of files in this revision</li>
+ *  <li>a blank, separating line</li>
+ *  <li>the comment of this revision</li>
+ * </ol>
+ */
 public final class ChangeLog extends Revlog {
 
     private final Repository repo;
@@ -137,6 +168,11 @@ public final class ChangeLog extends Revlog {
             return changeId.asShort() + " " + when + " " + author + "\n" + comment + "\n" + files;
         }
 
+        /**
+         * See {@link ChangeLog} class documentation for specifics.
+         * 
+         * @param in the stream to parse
+         */
         private void parse(final InputStream in) {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -157,7 +193,6 @@ public final class ChangeLog extends Revlog {
                         fileLine = readLine(reader);
                     }
                     comment = IOUtils.toString(reader);
-
                 }
             } catch (IOException e) {                
                 throw new HgInternalError("Error parsing " + in, e);
@@ -183,7 +218,7 @@ public final class ChangeLog extends Revlog {
             String parts[] = dateLine.split(" ");
             long secondsSinceEpoc = Integer.parseInt(parts[0]);
             long offset = Integer.parseInt(parts[1]);
-            long msSinceEpoc = 1000 * (secondsSinceEpoc + offset);
+            long msSinceEpoc = TimeUnit.MILLISECONDS.convert(secondsSinceEpoc + offset, TimeUnit.SECONDS);
             return new Date(msSinceEpoc);
         }
 
