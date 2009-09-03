@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 /**
- * Describe a nodeId.
+ * Describes a nodeId.
+ * 
+ * @see <a href="http://mercurial.selenic.com/wiki/Nodeid">Nodeid page at selenic</a>
  */
 public final class NodeId {
 
