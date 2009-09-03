@@ -153,6 +153,8 @@ public final class ChangeLog extends Revlog {
 
     /**
      * A ChangeSet holds the data for a single commit.
+     * 
+     * @see <a href="http://mercurial.selenic.com/wiki/ChangeSet">ChangeSet page at selenic</a>
      */
     public static class ChangeSet {
 
