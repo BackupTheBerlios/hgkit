@@ -33,7 +33,7 @@ import org.freehg.hgkit.HgInternalError;
  * 
  * <pre>
  * 4b6add21b702e18a679686779efaba97a9beff2e
- * Mirko Friedenhagen <mfriedenhagen@users.berlios.de>
+ * Mirko Friedenhagen &lt;mfriedenhagen@users.berlios.de&gt;
  * 1251923138 -7200
  * src/main/java/org/freehg/hgkit/core/ChangeLog.java
  * 
@@ -54,22 +54,48 @@ public final class ChangeLog extends Revlog {
 
     private final Repository repo;
 
-    ChangeLog(Repository repo, File index) {
+    /**
+     * Creates the ChangeLog for the repo.
+     * 
+     * @param arepo the repo
+     * @param index the changelog file.
+     */
+    ChangeLog(Repository arepo, File index) {
         super(index);
-        this.repo = repo;
+        this.repo = arepo;
     }
 
+    /**
+     * Returns a {@link ChangeSet} specified by the integer revision.
+     * This is only valid for a local repo.
+     * 
+     * @param revision integer revision
+     * @return the ChangeSet specified by the integer revision
+     */
     public ChangeSet get(int revision) {
         NodeId node = super.node(revision);
         return this.get(node);
     }
 
-    public ChangeSet get(NodeId node) {
+    /**
+     * Returns a {@link ChangeSet} specified by the {@link NodeId}.
+     * This is valid for all distributed copies of the repo.
+     * 
+     * @param nodeId a SHA1-key
+     * @return the ChangeSet specified by the nodeId
+     */
+    public ChangeSet get(NodeId nodeId) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        super.revision(node, out).close();
-        return new ChangeSet(node, index(node), out.toByteArray());
+        super.revision(nodeId, out).close();
+        return new ChangeSet(nodeId, index(nodeId), out.toByteArray());
     }
 
+    /**
+     * Returns filestates for the specified {@link ChangeSet}.
+     * 
+     * @param changeset to compare
+     * @return filestates
+     */
     public List<FileStatus> getFileStatus(ChangeSet changeset) {
         Manifest manifest = repo.getManifest();
         int revision = changeset.getRevision();
@@ -83,13 +109,13 @@ public final class ChangeLog extends Revlog {
         Set<String> allKeys = new HashSet<String>();
         allKeys.addAll(currMan.keySet());
         allKeys.addAll(prevMan.keySet());
-        List<FileStatus> result = new ArrayList<FileStatus>();
+        List<FileStatus> fileStates = new ArrayList<FileStatus>();
 
         // in both keyset == modified
         // only in prev == removed
         // only in curr == added
         for (String string : allKeys) {
-            FileStatus status = null;
+            final FileStatus status;
             if (currMan.containsKey(string) && prevMan.containsKey(string)) {
                 status = FileStatus.valueOf(new File(string), FileStatus.Status.MODIFIED);
             } else if (currMan.containsKey(string)) {
@@ -97,15 +123,15 @@ public final class ChangeLog extends Revlog {
             } else { // prevMan contains
                 status = FileStatus.valueOf(new File(string), FileStatus.Status.REMOVED);
             }
-            result.add(status);
+            fileStates.add(status);
         }
-        return result;
+        return fileStates;
     }
 
     public List<ChangeSet> getLog() {
         try {
-            int length = count();
-            List<ChangeSet> log = new ArrayList<ChangeSet>(length);
+            final int length = count();
+            final List<ChangeSet> log = new ArrayList<ChangeSet>(length);
             for (int revision = 0; revision < length; revision++) {
                 RevlogEntry revlogEntry = index.get(revision);
                 ByteArrayOutputStream out = new ByteArrayOutputStream((int) revlogEntry.getUncompressedLength());
@@ -119,6 +145,9 @@ public final class ChangeLog extends Revlog {
         }
     }
 
+    /**
+     * A ChangeSet holds the data for a single commit.
+     */
     public static class ChangeSet {
 
         private NodeId manifestId;
@@ -135,34 +164,70 @@ public final class ChangeLog extends Revlog {
 
         private String comment;
 
+        /**
+         * Returns the {@link NodeId} of the ChangeSet.
+         * 
+         * @return changeId
+         */
         public NodeId getChangeId() {
             return changeId;
         }
 
+        /**
+         * Returns the {@link NodeId} of the corresponding entry in the {@link Manifest}.
+         * 
+         * @return manifestId
+         */
         public NodeId getManifestId() {
             return manifestId;
         }
 
+        /**
+         * Returns the only locally valid integer revision of the ChangeSet.
+         * 
+         * @return revision
+         */
         public int getRevision() {
             return revision;
         }
 
+        /**
+         * Returns the date of the commit.
+         * 
+         * @return commit date
+         */
         public Date getWhen() {
             return (Date)when.clone();
         }
 
+        /**
+         * Returns the committer of the ChangeSet.
+         * 
+         * @return committer
+         */
         public String getAuthor() {
             return author;
         }
 
+        /**
+         * Returns the list of files comprised in this ChangeSet.
+         * 
+         * @return files
+         */
         public List<String> getFiles() {
             return new ArrayList<String>(files);
         }
 
+        /**
+         * Returns the commit comment.
+         * 
+         * @return comment
+         */
         public String getComment() {
             return comment;
         }
-
+        
+        /** {@inheritDoc} */
         @Override
         public String toString() {
             return changeId.asShort() + " " + when + " " + author + "\n" + comment + "\n" + files;
@@ -175,7 +240,7 @@ public final class ChangeLog extends Revlog {
          */
         private void parse(final InputStream in) {
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
             String line = null;
             try {
@@ -200,9 +265,11 @@ public final class ChangeLog extends Revlog {
         }
 
         /**
-         * Returns a line of reader. 
-         * @param reader
-         * @return
+         * Returns a line of reader.
+         *  
+         * @param reader to read from
+         * @return a line
+         * 
          * @throws IOException
          * @throws HgInternalError if we could not read a line.
          */
@@ -214,6 +281,14 @@ public final class ChangeLog extends Revlog {
             return line;
         }
 
+        /**
+         * Parses the given dateLine consisting of two space separated integers, first is a
+         * <a href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a>, second the 
+         * <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> offset. 
+         * 
+         * @param dateLine line with Unix time and offset
+         * @return a Date
+         */
         private Date dateParse(String dateLine) {
             String parts[] = dateLine.split(" ");
             long secondsSinceEpoc = Integer.parseInt(parts[0]);
@@ -222,11 +297,17 @@ public final class ChangeLog extends Revlog {
             return new Date(msSinceEpoc);
         }
 
+        /**
+         * Constructor for a ChangeSet.
+         * 
+         * @param changeId the changeId
+         * @param revision the integer revision 
+         * @param data binary data to parse
+         */
         ChangeSet(NodeId changeId, int revision, byte[] data) {
             parse(new ByteArrayInputStream(data));
             this.changeId = changeId;
             this.revision = revision;
-
         }
     }
 }
