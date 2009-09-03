@@ -26,9 +26,9 @@ import org.freehg.hgkit.HgInternalError;
  * @see <a href="http://mercurial.selenic.com/wiki/Changelog">ChangeLog page at selenic</a>
  * 
  * <p><tt>hg debugindex .hg/store/00changelog.i</tt>
- * shows the revisions contained in the changelog.</p>
+ * shows the changesets contained in the changelog.</p>
  * 
- * <p>The data in a specific revision might then be obtained with e.g.
+ * <p>The data in a specific {@link ChangeSet} might then be obtained with e.g.
  * <tt>hg debugdata .hg/store/00changelog.i 256</tt>.</p>
  * 
  * <pre>
@@ -40,11 +40,12 @@ import org.freehg.hgkit.HgInternalError;
  * Use IOUtils.
  * </pre>
  * 
- * <p>The entry consists of:</p>
+ * <p>The entry for a {@link ChangeSet} consists of:</p>
  * <ol>
- *  <li>the SHA1-Key of the corresponding manifest entry for this revision</li>
- *  <li>the committer of this revision</li>
- *  <li>a timestamp given in seconds and the offset from UTC of this revision</li>
+ *  <li>the SHA1-Key of the corresponding {@link Manifest} entry for this revision</li>
+ *  <li>the committer of this revision</li> 
+ *  <li>a <a href="http://en.wikipedia.org/wiki/Unix_time">timestamp</a> given in seconds and 
+ *  the offset from <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> of this revision</li>
  *  <li>a list of files in this revision</li>
  *  <li>a blank, separating line</li>
  *  <li>the comment of this revision</li>
@@ -128,6 +129,11 @@ public final class ChangeLog extends Revlog {
         return fileStates;
     }
 
+    /**
+     * Returns the {@link ChangeSet}s contained in the repository.
+     * 
+     * @return changesets
+     */
     public List<ChangeSet> getLog() {
         try {
             final int length = count();
@@ -282,9 +288,8 @@ public final class ChangeLog extends Revlog {
         }
 
         /**
-         * Parses the given dateLine consisting of two space separated integers, first is a
-         * <a href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a>, second the 
-         * <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> offset. 
+         * Parses the given dateLine consisting of two space separated integers.
+         * @see {@link ChangeLog}. 
          * 
          * @param dateLine line with Unix time and offset
          * @return a Date
