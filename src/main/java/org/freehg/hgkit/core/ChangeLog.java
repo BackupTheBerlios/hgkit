@@ -297,24 +297,24 @@ public final class ChangeLog extends Revlog {
          * @return a Date
          */
         private Date dateParse(String dateLine) {
-            String parts[] = dateLine.split(" ");
-            long secondsSinceEpoc = Integer.parseInt(parts[0]);
-            long offset = Integer.parseInt(parts[1]);
-            long msSinceEpoc = TimeUnit.MILLISECONDS.convert(secondsSinceEpoc + offset, TimeUnit.SECONDS);
+            final String[] parts = dateLine.split(" ");
+            final long secondsSinceEpoc = Integer.parseInt(parts[0]);
+            final long offset = Integer.parseInt(parts[1]);
+            final long msSinceEpoc = TimeUnit.MILLISECONDS.convert(secondsSinceEpoc + offset, TimeUnit.SECONDS);
             return new Date(msSinceEpoc);
         }
 
         /**
          * Constructor for a ChangeSet.
          * 
-         * @param changeId the changeId
-         * @param revision the integer revision 
+         * @param aChangeId the changeId
+         * @param aRevision the integer revision 
          * @param data binary data to parse
          */
-        ChangeSet(NodeId changeId, int revision, byte[] data) {
+        ChangeSet(NodeId aChangeId, int aRevision, byte[] data) {
             parse(new ByteArrayInputStream(data));
-            this.changeId = changeId;
-            this.revision = revision;
+            this.changeId = aChangeId;
+            this.revision = aRevision;
         }
     }
 }
