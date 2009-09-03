@@ -11,10 +11,11 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.freehg.hgkit.HgInternalError;
+import org.freehg.hgkit.core.ChangeLog.ChangeSet;
 
 /**
  * The manifest is the file that describes the contents of the repository at a
- * particular changeset ID.
+ * particular {@link ChangeSet} ID.
  * 
  * @see <a href="http://www.selenic.com/mercurial/wiki/index.cgi/Manifest">Manifest</a>
  */
