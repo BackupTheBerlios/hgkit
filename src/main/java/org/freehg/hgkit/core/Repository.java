@@ -75,8 +75,8 @@ public class Repository {
      * @return ignore
      */
     public Ignore getIgnore() {
-        File ignoreFile = new File(root.getAbsoluteFile(), ".hgignore");
-        return new Ignore(this, ignoreFile);
+        final File ignoreFile = new File(root.getAbsoluteFile(), ".hgignore");
+        return Ignore.valueOf(this, ignoreFile);
     }
 
     /**
@@ -160,6 +160,22 @@ public class Repository {
      */
     public File getRoot() {
         return root;
+    }
+
+    /**
+     * Returns the path of the file relative to the repository.
+     * 
+     * @param file file
+     * @return relative path
+     */
+    String getRelativePath(final File file) {
+        final File relativeFile;
+        if (file.isAbsolute()) {
+            relativeFile = makeRelative(file);
+        } else {
+            relativeFile = file;
+        }
+        return relativeFile.getPath();
     }
 
     /**
