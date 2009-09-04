@@ -122,14 +122,17 @@ public class UtilTest {
      */
     @Test(expected=HgInternalError.class)
     public final void testGetCanonicalFileNonExisting() {
-        Util.getCanonicalFile(new File(".") {
+        @SuppressWarnings("serial")
+        final File nonCanonicalFile = new File(".") {
             /** {@inheritDoc} */
             @Override
-            public File getCanonicalFile() throws IOException {
+            public String getCanonicalPath() throws IOException {
                 throw new IOException("Oops");                
             }
-        });
+        };
+        Util.getCanonicalFile(nonCanonicalFile);
     }
+    
     /**
      * Test method for {@link Util#getCanonicalPath(File)}.
      */
@@ -140,16 +143,18 @@ public class UtilTest {
     
     /**
      * Test method for {@link Util#getCanonicalPath(File)}.
-     */
+     */    
     @Test(expected=HgInternalError.class)
     public final void testGetCanonicalPathNonExisting() {
-        Util.getCanonicalFile(new File(".") {
+        @SuppressWarnings("serial")
+        final File nonCanonicalPath = new File(".") {
             /** {@inheritDoc} */
             @Override
             public String getCanonicalPath() throws IOException {
                 throw new IOException("Oops");                
             }
-        });
+        };
+        Util.getCanonicalPath(nonCanonicalPath);
     }
 
 }
