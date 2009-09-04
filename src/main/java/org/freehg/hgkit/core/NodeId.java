@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.freehg.hgkit.HgInternalError;
+
 /**
  * Describes a nodeId.
  * 
@@ -170,8 +172,7 @@ public final class NodeId {
         final NodeId result = valueOf(toBinArray(nodeId));
         final String asFull = result.asFull();
         if (!nodeId.equals(asFull)) {
-            System.err.println(asFull + " != " + nodeId);
-            // FIXME Figure out when and why this happens!
+            throw new HgInternalError(asFull + " != " + nodeId);
         }
         return result;
     }
@@ -187,7 +188,7 @@ public final class NodeId {
      *             when reading from <code>in</code> does not succeed.
      */
     public static NodeId read(InputStream in) throws IOException {
-        byte[] data = new byte[NODE_ID_LENGTH];
+        byte[] data = new byte[NODE_ID_LENGTH];        
         int read = in.read(data);
         assert read == NODE_ID_LENGTH;
         return NodeId.valueOf(data);
