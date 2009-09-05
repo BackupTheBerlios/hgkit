@@ -9,6 +9,7 @@ package org.freehg.hgkit;
  * 
  * @author mfriedenhagen
  */
+@SuppressWarnings("serial")
 public class HgInternalError extends RuntimeException {
 
     /**
