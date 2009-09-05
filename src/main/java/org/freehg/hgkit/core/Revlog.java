@@ -39,6 +39,16 @@ import org.freehg.hgkit.util.RemoveMetaOutputStream;
  */
 public class Revlog {
 
+    /**
+     * 
+     */
+    private static final int INITIAL_REVLOGS_SIZE = 100;
+
+    /**
+     * 
+     */
+    private static final int BITMASK = 0xFFFF;
+
     private static final String READ_ONLY = "r";
 
     public static final int REVLOGV0 = 0;
@@ -71,14 +81,14 @@ public class Revlog {
     /**
      * Creates a Revlog from the given Mercurial-index-file.
      * 
-     * @param index
+     * @param aIndex the index file. E.g. 00changelog.i.
      */
-    public Revlog(File index) {
-        indexFile = index;
+    public Revlog(File aIndex) {
+        indexFile = aIndex;
         try {
-            parseIndex(index);
+            parseIndex(aIndex);
         } catch (IOException e) {
-            throw new HgInternalError("Error creating Revlog for " + index.toString(), e);
+            throw new HgInternalError("Error creating Revlog for " + aIndex.toString(), e);
         }
     }
 
@@ -220,7 +230,7 @@ public class Revlog {
      * @return revlog
      */
     private Revlog revision(final RevlogEntry target, final OutputStream out) {
-        if ((target.getFlags() & 0xFFFF) != 0) {
+        if ((target.getFlags() & BITMASK) != 0) {
             throw new IllegalStateException("Incompatible revision flag: " + target.getFlags());
         }
         if (cache.containsKey(target)) {
@@ -297,7 +307,7 @@ public class Revlog {
 
     /**
      * versionformat = ">I", big endian, uint 4 bytes which includes version
-     * format
+     * format.
      */
     void parseIndex(File fileOfIndex) throws IOException {
         final int version = readVersion(fileOfIndex);
@@ -306,7 +316,7 @@ public class Revlog {
         checkRevlogFormat(version);
 
         nodemap = new LinkedHashMap<NodeId, RevlogEntry>();
-        this.index = new ArrayList<RevlogEntry>(100);
+        this.index = new ArrayList<RevlogEntry>(INITIAL_REVLOGS_SIZE);
 
         final byte[] data = toByteArray(fileOfIndex);
 
@@ -340,10 +350,10 @@ public class Revlog {
      * @param fileOfIndex
      *            file
      * @return byte-array.
-     * @throws FileNotFoundException
-     * @throws IOException
+     * @throws FileNotFoundException if file is not found.
+     * @throws IOException if reading does not succeed.
      */
-    private byte[] toByteArray(File fileOfIndex) throws FileNotFoundException, IOException {
+    private byte[] toByteArray(File fileOfIndex) throws IOException {
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(fileOfIndex)));
         try {
             return IOUtils.toByteArray(in);
@@ -376,11 +386,11 @@ public class Revlog {
      * @param fileOfIndex
      *            file
      * @return version
-     * @throws FileNotFoundException
-     * @throws IOException
+     * @throws FileNotFoundException if file is not found.
+     * @throws IOException if reading does not succeed.
      */
-    private int readVersion(File fileOfIndex) throws FileNotFoundException, IOException {
-        DataInputStream in = new DataInputStream(new FileInputStream(fileOfIndex));
+    private int readVersion(File fileOfIndex) throws IOException {
+        final DataInputStream in = new DataInputStream(new FileInputStream(fileOfIndex));
         try {
             return in.readInt();
         } finally {
@@ -392,20 +402,20 @@ public class Revlog {
      * Caching decorator. This class caches all writes in a
      * {@link ByteArrayOutputStream}.
      */
-    private static class CacheOutputStream extends OutputStream {
+    private static final class CacheOutputStream extends OutputStream {
 
-        private ByteArrayOutputStream cache;
+        private final ByteArrayOutputStream cache;
 
         private final OutputStream cached;
 
         /**
-         * @param cached
+         * @param cachedOut
          *            the cached outputstream.
          * @param size
          *            initial size of the caching {@link ByteArrayOutputStream}
          */
-        private CacheOutputStream(OutputStream cached, int size) {
-            this.cached = cached;
+        private CacheOutputStream(OutputStream cachedOut, int size) {
+            this.cached = cachedOut;
             this.cache = new ByteArrayOutputStream(size);
         }
 
@@ -470,14 +480,14 @@ public class Revlog {
         /**
          * Constructs the {@link RevisionWriter} from target and revlog.
          * 
-         * @param target
+         * @param aTarget
          *            the revlogentry to look up
-         * @param revlog
+         * @param arRevlog the revlog
          */
-        public RevisionWriter(RevlogEntry target, Revlog revlog) {
-            this.target = target;
-            this.revlog = revlog;
-            this.patches = new ArrayList<byte[]>(target.revision - target.getBaseRev() + 1);
+        public RevisionWriter(RevlogEntry aTarget, Revlog arRevlog) {
+            this.target = aTarget;
+            this.revlog = arRevlog;
+            this.patches = new ArrayList<byte[]>(aTarget.revision - aTarget.getBaseRev() + 1);
             this.baseData = null;
         }
 
