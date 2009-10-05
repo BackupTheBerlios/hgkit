@@ -11,16 +11,19 @@ import org.freehg.hgkit.HgInternalError;
 /**
  * Implements folding and unfolding of filenames by replacing:
  * <ul>
- * <li>uppercase letters with underscore and uppercase letters</li>
+ * <li>uppercase letters with underscore and lowercase letters</li>
  * <li>reserved windows filesystem letters and non-ascii letters with their
  * tilde-prefixed hex-code</li>
- * <li>leaving the rest as is.
- * <li>
+ * <li>leaving the rest as is.</li>
  * </ul>
  * 
  * @author mirko
  */
 public final class CaseFolding {
+
+    private static final char UNDERSCORE = '_';
+
+    private static final char TILDE = '~';
 
     /**
      * ASCII upper max.
@@ -147,7 +150,7 @@ public final class CaseFolding {
     }
 
     /**
-     * Unfolds a pathname as Mercurial does in util.decodefilename.
+     * Unfolds a pathname as Mercurial does in util.decodefilename, see specifics in {@link CaseFolding}.
      * 
      * @param foldedName
      *            a folded name.
@@ -155,16 +158,22 @@ public final class CaseFolding {
      */
     public static String unfold(String foldedName) {
         final StringBuilder unfolded = new StringBuilder();
-        for (int i = 0; i < foldedName.length();) {
-            final char[] keyCharacters;            
-            if (foldedName.charAt(i) == '~') { // escaped special character given as hex sequence
-                keyCharacters = new char[] { foldedName.charAt(i++), foldedName.charAt(i++), foldedName.charAt(i++) };
-            } else if (foldedName.charAt(i) == '_') { // uppercase character
-                keyCharacters = new char[] { foldedName.charAt(i++), foldedName.charAt(i++) };
-            } else {
-                keyCharacters = new char[] { foldedName.charAt(i++) };
-            }
-            final String key = new String(keyCharacters);
+        int i = 0;
+        while (i < foldedName.length()) {
+            final char currentChar = foldedName.charAt(i);
+            final String key;
+            if (currentChar == TILDE) { // escaped special character given as hex sequence
+                final char tilde = foldedName.charAt(i++);
+                final char hex1 = foldedName.charAt(i++);
+                final char hex2 = foldedName.charAt(i++);
+                key = new String(new char[] { tilde, hex1, hex2 });
+            } else if (currentChar == UNDERSCORE) { // uppercase character represented as _lowercasechar
+                final char underscore = foldedName.charAt(i++);
+                final char lowercaseChar = foldedName.charAt(i++);
+                key = new String(new char[] { underscore, lowercaseChar });
+            } else { // Default for lowercase non special characters
+                key = new String(new char[] { foldedName.charAt(i++) });
+            }            
             if (!UNFOLD_MAP.containsKey(key)) {
                 throw new HgInternalError("UNFOLD_MAP does not contain '" + key + "' foldedname = " + foldedName);
             }
