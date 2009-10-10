@@ -49,7 +49,7 @@
                 </ul>
             </subsection>
             <subsection name="Build Status">
-                <script type="text/javascript" src="images/hudson_widget.js"></script>
+                <script type="text/javascript" src="http://hudson.zeibig.net/job/HgKit/jswidgets/health/"></script>
             </subsection>
         </section>
     </body>
