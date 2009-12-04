@@ -77,7 +77,9 @@ class UpdateFile {
      */
     void createParentDirs() {
         File parentDir = absoluteFile.getParentFile();
-        parentDir.mkdirs();
+        if (!parentDir.mkdirs()) {
+            throw new HgInternalError("Could not create " + parentDir);
+        }
     }
 
     /**

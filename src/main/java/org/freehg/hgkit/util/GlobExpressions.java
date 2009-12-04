@@ -47,7 +47,9 @@ public final class GlobExpressions {
                     case ']':
                         regex.append(globPatt[++i]);
                         break;
-                    }
+                    default:
+                        break;
+                    }                    
                 }
                 break;
             case ']':
