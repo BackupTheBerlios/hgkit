@@ -61,17 +61,17 @@
         <site>
             <id>shell.berlios.de</id>
             <name>HgKit Website on berlios</name>
-            <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/</url>
+            <url>scpexe://shell.berlios.de:/home/groups/hgkit/htdocs/</url>
         </site>
         <snapshotRepository>
             <id>shell.berlios.de</id>
             <name>Maven2-Repo on berlios</name>
-            <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/maven2snapshotrepo/</url>
+            <url>scpexe://shell.berlios.de:/home/groups/hgkit/htdocs/maven2snapshotrepo/</url>
         </snapshotRepository>
         <repository>
             <id>shell.berlios.de</id>
             <name>Maven2-Repo on berlios</name>
-            <url>scp://shell.berlios.de:/home/groups/hgkit/htdocs/maven2repo/</url>
+            <url>scpexe://shell.berlios.de:/home/groups/hgkit/htdocs/maven2repo/</url>
         </repository>
     </distributionManagement>
     <build>
@@ -130,6 +130,13 @@
                 </executions>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>1.0-beta-6</version>
+            </extension>
+        </extensions>
     </build>
     <dependencies>
         <dependency>
