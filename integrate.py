@@ -20,6 +20,7 @@ def main(sleep=60):
         logging.info("Sleeping for %d seconds" % sleep)
         time.sleep(sleep)
 
+
 if __name__ == "__main__":
     logging.BASIC_FORMAT = "%(asctime)s:" + logging.BASIC_FORMAT
     logging.basicConfig()
