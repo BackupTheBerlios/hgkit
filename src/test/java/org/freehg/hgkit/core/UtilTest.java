@@ -95,9 +95,7 @@ public class UtilTest {
     }
 
     /**
-     * Test method for
-     * {@link org.freehg.hgkit.core.Util#toByteArray(java.io.InputStream)}.
-     * 
+     * Test method for reading a compressed file
      */
     @Test
     public final void testReadWholeFile() {
@@ -108,7 +106,7 @@ public class UtilTest {
         assertTrue("Should end with '" + suffix + "'", uncompressed_passwd.endsWith(suffix));
         assertEquals(2888, uncompressed_passwd.length());
     }
-    
+
     /**
      * Test method for {@link Util#getCanonicalFile(File)}.
      */
@@ -116,7 +114,7 @@ public class UtilTest {
     public final void testGetCanonicalFile() {
         Util.getCanonicalFile(new File("."));
     }
-    
+
     /**
      * Test method for {@link Util#getCanonicalFile(File)}.
      */
@@ -127,12 +125,12 @@ public class UtilTest {
             /** {@inheritDoc} */
             @Override
             public String getCanonicalPath() throws IOException {
-                throw new IOException("Oops");                
+                throw new IOException("Oops");
             }
         };
         Util.getCanonicalFile(nonCanonicalFile);
     }
-    
+
     /**
      * Test method for {@link Util#getCanonicalPath(File)}.
      */
@@ -140,7 +138,7 @@ public class UtilTest {
     public final void testGetCanonicalPath() {
         Util.getCanonicalFile(new File("."));
     }
-    
+
     /**
      * Test method for {@link Util#getCanonicalPath(File)}.
      */    
@@ -151,7 +149,7 @@ public class UtilTest {
             /** {@inheritDoc} */
             @Override
             public String getCanonicalPath() throws IOException {
-                throw new IOException("Oops");                
+                throw new IOException("Oops");
             }
         };
         Util.getCanonicalPath(nonCanonicalPath);
