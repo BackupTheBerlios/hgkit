@@ -65,7 +65,9 @@
       <property name="allowUndeclaredRTE" value="true"/>
       <property name="allowThrowsTagsForSubclasses" value="true"/>
     </module>
-    <module name="JavadocVariable"/>
+    <module name="JavadocVariable">
+        <property name="scope">protected</property>
+    </module>
     <module name="JavadocStyle"/>
 
     <module name="LeftCurly"/>
