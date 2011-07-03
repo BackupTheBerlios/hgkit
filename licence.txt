@@ -1,4 +1,4 @@
 This software is a derivate work of the python mercurial version and therefore 
-must be licensed as GPL.
+must be licensed as GPL2.
 
 In the future it may become EPL if someone would take pity and permit that. 
