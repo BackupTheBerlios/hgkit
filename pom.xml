@@ -6,26 +6,26 @@
     <packaging>jar</packaging>
     <version>SNAPSHOT</version>
     <name>HgKit</name>
-    <url>http://hgkit.berlios.de/</url>
+    <url>https://bitbucket.org/mfriedenhagen/hgkit/</url>
     <inceptionYear>2007-2011</inceptionYear>
     <organization>
         <name>hgkit</name>
-        <url>http://hgkit.berlios.de/</url>
+        <url>https://bitbucket.org/mfriedenhagen/hgkit/</url>
     </organization>
     <description>HgKit aims to be a java library for managing
         Mercurial (hg) repositories.</description>
     <ciManagement>
-        <system>hudson</system>
-        <url>http://s312195779.online.de/hudson/job/HgKit/</url>
+        <system>Jenkins</system>
+        <url>http://huschteguzzel.de/hudson/job/HgKit/</url>
     </ciManagement>
     <issueManagement>
-        <system>berlios</system>
-        <url>https://developer.berlios.de/bugs/?group_id=10058</url>
+        <system>Bitbucket</system>
+        <url>https://bitbucket.org/mfriedenhagen/hgkit/issues/</url>
     </issueManagement>
     <scm>
-        <connection>scm:hg:http://hg.berlios.de/repos/hgkit</connection>
-        <developerConnection>scm:hg:https://hg.berlios.de/repos/hgkit</developerConnection>
-        <url>http://hg.berlios.de/repos/hgkit</url>
+        <connection>scm:hg:https://bitbucket.org/mfriedenhagen/hgkit/</connection>
+        <developerConnection>scm:hg:hg@bitbucket.org/mfriedenhagen/hgkit/</developerConnection>
+        <url>https://bitbucket.org/mfriedenhagen/hgkit/</url>
     </scm>
     <properties>
         <!--
@@ -36,7 +36,7 @@
     <developers>
         <developer>
             <id>mfriedenhagen</id>
-            <email>mfriedenhagen@users.berlios.de</email>
+            <email>mfriedenhagen@gmail.com</email>
             <name>Mirko Friedenhagen</name>
             <roles>
                 <role>Developer</role>
